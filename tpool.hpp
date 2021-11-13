@@ -62,9 +62,11 @@ class FinishLine
     //! waits for all active runners to cross the finish line.
     void wait() noexcept
     {
+        std::this_thread::yield();
         std::unique_lock<std::mutex> lk(mtx_);
         while ((runners_ > 0) && !exception_ptr_)
             cv_.wait(lk);
+
         if (exception_ptr_)
             std::rethrow_exception(exception_ptr_);
     }
@@ -212,6 +214,9 @@ class TaskQueue
 
         return true;
     }
+
+    std::atomic_size_t fail_counter{ 0 };
+    std::atomic_size_t succ_counter{ 0 };
 
     //! pops a task from the top of the queue; returns false if lost race.
     bool try_pop(Task& task)
@@ -391,6 +396,8 @@ template<class Function, class... Args>
 void
 ThreadPool::push(Function&& f, Args&&... args)
 {
+    if (n_workers_ == 0)
+        return f(args...);
     task_manager_.push(
       std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
 }
@@ -411,8 +418,9 @@ ThreadPool::async(Function&& f, Args&&... args)
 void
 ThreadPool::wait()
 {
-    while (!task_manager_.empty())
+    while (!task_manager_.empty()) {
         finish_line_.wait();
+    }
 }
 
 void
@@ -432,6 +440,7 @@ ThreadPool::start_worker()
             finish_line_.start();
             while (task_manager_.try_pop(task))
                 execute_safely(task);
+
             finish_line_.cross();
         }
     });

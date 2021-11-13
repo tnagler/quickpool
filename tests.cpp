@@ -31,8 +31,9 @@ main()
         ok = ok & (xx == 1);
     std::cout << (ok ? "OK" : "FAILED") << std::endl;
 
-    // README contents -------------
-    std::cout << "- Running contents from README:";
+
+    // README contents --------------------------------------------
+    std::cout << "- Running contents from README: ";
 
     // Static access to a global pool
     {

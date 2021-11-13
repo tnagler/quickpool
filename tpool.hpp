@@ -86,21 +86,18 @@ class FinishLine
     std::exception_ptr exception_ptr_{ nullptr };
 };
 
-
 //! Implementation details
 namespace detail {
 
 //! A simple ring buffer class.
+template<typename T>
 class RingBuffer
 {
-    using Task = std::function<void()>;
-    using TaskVec = std::vector<std::shared_ptr<Task>>;
-
   public:
     explicit RingBuffer(size_t capacity)
-      : capacity_(capacity)
-      , mask_(capacity - 1)
-      , buffer_(TaskVec(capacity))
+      : capacity_{ capacity }
+      , mask_{ capacity - 1 }
+      , buffer_{ std::unique_ptr<T[]>(new T[capacity]) }
     {
         if (capacity_ & (capacity_ - 1))
             throw std::runtime_error("capacity must be a power of two");
@@ -108,32 +105,35 @@ class RingBuffer
 
     size_t capacity() const { return capacity_; }
 
-    void store(size_t i, Task&& tsk)
-    {
-        buffer_[i & mask_] = std::make_shared<Task>(std::move(tsk));
-    }
+    void store(size_t i, T&& x) { buffer_[i & mask_] = std::move(x); }
 
-    void copy(size_t i, std::shared_ptr<Task> task_ptr)
-    {
-        buffer_[i & mask_] = task_ptr;
-    }
+    T load(size_t i) const { return buffer_[i & mask_]; }
 
-    std::shared_ptr<Task> load(size_t i) const { return buffer_[i & mask_]; }
-
-    // creates a new ring buffer with shared pointers to current elements.
-    RingBuffer enlarge(size_t bottom, size_t top) const
+    // creates a new ring buffer with pointers to current elements.
+    RingBuffer<T>* enlarge(size_t bottom, size_t top) const
     {
-        RingBuffer buffer(2 * capacity_);
+        RingBuffer<T>* new_buffer = new RingBuffer{ 2 * capacity_ };
         for (size_t i = top; i != bottom; ++i)
-            buffer.copy(i, this->load(i));
-        return buffer;
+            new_buffer->store(i, this->load(i));
+        return new_buffer;
     }
 
   private:
-    TaskVec buffer_;
+    std::unique_ptr<T[]> buffer_;
     size_t capacity_;
     size_t mask_;
 };
+
+// exchange is not available in C++11, use implementatino from
+// https://en.cppreference.com/w/cpp/utility/exchange
+template<class T, class U = T>
+T
+exchange(T& obj, U&& new_value) noexcept
+{
+    T old_value = std::move(obj);
+    obj = std::forward<U>(new_value);
+    return old_value;
+}
 
 //! A multi-producer, multi-consumer queue; pops are lock free.
 class TaskQueue
@@ -143,8 +143,11 @@ class TaskQueue
   public:
     //! constructs the que with a given capacity.
     //! @param capacity must be a power of two.
-    TaskQueue(size_t capacity = 256) { buffers_.emplace_back(capacity); }
+    TaskQueue(size_t capacity = 256)
+      : buffer_{ new RingBuffer<Task>(capacity) }
+    {}
 
+    ~TaskQueue() noexcept { delete buffer_.load(); }
     TaskQueue(TaskQueue const& other) = delete;
     TaskQueue& operator=(TaskQueue const& other) = delete;
 
@@ -157,7 +160,7 @@ class TaskQueue
     }
 
     //! queries the capacity.
-    size_t capacity() const { return buffers_[buffer_index_].capacity(); }
+    size_t capacity() const { return buffer_.load(m_relaxed)->capacity(); }
 
     //! checks if queue is empty.
     bool empty() const { return (this->size() == 0); }
@@ -171,25 +174,20 @@ class TaskQueue
 
     //! pushes a task to the bottom of the queue; returns false if queue is
     //! currently locked; enlarges the queue if full.
-    bool try_push(Task&& tsk)
+    bool try_push(Task&& task)
     {
         auto b = bottom_.load(m_relaxed);
         auto t = top_.load(m_acquire);
+        RingBuffer<Task>* buf_ptr = buffer_.load(m_relaxed);
 
-        // lock must be acquired in case multiple producers want to modify the
-        // buffer; quick abort if lock is already taken
-        std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
-        if (!lk)
-            return false;
-
-        if (buffers_[buffer_index_].capacity() < (b - t) + 1) {
-            // capacity reached, create copy with double size
-            buffers_.push_back(buffers_[buffer_index_].enlarge(b, t));
-            buffer_index_++;
+        if (buf_ptr->capacity() < (b - t) + 1) {
+            // capacity reached, create buffer with double size
+            old_buffers_.emplace_back(
+              exchange(buf_ptr, buf_ptr->enlarge(b, t)));
+            buffer_.store(buf_ptr, m_relaxed);
         }
 
-        buffers_[buffer_index_].store(b, std::move(tsk));
-        lk.unlock(); // holding the lock is no longer necessary
+        buf_ptr->store(b, std::move(task));
         std::atomic_thread_fence(m_release);
         bottom_.store(b + 1, m_relaxed);
 
@@ -199,15 +197,18 @@ class TaskQueue
     //! pops a task from the top of the queue; returns false if lost race.
     bool try_pop(Task& task)
     {
+        std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
+        if (!lk)
+            return false;
+
         auto t = top_.load(m_acquire);
         std::atomic_thread_fence(m_seq_cst);
         auto b = bottom_.load(m_acquire);
 
         if (t < b) {
             // must load task pointer before acquiring the slot
-            auto task_ptr = buffers_[buffer_index_].load(t);
+            task = buffer_.load(m_consume)->load(t);
             if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
-                task = std::move(*task_ptr.get());
                 return true; // won race
             }
         }
@@ -217,8 +218,8 @@ class TaskQueue
   private:
     alignas(64) std::atomic_ptrdiff_t top_{ 0 };
     alignas(64) std::atomic_ptrdiff_t bottom_{ 0 };
-    alignas(64) std::vector<detail::RingBuffer> buffers_;
-    alignas(64) std::atomic_size_t buffer_index_{ 0 };
+    alignas(64) std::atomic<RingBuffer<Task>*> buffer_{ nullptr };
+    std::vector<std::unique_ptr<RingBuffer<Task>>> old_buffers_;
     std::mutex mutex_;
 
     // convenience aliases
@@ -226,6 +227,7 @@ class TaskQueue
     static constexpr std::memory_order m_acquire = std::memory_order_acquire;
     static constexpr std::memory_order m_release = std::memory_order_release;
     static constexpr std::memory_order m_seq_cst = std::memory_order_seq_cst;
+    static constexpr std::memory_order m_consume = std::memory_order_consume;
 };
 
 //! Task manager based on work stealing

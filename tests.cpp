@@ -31,7 +31,6 @@ main()
         ok = ok & (xx == 1);
     std::cout << (ok ? "OK" : "FAILED") << std::endl;
 
-
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
 
@@ -91,6 +90,75 @@ main()
         finish_cons.wait();              // waits for all consumers to be done
     }
     std::cout << "OK" << std::endl;
+
+    // unit tests ---------------------------------------
+    std::cout << "- unit tests: " << std::endl;
+    // thread pool push
+    {
+        std::cout << "    * push: ";
+        tpool::ThreadPool pool(2);
+        std::vector<size_t> x(10000, 1);
+        auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
+        for (size_t i = 0; i < x.size() / 2; i++)
+            pool.push(dummy, i);
+
+        pool.wait();
+
+        size_t count_wrong = 0;
+        for (size_t i = 0; i < x.size() / 2; i++)
+            count_wrong += (x[i] != 2);
+        for (size_t i = x.size() / 2 + 1; i < x.size(); i++)
+            count_wrong += (x[i] != 1);
+        if (count_wrong > 0)
+            throw std::runtime_error("push gives wrong result");
+        std::cout << "OK" << std::endl;
+    }
+
+    // async()
+    {
+        std::cout << "    * async: ";
+        tpool::ThreadPool pool(2);
+        std::vector<size_t> x(1000000, 1);
+        auto dummy = [&](size_t i) { return 2 * x[i]; };
+
+        std::vector<std::future<size_t>> fut(x.size());
+        for (size_t i = 0; i < x.size() / 2; i++)
+            fut[i] = pool.async(dummy, i);
+        for (size_t i = 0; i < x.size() / 2; i++)
+            x[i] = fut[i].get();
+        pool.wait();
+
+        size_t count_wrong = 0;
+        for (size_t i = 0; i < x.size() / 2; i++)
+            count_wrong += (x[i] != 2);
+        for (size_t i = x.size() / 2 + 1; i < x.size(); i++)
+            count_wrong += (x[i] != 1);
+        if (count_wrong > 0)
+            throw std::runtime_error("push gives wrong result");
+        std::cout << "OK" << std::endl;
+    }
+
+    // single threaded
+    {
+        std::cout << "    * single threaded: ";
+        tpool::ThreadPool pool(0);
+        std::vector<size_t> x(1000, 1);
+        auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
+
+        for (size_t i = 0; i < x.size() / 2; i++) {
+            pool.push(dummy, i);
+        }
+        pool.wait();
+
+        size_t count_wrong = 0;
+        for (size_t i = 0; i < x.size() / 2; i++)
+            count_wrong += (x[i] != 2);
+        for (size_t i = x.size() / 2 + 1; i < x.size(); i++)
+            count_wrong += (x[i] != 1);
+        if (count_wrong > 0)
+            throw std::runtime_error("push gives wrong result");
+        std::cout << "OK" << std::endl;
+    }
 
     return 0;
 }

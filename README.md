@@ -4,7 +4,7 @@
 
 ## Why tpool?
 
-* **no install**: [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support) single-header library, just drop in your project and enjoy.
+* **no install**: [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support) single-header library, just drop into your project and enjoy.
 
 * **fast**: Uses a [work stealing](https://en.wikipedia.org/wiki/Work_stealing)  queue with [lock-free](https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom) pops.
 

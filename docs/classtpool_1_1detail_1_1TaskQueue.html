@@ -106,8 +106,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#ad091fd6afea409913c396ec251c528b8">clear</a> ()</td></tr>
 <tr class="memdesc:ad091fd6afea409913c396ec251c528b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">clears the queue. <br /></td></tr>
 <tr class="separator:ad091fd6afea409913c396ec251c528b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1e97c52e73768e48b3dc09f6e4f867e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#af1e97c52e73768e48b3dc09f6e4f867e">try_push</a> (Task &amp;&amp;tsk)</td></tr>
-<tr class="separator:af1e97c52e73768e48b3dc09f6e4f867e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8fd0ab537ce800f9388f1fe0016acf7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#ab8fd0ab537ce800f9388f1fe0016acf7">try_push</a> (Task &amp;&amp;task)</td></tr>
+<tr class="separator:ab8fd0ab537ce800f9388f1fe0016acf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b5d1adff3c55d6cc0ed4bf5fb008935"><td class="memItemLeft" align="right" valign="top"><a id="a4b5d1adff3c55d6cc0ed4bf5fb008935"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a4b5d1adff3c55d6cc0ed4bf5fb008935">try_pop</a> (Task &amp;task)</td></tr>
 <tr class="memdesc:a4b5d1adff3c55d6cc0ed4bf5fb008935"><td class="mdescLeft">&#160;</td><td class="mdescRight">pops a task from the top of the queue; returns false if lost race. <br /></td></tr>
@@ -153,8 +153,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="af1e97c52e73768e48b3dc09f6e4f867e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af1e97c52e73768e48b3dc09f6e4f867e">&#9670;&nbsp;</a></span>try_push()</h2>
+<a id="ab8fd0ab537ce800f9388f1fe0016acf7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8fd0ab537ce800f9388f1fe0016acf7">&#9670;&nbsp;</a></span>try_push()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -166,7 +166,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
           <td class="memname">bool tpool::detail::TaskQueue::try_push </td>
           <td>(</td>
           <td class="paramtype">Task &amp;&amp;&#160;</td>
-          <td class="paramname"><em>tsk</em></td><td>)</td>
+          <td class="paramname"><em>task</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -178,7 +178,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </div><div class="memdoc">
 <p>pushes a task to the bottom of the queue; returns false if queue is currently locked; enlarges the queue if full. </p>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00174">174</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00177">177</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>

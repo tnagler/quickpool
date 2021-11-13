@@ -14,9 +14,11 @@
 
 ## Usage
 
+Basic usage is demonstrated below. See the [API documentation](https://tnagler.github.io/tpool/) for more details.
+
 ### Static access to a global pool
 
-The easiest way is to use the static `push()` , `async()` , and `wait()` functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.
+The easiest way is to use the static `push()` , [`async()`](https://tnagler.github.io/tpool/namespacetpool.html#a10575809d24ead3716e312585f90a94a) , and `wait()` functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.
 
 ```cpp
 #include "tpool.hpp"

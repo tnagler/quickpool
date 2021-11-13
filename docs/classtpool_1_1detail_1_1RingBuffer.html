@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>tpool: tpool::detail::RingBuffer Class Reference</title>
+<title>tpool: tpool::detail::RingBuffer&lt; T &gt; Class Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -71,7 +71,7 @@ $(function() {
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classtpool_1_1detail_1_1RingBuffer-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">tpool::detail::RingBuffer Class Reference</div>  </div>
+<div class="title">tpool::detail::RingBuffer&lt; T &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -82,27 +82,27 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aa5bb853ec3433ee0e3adcb2b2062af1c"><td class="memItemLeft" align="right" valign="top"><a id="aa5bb853ec3433ee0e3adcb2b2062af1c"></a>
+<tr class="memitem:adb85dfad05f0a851c79c36731d8778da"><td class="memItemLeft" align="right" valign="top"><a id="adb85dfad05f0a851c79c36731d8778da"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>RingBuffer</b> (size_t capacity)</td></tr>
-<tr class="separator:aa5bb853ec3433ee0e3adcb2b2062af1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae8cba45bf7f29f1dfc9beff60d63a6bd"><td class="memItemLeft" align="right" valign="top"><a id="ae8cba45bf7f29f1dfc9beff60d63a6bd"></a>
+<tr class="separator:adb85dfad05f0a851c79c36731d8778da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a046b0b992a41219f64b1e5f7676d70da"><td class="memItemLeft" align="right" valign="top"><a id="a046b0b992a41219f64b1e5f7676d70da"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>capacity</b> () const</td></tr>
-<tr class="separator:ae8cba45bf7f29f1dfc9beff60d63a6bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60713f1ea8e3e222f2e214fc8f7b9981"><td class="memItemLeft" align="right" valign="top"><a id="a60713f1ea8e3e222f2e214fc8f7b9981"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>store</b> (size_t i, Task &amp;&amp;tsk)</td></tr>
-<tr class="separator:a60713f1ea8e3e222f2e214fc8f7b9981"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a99ca2f8c6f328385f9d455be6dc40ed9"><td class="memItemLeft" align="right" valign="top"><a id="a99ca2f8c6f328385f9d455be6dc40ed9"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>copy</b> (size_t i, std::shared_ptr&lt; Task &gt; task_ptr)</td></tr>
-<tr class="separator:a99ca2f8c6f328385f9d455be6dc40ed9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae9f9c294053222f0c613c9fa2b778ef6"><td class="memItemLeft" align="right" valign="top"><a id="ae9f9c294053222f0c613c9fa2b778ef6"></a>
-std::shared_ptr&lt; Task &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>load</b> (size_t i) const</td></tr>
-<tr class="separator:ae9f9c294053222f0c613c9fa2b778ef6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a367d687af357a5b6073641e1146fa087"><td class="memItemLeft" align="right" valign="top"><a id="a367d687af357a5b6073641e1146fa087"></a>
-<a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">RingBuffer</a>&#160;</td><td class="memItemRight" valign="bottom"><b>enlarge</b> (size_t bottom, size_t top) const</td></tr>
-<tr class="separator:a367d687af357a5b6073641e1146fa087"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a046b0b992a41219f64b1e5f7676d70da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addf659e6226ac7fe816870ed46e9a58d"><td class="memItemLeft" align="right" valign="top"><a id="addf659e6226ac7fe816870ed46e9a58d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>store</b> (size_t i, T &amp;&amp;x)</td></tr>
+<tr class="separator:addf659e6226ac7fe816870ed46e9a58d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab8d5096c750a49b9dc136f78f4a6d23"><td class="memItemLeft" align="right" valign="top"><a id="aab8d5096c750a49b9dc136f78f4a6d23"></a>
+T&#160;</td><td class="memItemRight" valign="bottom"><b>load</b> (size_t i) const</td></tr>
+<tr class="separator:aab8d5096c750a49b9dc136f78f4a6d23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea9a5dca2a260dcb7db0f78e30f264a8"><td class="memItemLeft" align="right" valign="top"><a id="aea9a5dca2a260dcb7db0f78e30f264a8"></a>
+<a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">RingBuffer</a>&lt; T &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>enlarge</b> (size_t bottom, size_t top) const</td></tr>
+<tr class="separator:aea9a5dca2a260dcb7db0f78e30f264a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A simple ring buffer class. </p>
+<div class="textblock"><h3>template&lt;typename T&gt;<br />
+class tpool::detail::RingBuffer&lt; T &gt;</h3>
+
+<p>A simple ring buffer class. </p>
 
 <p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00094">94</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 </div><hr/>The documentation for this class was generated from the following file:<ul>

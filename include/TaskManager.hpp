@@ -90,7 +90,7 @@ class TaskQueue
     void clear();
 
     //! pushes a task to the bottom of the queue; enlarges the queue if full.
-    void push(Task&& tsk);
+    bool try_push(Task&& tsk);
 
     //! pops a task from the top of the queue. Returns an empty task
     //! when lost race.
@@ -101,6 +101,8 @@ class TaskQueue
     alignas(64) std::atomic_ptrdiff_t bottom_{ 0 };
     alignas(64) std::vector<detail::RingBuffer> buffers_;
     alignas(64) std::atomic_size_t buffer_index_{ 0 };
+
+    std::mutex mutex_;
 
     // convenience aliases
     static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
@@ -141,9 +143,12 @@ TaskQueue::clear()
     top_.store(b, m_release);
 }
 
-void
-TaskQueue::push(Task&& tsk)
+bool
+TaskQueue::try_push(Task&& tsk)
 {
+    std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
+    if (!lk)
+        return false;
     auto b = bottom_.load(m_relaxed);
     auto t = top_.load(m_acquire);
 
@@ -156,6 +161,7 @@ TaskQueue::push(Task&& tsk)
 
     std::atomic_thread_fence(m_release);
     bottom_.store(b + 1, m_relaxed);
+    return true;
 }
 
 bool
@@ -188,34 +194,58 @@ TaskQueue::try_pop(Task& task)
 
 struct TaskManager
 {
-    TaskQueue q_;
+    std::vector<TaskQueue> queues_;
     std::mutex m_;
     std::condition_variable cv_;
     std::atomic_bool stopped_{ false };
+    alignas(64) std::atomic_size_t push_idx_;
+    alignas(64) std::atomic_size_t pop_idx_;
+    size_t num_queues_;
+
+    TaskManager(size_t num_queues = 1)
+      : num_queues_{ num_queues }
+    {
+        queues_ = std::vector<TaskQueue>(num_queues);
+    }
 
     template<typename Task>
     void push(Task&& task)
     {
-        {
-            std::lock_guard<std::mutex> lk(m_);
-            q_.push(task);
-        }
+        while (!queues_[push_idx_++ % num_queues_].try_push(task))
+            ;
         cv_.notify_one();
     }
 
-    bool try_pop(std::function<void()>& task) { return q_.try_pop(task); }
+    bool empty()
+    {
+        for (auto& q : queues_) {
+            if (!q.empty())
+                return false;
+        }
+        return true;
+    }
 
-    void clear() { q_.clear(); }
-
-    bool empty() { return q_.empty(); }
+    bool try_pop(std::function<void()>& task)
+    {
+        do {
+            if (queues_[pop_idx_++ % num_queues_].try_pop(task))
+                return true;
+        } while (!this->empty());
+        return false;
+    }
+    void clear()
+    {
+        for (auto& q : queues_)
+            q.clear();
+    }
+    bool stopped() { return stopped_; }
 
     void wait_for_jobs()
     {
         std::unique_lock<std::mutex> lk(m_);
-        cv_.wait(lk, [this] { return !q_.empty() || stopped_; });
+        cv_.wait(lk, [this] { return !this->empty() || stopped_; });
     }
 
-    bool stopped() { return stopped_; }
     void stop()
     {
         {

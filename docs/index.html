@@ -73,17 +73,17 @@ $(function() {
 <h1><a class="anchor" id="autotoc_md1"></a>
 Why tpool?</h1>
 <ul>
-<li><b>no install</b>: Single-header library, just drop in your project and enjoy.</li>
-<li><b>portable</b>: Only requires a <a href="https://en.cppreference.com/w/cpp/compiler_support">C++11 compliant</a> compiler.</li>
-<li><b>fast</b>: Uses a <a href="https://en.wikipedia.org/wiki/Work_stealing">work stealing</a> queue for distributing tasks with <a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom">lock-free</a> pops.</li>
-<li><b>user-friendly</b>: Dead simple API, including direct access to a global pool for maximal convenience.</li>
+<li><b>no install</b>: <a href="https://en.cppreference.com/w/cpp/compiler_support">C++11 compliant</a> single-header library, just drop in your project and enjoy.</li>
+<li><b>fast</b>: Uses a <a href="https://en.wikipedia.org/wiki/Work_stealing">work stealing</a> queue with <a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom">lock-free</a> pops.</li>
+<li><b>user friendly</b>: Dead simple <a href="https://tnagler.github.io/tpool/">API</a>, including direct access to a global pool.</li>
+<li><b>light weight</b>: Less than 500 LOC including API documentation and whitespace.</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Usage</h1>
 <p>Basic usage is demonstrated below. See the <a href="https://tnagler.github.io/tpool/">API documentation</a> for more details.</p>
 <h2><a class="anchor" id="autotoc_md3"></a>
 Static access to a global pool</h2>
-<p>The easiest way is to use the static <a href="https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830"><code>tpool::push()</code></a>, <a href="https://tnagler.github.io/tpool/namespacetpool.html#a10575809d24ead3716e312585f90a94a"><code>tpool::async()</code></a>, and <a href="https://tnagler.github.io/tpool/namespacetpool.html#a086671a25cc4f207112bc82a00688301"><code>tpool::wait()</code></a> functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.</p>
+<p>The easiest method is to use the static <a href="https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830"><code>tpool::push()</code></a>, <a href="https://tnagler.github.io/tpool/namespacetpool.html#a10575809d24ead3716e312585f90a94a"><code>tpool::async()</code></a>, and <a href="https://tnagler.github.io/tpool/namespacetpool.html#a086671a25cc4f207112bc82a00688301"><code>tpool::wait()</code></a> functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;tpool.hpp&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><a class="code" href="namespacetpool.html#affc41895dab281715c271aca3649e830">tpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
@@ -100,17 +100,14 @@ Static access to a global pool</h2>
 <div class="line"><a class="code" href="namespacetpool.html#affc41895dab281715c271aca3649e830">tpool::push</a>(work, <span class="stringliteral">&quot;first title&quot;</span>, 5);</div>
 <div class="line"><a class="code" href="namespacetpool.html#a10575809d24ead3716e312585f90a94a">tpool::async</a>(work, <span class="stringliteral">&quot;other title&quot;</span>, 99);</div>
 <div class="line"><a class="code" href="namespacetpool.html#a086671a25cc4f207112bc82a00688301">tpool::wait</a>();</div>
-<div class="line"><span class="comment">// prints: --------</span></div>
-<div class="line"><span class="comment">// first title: 5</span></div>
-<div class="line"><span class="comment">// other title: 99</span></div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md4"></a>
 Local thread pool</h2>
 <p>A <a href="https://tnagler.github.io/tpool/classtpool_1_1ThreadPool.html"><code>ThreadPool</code></a> can also be set up manually, with an arbitrary number of threads. When the pool goes out of scope, all threads joined.</p>
 <div class="fragment"><div class="line">{</div>
 <div class="line">  <a class="code" href="classtpool_1_1ThreadPool.html">tpool::ThreadPool</a> pool(2);  <span class="comment">// thread pool with two threads</span></div>
-<div class="line">  pool.push([] { <span class="comment">/* some work */</span> });</div>
-<div class="line">  pool.async([] { <span class="comment">/* some work */</span> });</div>
-<div class="line">  pool.wait(); <span class="comment">// waits for all current jobs to finish</span></div>
+<div class="line">  pool.push([] {});</div>
+<div class="line">  pool.async([] {});</div>
+<div class="line">  pool.wait();</div>
 <div class="line">}</div>
 <div class="line"><span class="comment">// threads are joined</span></div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md5"></a>

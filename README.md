@@ -4,13 +4,13 @@
 
 ## Why tpool?
 
-* **no install**: Single-header library, just drop in your project and enjoy.
+* **no install**: [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support) single-header library, just drop in your project and enjoy.
 
-* **portable**: Only requires a [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support) compiler.
+* **fast**: Uses a [work stealing](https://en.wikipedia.org/wiki/Work_stealing)  queue with [lock-free](https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom) pops.
 
-* **fast**: Uses a [work stealing](https://en.wikipedia.org/wiki/Work_stealing) queue for distributing tasks with [lock-free](https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom) pops.
+* **user friendly**: Dead simple [API](https://tnagler.github.io/tpool/), including direct access to a global pool.
 
-* **user-friendly**: Dead simple API, including direct access to a global pool for maximal convenience.
+* **light weight**: Less than 500 LOC including API documentation and whitespace.
 
 ## Usage
 
@@ -18,7 +18,7 @@ Basic usage is demonstrated below. See the [API documentation](https://tnagler.g
 
 ### Static access to a global pool
 
-The easiest way is to use the static [`tpool::push()`](https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830), 
+The easiest method is to use the static [`tpool::push()`](https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830), 
 [`tpool::async()`](https://tnagler.github.io/tpool/namespacetpool.html#a10575809d24ead3716e312585f90a94a), 
 and [`tpool::wait()`](https://tnagler.github.io/tpool/namespacetpool.html#a086671a25cc4f207112bc82a00688301) functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.
 
@@ -47,9 +47,6 @@ auto work = [] (std::string title, int i) {
 tpool::push(work, "first title", 5);
 tpool::async(work, "other title", 99);
 tpool::wait();
-// prints: --------
-// first title: 5
-// other title: 99
 ```
 
 ### Local thread pool
@@ -59,9 +56,9 @@ A [`ThreadPool`](https://tnagler.github.io/tpool/classtpool_1_1ThreadPool.html) 
 ```cpp
 {
   tpool::ThreadPool pool(2);  // thread pool with two threads
-  pool.push([] { /* some work */ });
-  pool.async([] { /* some work */ });
-  pool.wait(); // waits for all current jobs to finish
+  pool.push([] {});
+  pool.async([] {});
+  pool.wait();
 }
 // threads are joined
 ```

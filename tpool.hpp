@@ -441,13 +441,13 @@ ThreadPool::join_workers()
     }
 }
 
-//! Static access to the global thread pool ------------------------------------
+//! Direct access to the global thread pool ------------------------------------
 
 //! @brief push a job to the global thread pool.
 //! @param f a function.
 //! @param args (optional) arguments passed to `f`.
 template<class Function, class... Args>
-static void
+void
 push(Function&& f, Args&&... args)
 {
     ThreadPool::global_instance().push(std::forward<Function>(f),
@@ -460,7 +460,7 @@ push(Function&& f, Args&&... args)
 //! @return A `std::future` for the task. Call `future.get()` to retrieve the
 //! results at a later point in time (blocking).
 template<class Function, class... Args>
-static auto
+auto
 async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
 {
     return ThreadPool::global_instance().async(std::forward<Function>(f),
@@ -468,14 +468,14 @@ async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
 }
 
 //! @brief waits for all jobs currently running on the global thread pool.
-static void
+void
 wait()
 {
     ThreadPool::global_instance().wait();
 }
 
 //! @brief clears all jobs currently running on the global thread pool.
-static void
+void
 clear()
 {
     ThreadPool::global_instance().clear();

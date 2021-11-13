@@ -25,7 +25,7 @@ Basic usage is demonstrated below. See the [API documentation](https://tnagler.g
 
 ### Static access to a global pool
 
-The easiest method is to use the static [`tpool::push()`](https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830), 
+The easiest method is to use the [`tpool::push()`](https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830), 
 [`tpool::async()`](https://tnagler.github.io/tpool/namespacetpool.html#a10575809d24ead3716e312585f90a94a), 
 and [`tpool::wait()`](https://tnagler.github.io/tpool/namespacetpool.html#a086671a25cc4f207112bc82a00688301) functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.
 

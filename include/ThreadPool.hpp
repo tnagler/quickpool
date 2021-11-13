@@ -48,6 +48,8 @@ class ThreadPool
     void start_worker(size_t id);
     void join_workers();
     void join();
+    template<class Task>
+    void execute_safely(Task& task);
 
     std::vector<std::thread> workers_;
     detail::TaskManager task_manager_;
@@ -135,11 +137,23 @@ ThreadPool::start_worker(size_t id)
         while (!task_manager_.stopped()) {
             task_manager_.wait_for_jobs();
             finish_line_.start();
-            while (task_manager_.try_pop(task))
-                task();
+            while (task_manager_.try_pop(task)) {
+                execute_safely(task);
+            }
             finish_line_.cross();
         }
     });
+}
+
+template<class Task>
+inline void
+ThreadPool::execute_safely(Task& task)
+{
+    try {
+        task();
+    } catch (...) {
+        finish_line_.abort(std::current_exception());
+    }
 }
 
 //! joins worker threads if possible.

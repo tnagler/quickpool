@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <condition_variable>
-#include <mutex>
 #include <atomic>
+#include <condition_variable>
 #include <exception>
+#include <mutex>
 
 namespace tpool {
 
@@ -20,6 +20,14 @@ class FinishLine
       : runners_(runners)
     {}
 
+    void add(size_t num = 1) noexcept { runners_ = runners_ + num; }
+    void start() noexcept { ++runners_; }
+    void cross() noexcept
+    {
+        if (--runners_ == 0)
+            cv_.notify_all();
+    }
+    
     void wait() noexcept
     {
         std::unique_lock<std::mutex> lk(mtx_);
@@ -29,22 +37,10 @@ class FinishLine
             std::rethrow_exception(exception_ptr_);
     }
 
-    void add(size_t num = 1) noexcept { runners_ = runners_ + num; }
-
-    void start() noexcept { ++runners_; }
-
-    void cross() noexcept
-    {
-        if (--runners_ == 0)
-            cv_.notify_all();
-    }
-
     void abort(std::exception_ptr e) noexcept
     {
-        {
-            std::lock_guard<std::mutex> lk(mtx_);
-            exception_ptr_ = e;
-        }
+        std::lock_guard<std::mutex> lk(mtx_);
+        exception_ptr_ = e;
     }
 
   private:
@@ -53,6 +49,5 @@ class FinishLine
     std::condition_variable cv_;
     std::exception_ptr exception_ptr_{ nullptr };
 };
-
 
 }

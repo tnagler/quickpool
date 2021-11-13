@@ -207,6 +207,8 @@ struct TaskManager
 
     void clear() { q_.clear(); }
 
+    bool empty() { return q_.empty(); }
+
     void wait_for_jobs()
     {
         std::unique_lock<std::mutex> lk(m_);

@@ -108,7 +108,8 @@ ThreadPool::async(Function&& f, Args&&... args)
 void
 ThreadPool::wait()
 {
-    finish_line_.wait();
+    while (!task_manager_.empty())
+        finish_line_.wait();
 }
 
 void

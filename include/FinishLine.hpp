@@ -41,6 +41,7 @@ class FinishLine
     {
         std::lock_guard<std::mutex> lk(mtx_);
         exception_ptr_ = e;
+        cv_.notify_all();
     }
 
   private:

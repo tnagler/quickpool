@@ -1,10 +1,24 @@
-#include "include/ThreadPool.hpp"
+#include "include/Static.hpp"
 #include <iostream>
 
-int main() {
+int
+main()
+{
     auto& pool = tpool::ThreadPool::global_instance();
-    pool.push([] { std::cout << "test" << std::endl; });
-    return 0;
+    pool.push([] { std::cout << "push" << std::endl; });
+    pool.wait();
+    std::cout << "OK" << std::endl;
+
+    tpool::push([] { std::cout << "static push" << std::endl; });
+    tpool::wait();
+    std::cout << "OK" << std::endl;
+
+    auto fut = tpool::async([] {
+        std::cout << "static async" << std::endl;
+        return 1;
+    });
+    if (fut.get())
+        std::cout << "OK" << std::endl;
 }
 
 // std::vector<std::vector<double>> x(size, std::vector<double>(200, 1));
@@ -192,7 +206,6 @@ int main() {
 //         // check_equal_to(y, target);
 //     }
 // }
-
 
 // static void
 // BM_sequential(benchmark::State& state)

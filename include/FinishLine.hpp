@@ -14,13 +14,14 @@
 #include <mutex>
 #include <atomic>
 #include <exception>
+#include <iostream>
 
 namespace tpool {
 
 class FinishLine
 {
   public:
-    FinishLine(size_t runners) noexcept
+    FinishLine(size_t runners = 0) noexcept
       : runners_(runners)
     {}
 
@@ -33,7 +34,9 @@ class FinishLine
             std::rethrow_exception(exception_ptr_);
     }
 
-    void add() noexcept { ++runners_; }
+    void add(size_t num = 1) noexcept { runners_ = runners_ + num; }
+
+    void start() noexcept { ++runners_; }
 
     void cross() noexcept
     {

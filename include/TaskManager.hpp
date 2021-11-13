@@ -67,7 +67,7 @@ class RingBuffer
 class TaskQueue
 {
     using Task = std::function<void()>;
- 
+
   public:
     //! constructs the que with a given capacity.
     //! @param capacity must be a power of two.
@@ -94,7 +94,7 @@ class TaskQueue
 
     //! pops a task from the top of the queue. Returns an empty task
     //! when lost race.
-    Task pop();
+    bool try_pop(Task& task);
 
   private:
     alignas(64) std::atomic_ptrdiff_t top_{ 0 };
@@ -158,8 +158,8 @@ TaskQueue::push(Task&& tsk)
     bottom_.store(b + 1, m_relaxed);
 }
 
-std::function<void()>
-TaskQueue::pop()
+bool
+TaskQueue::try_pop(Task& task)
 {
     auto t = top_.load(m_acquire);
     std::atomic_thread_fence(m_seq_cst);
@@ -176,12 +176,13 @@ TaskQueue::pop()
         auto task_ptr = buffers_[buffer_index_].load(t);
 
         if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
-            return std::move(*task_ptr);
+            task = std::move(*task_ptr.get());
+            return true;
         } else {
-            return [] {}; // lost race for this task
+            return false; // lost race for this task
         }
     } else {
-        return [] {}; // queue is empty
+        return false; // queue is empty
     }
 }
 
@@ -191,24 +192,18 @@ struct TaskManager
     std::mutex m_;
     std::condition_variable cv_;
     std::atomic_bool stopped_{ false };
-    FinishLine finish_line_{ 0 };
 
     template<typename Task>
     void push(Task&& task)
     {
         {
-            finish_line_.add();
             std::lock_guard<std::mutex> lk(m_);
             q_.push(task);
         }
         cv_.notify_one();
     }
 
-    std::function<void()> pop()
-    {
-        return q_.pop();
-        finish_line_.cross();
-    }
+    bool try_pop(std::function<void()>& task) { return q_.try_pop(task); }
 
     void clear() { q_.clear(); }
 
@@ -216,12 +211,6 @@ struct TaskManager
     {
         std::unique_lock<std::mutex> lk(m_);
         cv_.wait(lk, [this] { return !q_.empty() || stopped_; });
-    }
-
-    void wait_for_done()
-    {
-        std::unique_lock<std::mutex> lk(m_);
-        cv_.wait(lk, [this] { return q_.empty() || stopped_; });
     }
 
     bool stopped() { return stopped_; }

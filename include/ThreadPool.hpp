@@ -94,7 +94,8 @@ ThreadPool::push(Function&& f, Args&&... args)
 
 template<class Function, class... Args>
 auto
-ThreadPool::async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
+ThreadPool::async(Function&& f, Args&&... args)
+  -> std::future<decltype(f(args...))>
 {
     using task = std::packaged_task<decltype(f(args...))()>;
     auto pack =
@@ -107,7 +108,7 @@ ThreadPool::async(Function&& f, Args&&... args) -> std::future<decltype(f(args..
 void
 ThreadPool::wait()
 {
-    task_manager_.wait_for_done();
+    finish_line_.wait();
 }
 
 void
@@ -129,9 +130,13 @@ inline void
 ThreadPool::start_worker(size_t id)
 {
     workers_.emplace_back([this, id] {
+        std::function<void()> task;
         while (!task_manager_.stopped()) {
             task_manager_.wait_for_jobs();
-            task_manager_.pop()();
+            finish_line_.start();
+            while (task_manager_.try_pop(task))
+                task();
+            finish_line_.cross();
         }
     });
 }

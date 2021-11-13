@@ -269,6 +269,7 @@ struct TaskManager
     template<typename Task>
     void push(Task&& task)
     {
+        size_t count = 0;
         while (!queues_[push_idx_++ % num_queues_].try_push(task))
             continue;
         cv_.notify_one();

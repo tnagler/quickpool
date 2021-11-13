@@ -96,15 +96,29 @@ main()
     // thread pool push
     {
         std::cout << "    * push: ";
-        tpool::ThreadPool pool(2);
         std::vector<size_t> x(10000, 1);
         auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
+        for (size_t i = 0; i < x.size() / 2; i++)
+            tpool::push(dummy, i);
+
+        tpool::wait();
+
+        size_t count_wrong = 0;
+        for (size_t i = 0; i < x.size() / 2; i++)
+            count_wrong += (x[i] != 2);
+        for (size_t i = x.size() / 2 + 1; i < x.size(); i++)
+            count_wrong += (x[i] != 1);
+        if (count_wrong > 0)
+            throw std::runtime_error("push gives wrong result");
+
+        tpool::ThreadPool pool(2);
+        x = std::vector<size_t>(10000, 1);
         for (size_t i = 0; i < x.size() / 2; i++)
             pool.push(dummy, i);
 
         pool.wait();
 
-        size_t count_wrong = 0;
+        count_wrong = 0;
         for (size_t i = 0; i < x.size() / 2; i++)
             count_wrong += (x[i] != 2);
         for (size_t i = x.size() / 2 + 1; i < x.size(); i++)
@@ -117,18 +131,34 @@ main()
     // async()
     {
         std::cout << "    * async: ";
-        tpool::ThreadPool pool(2);
         std::vector<size_t> x(1000000, 1);
         auto dummy = [&](size_t i) { return 2 * x[i]; };
 
         std::vector<std::future<size_t>> fut(x.size());
         for (size_t i = 0; i < x.size() / 2; i++)
-            fut[i] = pool.async(dummy, i);
+            fut[i] = tpool::async(dummy, i);
         for (size_t i = 0; i < x.size() / 2; i++)
             x[i] = fut[i].get();
-        pool.wait();
+        tpool::wait();
 
         size_t count_wrong = 0;
+        for (size_t i = 0; i < x.size() / 2; i++)
+            count_wrong += (x[i] != 2);
+        for (size_t i = x.size() / 2 + 1; i < x.size(); i++)
+            count_wrong += (x[i] != 1);
+        if (count_wrong > 0)
+            throw std::runtime_error("push gives wrong result");
+
+        tpool::ThreadPool pool(2);
+        x = std::vector<size_t>(1000000, 1);
+        std::vector<std::future<size_t>> fut2(x.size());
+        for (size_t i = 0; i < x.size() / 2; i++)
+            fut2[i] = pool.async(dummy, i);
+        for (size_t i = 0; i < x.size() / 2; i++)
+            x[i] = fut2[i].get();
+        pool.wait();
+
+        count_wrong = 0;
         for (size_t i = 0; i < x.size() / 2; i++)
             count_wrong += (x[i] != 2);
         for (size_t i = x.size() / 2 + 1; i < x.size(); i++)

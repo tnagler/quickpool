@@ -4,6 +4,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ed2deb06d4454ab3b488536426ec3066)](https://www.codacy.com/gh/tnagler/tpool/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tnagler/tpool&amp;utm_campaign=Badge_Grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/website/http/tnagler.github.io/tpool.svg)](https://vinecopulib.github.io/pyvinecopulib/)
+[![DOI](https://zenodo.org/badge/427536398.svg)](https://zenodo.org/badge/latestdoi/427536398)
 
 
 An easy-to-use, header-only work stealing thread pool in C++11.

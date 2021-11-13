@@ -35,12 +35,8 @@ class FinishLine
 
     void cross() noexcept
     {
-        if (--runners_ == 0) {
-            {
-                std::lock_guard<std::mutex> lk(mtx_);
-            }
+        if (--runners_ == 0)
             cv_.notify_all();
-        }
     }
 
     void abort(std::exception_ptr e) noexcept

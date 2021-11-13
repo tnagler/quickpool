@@ -1,5 +1,8 @@
 # tpool
 
+![example branch parameter](https://github.com/tnagler/tpool/actions/workflows/main.yml/badge.svg?branch=main)
+
+
 > An easy-to-use, header-only work stealing thread pool in C++11
 
 ## Why tpool?

@@ -110,9 +110,10 @@ class RingBuffer
 {
   public:
     explicit RingBuffer(size_t capacity)
-      : capacity_{ capacity }
+      : buffer_{ std::unique_ptr<T[]>(new T[capacity]) }
+      , capacity_{ capacity }
       , mask_{ capacity - 1 }
-      , buffer_{ std::unique_ptr<T[]>(new T[capacity]) }
+
     {
         if (capacity_ & (capacity_ - 1))
             throw std::runtime_error("capacity must be a power of two");
@@ -201,7 +202,7 @@ class TaskQueue
         auto t = top_.load(m_acquire);
         RingBuffer<Task>* buf_ptr = buffer_.load(m_relaxed);
 
-        if (buf_ptr->capacity() < (b - t) + 1) {
+        if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
             old_buffers_.emplace_back(
               exchange(buf_ptr, buf_ptr->enlarge(b, t)));
             buffer_.store(buf_ptr, m_relaxed);
@@ -228,16 +229,15 @@ class TaskQueue
         if (t < b) {
             // must load task pointer before acquiring the slot
             task = buffer_.load(m_consume)->load(t);
-            if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
+            if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed))
                 return true; // won race
-            }
         }
         return false; // queue is empty or lost race
     }
 
   private:
-    alignas(64) std::atomic_ptrdiff_t top_{ 0 };
-    alignas(64) std::atomic_ptrdiff_t bottom_{ 0 };
+    alignas(64) std::atomic_int top_{ 0 };
+    alignas(64) std::atomic_int bottom_{ 0 };
     alignas(64) std::atomic<RingBuffer<Task>*> buffer_{ nullptr };
     std::vector<std::unique_ptr<RingBuffer<Task>>> old_buffers_;
     std::mutex mutex_;
@@ -262,8 +262,8 @@ struct TaskManager
     size_t num_queues_;
 
     TaskManager(size_t num_queues = 1)
-      : num_queues_{ num_queues }
-      , queues_{ std::vector<TaskQueue>(num_queues) }
+      : queues_{ std::vector<TaskQueue>(num_queues) }
+      , num_queues_{ num_queues }
     {}
 
     template<typename Task>

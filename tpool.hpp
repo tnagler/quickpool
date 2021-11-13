@@ -29,21 +29,35 @@
 
 namespace tpool {
 
+//! @brief Finish line - a synchronization primitive.
+//!
+//! Lets some threads wait until others reach a control point. Start a runner
+//! with `FinishLine::start()`, and wait for all runners to finish with
+//! `FinishLine::wait()`.
 class FinishLine
 {
   public:
+    //! constructs a finish line.
+    //! @param runners number of initial runners.
     FinishLine(size_t runners = 0) noexcept
       : runners_(runners)
     {}
 
-    void add(size_t num = 1) noexcept { runners_ = runners_ + num; }
+    //! adds runners.
+    //! @param runners adds runners to the race.
+    void add(size_t runners = 1) noexcept { runners_ = runners_ + runners; }
+
+    //! adds a single runner.
     void start() noexcept { ++runners_; }
+
+    //! indicates that a runner has crossed the finish line.
     void cross() noexcept
     {
-        if (--runners_ == 0)
+        if (--runners_ <= 0)
             cv_.notify_all();
     }
 
+    //! waits for all active runners to cross the finish line.
     void wait() noexcept
     {
         std::unique_lock<std::mutex> lk(mtx_);
@@ -53,10 +67,14 @@ class FinishLine
             std::rethrow_exception(exception_ptr_);
     }
 
-    void abort(std::exception_ptr e) noexcept
+    //! aborts the race.
+    //! @param eptr (optional) pointer to an active exception to be rethrown by
+    //! a waiting thread; typically retrieved from `std::current_exception()`.
+    void abort(std::exception_ptr eptr = nullptr) noexcept
     {
         std::lock_guard<std::mutex> lk(mtx_);
-        exception_ptr_ = e;
+        runners_ = 0;
+        exception_ptr_ = eptr;
         cv_.notify_all();
     }
 
@@ -114,6 +132,7 @@ class RingBuffer
     size_t mask_;
 };
 
+//! A multi-producer, multi-consumer queue; pops are lock free.
 class TaskQueue
 {
     using Task = std::function<void()>;
@@ -123,7 +142,6 @@ class TaskQueue
     //! @param capacity must be a power of two.
     TaskQueue(size_t capacity = 256) { buffers_.emplace_back(capacity); }
 
-    // move/copy is not supported
     TaskQueue(TaskQueue const& other) = delete;
     TaskQueue& operator=(TaskQueue const& other) = delete;
 
@@ -148,29 +166,34 @@ class TaskQueue
         top_.store(b, m_release);
     }
 
-    //! pushes a task to the bottom of the queue; enlarges the queue if full.
+    //! pushes a task to the bottom of the queue; returns false if queue is 
+    //! currently locked; enlarges the queue if full.
     bool try_push(Task&& tsk)
     {
+        auto b = bottom_.load(m_relaxed);
+        auto t = top_.load(m_acquire);
+
+        // lock must be acquired in case multiple producers want to modify the 
+        // buffer; quick abort if lock is already taken
         std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
         if (!lk)
             return false;
-        auto b = bottom_.load(m_relaxed);
-        auto t = top_.load(m_acquire);
 
         if (buffers_[buffer_index_].capacity() < (b - t) + 1) {
             // capacity reached, create copy with double size
             buffers_.push_back(buffers_[buffer_index_].enlarge(b, t));
             buffer_index_++;
         }
-        buffers_[buffer_index_].store(b, std::move(tsk));
 
+        buffers_[buffer_index_].store(b, std::move(tsk));
+        lk.unlock();  // holding the lock is no longer necessary
         std::atomic_thread_fence(m_release);
         bottom_.store(b + 1, m_relaxed);
+
         return true;
     }
 
-    //! pops a task from the top of the queue. Returns an empty task
-    //! when lost race.
+    //! pops a task from the top of the queue; returns false if lost race.
     bool try_pop(Task& task)
     {
         auto t = top_.load(m_acquire);
@@ -178,24 +201,14 @@ class TaskQueue
         auto b = bottom_.load(m_acquire);
 
         if (t < b) {
-            // Must load *before* acquiring the slot as slot may be overwritten
-            // immediately after acquiring. This load is NOT required to be
-            // atomic even-though it may race with an overrite as we only return
-            // the value if we win the race below garanteeing we had no race
-            // during our read. If we loose the race then 'x' could be corrupt
-            // due to read-during-write race but as T is trivially destructible
-            // this does not matter.
+            // must load task pointer before acquiring the slot
             auto task_ptr = buffers_[buffer_index_].load(t);
-
             if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
                 task = std::move(*task_ptr.get());
-                return true;
-            } else {
-                return false; // lost race for this task
+                return true; // won race
             }
-        } else {
-            return false; // queue is empty
         }
+        return false; // queue is empty or lost race
     }
 
   private:
@@ -203,7 +216,6 @@ class TaskQueue
     alignas(64) std::atomic_ptrdiff_t bottom_{ 0 };
     alignas(64) std::vector<detail::RingBuffer> buffers_;
     alignas(64) std::atomic_size_t buffer_index_{ 0 };
-
     std::mutex mutex_;
 
     // convenience aliases
@@ -213,6 +225,8 @@ class TaskQueue
     static constexpr std::memory_order m_seq_cst = std::memory_order_seq_cst;
 };
 
+
+//! Task manager based on work stealing 
 struct TaskManager
 {
     std::vector<TaskQueue> queues_;
@@ -254,11 +268,13 @@ struct TaskManager
         } while (!this->empty());
         return false;
     }
+
     void clear()
     {
         for (auto& q : queues_)
             q.clear();
     }
+
     bool stopped() { return stopped_; }
 
     void wait_for_jobs()
@@ -279,9 +295,15 @@ struct TaskManager
 
 } // end namespace detail
 
+//! Thread pool class ------------------------------------
+
+//! A work stealing thread pool.
 class ThreadPool
 {
   public:
+    //! constructs a thread pool.
+    //! @param n_workers number of worker threads to create; defaults to number
+    //! of available (virtual) hardware cores.
     explicit ThreadPool(
       size_t num_threads = std::thread::hardware_concurrency());
 
@@ -291,26 +313,36 @@ class ThreadPool
     ThreadPool& operator=(ThreadPool&& other) = delete;
     ~ThreadPool() noexcept;
 
+    //! returns a reference to the global thread pool instance.
     static ThreadPool& global_instance()
     {
         static ThreadPool instance_;
         return instance_;
     }
 
+    //! push a job to the thread pool.
+    //! @param f a function.
+    //! @param args (optional) arguments passed to `f`.
     template<class Function, class... Args>
     void push(Function&& f, Args&&... args);
 
+    //! executes a job asynchronously the global thread pool.
+    //! @param f a function.
+    //! @param args (optional) arguments passed to `f`.
+    //! @return A `std::future` for the task. Call `future.get()` to retrieve
+    //! the results at a later point in time (blocking).
     template<class Function, class... Args>
     auto async(Function&& f, Args&&... args)
       -> std::future<decltype(f(args...))>;
 
+    //! waits for all jobs currently running on the global thread pool.
     void wait();
+    //! clears all jobs currently running on the global thread pool.
     void clear();
 
   private:
     void start_worker(size_t id);
     void join_workers();
-    void join();
     template<class Task>
     void execute_safely(Task& task);
 
@@ -321,26 +353,20 @@ class ThreadPool
     FinishLine finish_line_{ 0 };
 };
 
-
-//! constructs a thread pool with `num_threads` threads.
-//! @param n_workers Number of worker threads to create; defaults to number of 
-//!    available (virtual) hardware cores.
 inline ThreadPool::ThreadPool(size_t n_workers)
   : n_workers_{ n_workers }
 {
-    for (size_t id = 0; id < n_workers; ++id) {
+    for (size_t id = 0; id < n_workers; ++id)
         this->start_worker(id);
-    }
 }
 
-//! destructor joins all threads if possible.
 inline ThreadPool::~ThreadPool() noexcept
 {
-    // destructors should never throw
     try {
         task_manager_.stop();
         this->join_workers();
     } catch (...) {
+        // destructors should never throw
     }
 }
 
@@ -378,15 +404,6 @@ ThreadPool::clear()
     task_manager_.clear();
 }
 
-//! waits for all jobs to finish and joins all threads.
-inline void
-ThreadPool::join()
-{
-    task_manager_.stop();
-    this->join_workers();
-}
-
-//! spawns a worker thread waiting for jobs to arrive.
 inline void
 ThreadPool::start_worker(size_t id)
 {
@@ -394,6 +411,7 @@ ThreadPool::start_worker(size_t id)
         std::function<void()> task;
         while (!task_manager_.stopped()) {
             task_manager_.wait_for_jobs();
+
             finish_line_.start();
             while (task_manager_.try_pop(task))
                 execute_safely(task);
@@ -413,20 +431,20 @@ ThreadPool::execute_safely(Task& task)
     }
 }
 
-//! joins worker threads if possible.
 inline void
 ThreadPool::join_workers()
 {
-    if (n_workers_ > 0) {
-        for (auto& worker : workers_) {
-            if (worker.joinable())
-                worker.join();
-        }
+    for (auto& worker : workers_) {
+        if (worker.joinable())
+            worker.join();
     }
 }
 
-//! Static access to the global thread pool ------------------
+//! Static access to the global thread pool ------------------------------------
 
+//! push a job to the global thread pool.
+//! @param f a function.
+//! @param args (optional) arguments passed to `f`.
 template<class Function, class... Args>
 static void
 push(Function&& f, Args&&... args)
@@ -435,6 +453,11 @@ push(Function&& f, Args&&... args)
     global_pool.push(std::forward<Function>(f), std::forward<Args>(args)...);
 }
 
+//! executes a job asynchronously the global thread pool.
+//! @param f a function.
+//! @param args (optional) arguments passed to `f`.
+//! @return A `std::future` for the task. Call `future.get()` to retrieve the
+//! results at a later point in time (blocking).
 template<class Function, class... Args>
 static auto
 async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
@@ -444,12 +467,14 @@ async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
                              std::forward<Args>(args)...);
 }
 
+//! waits for all jobs currently running on the global thread pool.
 static void
 wait()
 {
     ThreadPool::global_instance().wait();
 }
 
+//! clears all jobs currently running on the global thread pool.
 static void
 clear()
 {

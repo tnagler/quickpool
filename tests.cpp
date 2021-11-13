@@ -51,7 +51,7 @@ main()
 
     // extra arguments
     {
-        auto work = [](std::string title, int i) {
+        auto work = [](const std::string& title, int i) {
             // std::cout << title << ": " << i << std::endl;
         };
         tpool::push(work, "first title", 5);

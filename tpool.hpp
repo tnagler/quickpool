@@ -62,7 +62,7 @@ class FinishLine
     void wait() noexcept
     {
         std::unique_lock<std::mutex> lk(mtx_);
-        while ((runners_ > 0) & !exception_ptr_)
+        while ((runners_ > 0) && !exception_ptr_)
             cv_.wait(lk);
         if (exception_ptr_)
             std::rethrow_exception(exception_ptr_);
@@ -243,9 +243,8 @@ struct TaskManager
 
     TaskManager(size_t num_queues = 1)
       : num_queues_{ num_queues }
-    {
-        queues_ = std::vector<TaskQueue>(num_queues);
-    }
+      , queues_{ std::vector<TaskQueue>(num_queues) }
+    {}
 
     template<typename Task>
     void push(Task&& task)
@@ -451,8 +450,8 @@ template<class Function, class... Args>
 static void
 push(Function&& f, Args&&... args)
 {
-    auto& global_pool = ThreadPool::global_instance();
-    global_pool.push(std::forward<Function>(f), std::forward<Args>(args)...);
+    ThreadPool::global_instance().push(std::forward<Function>(f),
+                                       std::forward<Args>(args)...);
 }
 
 //! @brief executes a job asynchronously the global thread pool.
@@ -464,9 +463,8 @@ template<class Function, class... Args>
 static auto
 async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
 {
-    auto& global_pool = ThreadPool::global_instance();
-    return global_pool.async(std::forward<Function>(f),
-                             std::forward<Args>(args)...);
+    return ThreadPool::global_instance().async(std::forward<Function>(f),
+                                               std::forward<Args>(args)...);
 }
 
 //! @brief waits for all jobs currently running on the global thread pool.

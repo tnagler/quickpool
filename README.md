@@ -1,6 +1,9 @@
 # tpool
 
-![example branch parameter](https://github.com/tnagler/tpool/actions/workflows/main.yml/badge.svg?branch=main)
+![build status](https://github.com/tnagler/tpool/actions/workflows/main.yml/badge.svg?branch=main)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ed2deb06d4454ab3b488536426ec3066)](https://www.codacy.com/gh/tnagler/tpool/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tnagler/tpool&amp;utm_campaign=Badge_Grade)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation](https://img.shields.io/website/http/tnagler.github.io/tpool.svg)](https://vinecopulib.github.io/pyvinecopulib/)
 
 
 > An easy-to-use, header-only work stealing thread pool in C++11
@@ -44,7 +47,7 @@ auto result = f.get();  // waits until done and returns result
 Both [`push()`](https://tnagler.github.io/tpool/namespacetpool.html#affc41895dab281715c271aca3649e830) and [`async()`](https://tnagler.github.io/tpool/namespacetpool.html#a10575809d24ead3716e312585f90a94a) can also be called with extra arguments passed to the function.
 
 ```cpp
-auto work = [] (std::string title, int i) { 
+auto work = [] (const std::string& title, int i) { 
   std::cout << title << ": " << i << std::endl; 
 };
 tpool::push(work, "first title", 5);

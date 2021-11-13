@@ -61,7 +61,8 @@ jobs:
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       if: runner.os == 'Windows'
-      run: start tpool.exe
+      run: start "Release/tpool.exe"
+      shell: cmd
 
     - name: Test
       working-directory: ${{github.workspace}}/build

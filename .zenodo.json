@@ -1,0 +1,20 @@
+{
+  "title": "tpool",
+  "description": "<p><a href=\"https://tnagler.github.io/tpool/\">An easy-to-use, header-only work stealing thread pool in C++11. The library consists of a single header file that just needs to be copied into your own projects. </p>",
+  "keywords": [
+      "async",
+      "thread",
+      "pool",
+      "lock-free",
+      "stealing"
+  ],
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+      {
+          "orcid": "0000-0003-1855-0046",
+          "name": "Nagler, Thomas"
+      }
+  ]
+}

@@ -6,7 +6,7 @@
 [![Documentation](https://img.shields.io/website/http/tnagler.github.io/tpool.svg)](https://vinecopulib.github.io/pyvinecopulib/)
 
 
-> An easy-to-use, header-only work stealing thread pool in C++11
+An easy-to-use, header-only work stealing thread pool in C++11.
 
 ## Why tpool?
 

@@ -27,6 +27,7 @@
 #include <thread>
 #include <vector>
 
+//! tpool namespace
 namespace tpool {
 
 //! @brief Finish line - a synchronization primitive.
@@ -85,6 +86,8 @@ class FinishLine
     std::exception_ptr exception_ptr_{ nullptr };
 };
 
+
+//! Implementation details
 namespace detail {
 
 //! A simple ring buffer class.
@@ -166,14 +169,14 @@ class TaskQueue
         top_.store(b, m_release);
     }
 
-    //! pushes a task to the bottom of the queue; returns false if queue is 
+    //! pushes a task to the bottom of the queue; returns false if queue is
     //! currently locked; enlarges the queue if full.
     bool try_push(Task&& tsk)
     {
         auto b = bottom_.load(m_relaxed);
         auto t = top_.load(m_acquire);
 
-        // lock must be acquired in case multiple producers want to modify the 
+        // lock must be acquired in case multiple producers want to modify the
         // buffer; quick abort if lock is already taken
         std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
         if (!lk)
@@ -186,7 +189,7 @@ class TaskQueue
         }
 
         buffers_[buffer_index_].store(b, std::move(tsk));
-        lk.unlock();  // holding the lock is no longer necessary
+        lk.unlock(); // holding the lock is no longer necessary
         std::atomic_thread_fence(m_release);
         bottom_.store(b + 1, m_relaxed);
 
@@ -225,8 +228,7 @@ class TaskQueue
     static constexpr std::memory_order m_seq_cst = std::memory_order_seq_cst;
 };
 
-
-//! Task manager based on work stealing 
+//! Task manager based on work stealing
 struct TaskManager
 {
     std::vector<TaskQueue> queues_;
@@ -295,8 +297,6 @@ struct TaskManager
 
 } // end namespace detail
 
-//! Thread pool class ------------------------------------
-
 //! A work stealing thread pool.
 class ThreadPool
 {
@@ -313,20 +313,20 @@ class ThreadPool
     ThreadPool& operator=(ThreadPool&& other) = delete;
     ~ThreadPool() noexcept;
 
-    //! returns a reference to the global thread pool instance.
+    //! @brief returns a reference to the global thread pool instance.
     static ThreadPool& global_instance()
     {
         static ThreadPool instance_;
         return instance_;
     }
 
-    //! push a job to the thread pool.
+    //! @brief pushes a job to the thread pool.
     //! @param f a function.
     //! @param args (optional) arguments passed to `f`.
     template<class Function, class... Args>
     void push(Function&& f, Args&&... args);
 
-    //! executes a job asynchronously the global thread pool.
+    //! @brief executes a job asynchronously the global thread pool.
     //! @param f a function.
     //! @param args (optional) arguments passed to `f`.
     //! @return A `std::future` for the task. Call `future.get()` to retrieve
@@ -335,9 +335,9 @@ class ThreadPool
     auto async(Function&& f, Args&&... args)
       -> std::future<decltype(f(args...))>;
 
-    //! waits for all jobs currently running on the global thread pool.
+    //! @brief waits for all jobs currently running on the global thread pool.
     void wait();
-    //! clears all jobs currently running on the global thread pool.
+    //! @brief clears all jobs currently running on the global thread pool.
     void clear();
 
   private:
@@ -442,7 +442,7 @@ ThreadPool::join_workers()
 
 //! Static access to the global thread pool ------------------------------------
 
-//! push a job to the global thread pool.
+//! @brief push a job to the global thread pool.
 //! @param f a function.
 //! @param args (optional) arguments passed to `f`.
 template<class Function, class... Args>
@@ -453,7 +453,7 @@ push(Function&& f, Args&&... args)
     global_pool.push(std::forward<Function>(f), std::forward<Args>(args)...);
 }
 
-//! executes a job asynchronously the global thread pool.
+//! @brief executes a job asynchronously the global thread pool.
 //! @param f a function.
 //! @param args (optional) arguments passed to `f`.
 //! @return A `std::future` for the task. Call `future.get()` to retrieve the
@@ -467,14 +467,14 @@ async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
                              std::forward<Args>(args)...);
 }
 
-//! waits for all jobs currently running on the global thread pool.
+//! @brief waits for all jobs currently running on the global thread pool.
 static void
 wait()
 {
     ThreadPool::global_instance().wait();
 }
 
-//! clears all jobs currently running on the global thread pool.
+//! @brief clears all jobs currently running on the global thread pool.
 static void
 clear()
 {

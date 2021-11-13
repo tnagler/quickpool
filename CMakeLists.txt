@@ -15,9 +15,6 @@ enable_testing()
 add_executable(tpool tests.cpp)
 target_link_libraries(tpool ${CMAKE_THREAD_LIBS_INIT})
 
-file(GLOB_RECURSE include_files ${PROJECT_SOURCE_DIR}/include)
-install(FILES ${include_files} DESTINATION "${include_install_dir}")
-
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)

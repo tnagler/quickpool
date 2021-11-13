@@ -1,6 +1,6 @@
 {
   "title": "tpool",
-  "description": "<p><a href=\"https://tnagler.github.io/tpool/\">An easy-to-use, header-only work stealing thread pool in C++11. The library consists of a single header file that just needs to be copied into your own projects. </p>",
+  "description": "<p><a href=\"https://github.com/tnagler/tpool\">tpool</a>:An easy-to-use, header-only work stealing thread pool in C++11. See the <a href=\"https://github.com/tnagler/tpool/blob/main/README.md\">README</a> for more details.</p>",
   "keywords": [
       "async",
       "thread",

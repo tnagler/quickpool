@@ -1,3 +1,9 @@
+// Copyright © 2021 Thomas Nagler
+//
+// This file is part of the tpool library and licensed under the terms of
+// the MIT license. For a copy, see the LICENSE.md file in the root directory of
+// tpool or https://github.com/tnagler/tpool/blob/main/LICENSE.md.
+
 #pragma once
 
 #include "ThreadPool.hpp"

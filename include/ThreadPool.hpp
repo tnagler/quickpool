@@ -1,27 +1,27 @@
+// Copyright © 2021 Thomas Nagler
+//
+// This file is part of the tpool library and licensed under the terms of
+// the MIT license. For a copy, see the LICENSE.md file in the root directory of
+// tpool or https://github.com/tnagler/tpool/blob/main/LICENSE.md.
+
 #pragma once
 
 #include "FinishLine.hpp"
 #include "TaskManager.hpp"
-#include <algorithm>
-#include <atomic>
-#include <cmath>
-#include <condition_variable>
 #include <functional>
 #include <future>
-#include <queue>
 #include <thread>
 #include <vector>
 
 namespace tpool {
 
-//! Implementation of the thread pool pattern based on `std::thread`.
 class ThreadPool
 {
   public:
     ThreadPool(ThreadPool&&) = delete;
     ThreadPool(const ThreadPool&) = delete;
     ThreadPool();
-    explicit ThreadPool(size_t nThreads);
+    explicit ThreadPool(size_t num_threads);
 
     ~ThreadPool() noexcept;
 
@@ -63,14 +63,14 @@ inline ThreadPool::ThreadPool()
   : ThreadPool(std::thread::hardware_concurrency())
 {}
 
-//! constructs a thread pool with `nThreads` threads.
-//! @param n_workers Number of worker threads to create; if `nThreads = 0`,
+//! constructs a thread pool with `num_threads` threads.
+//! @param n_workers Number of worker threads to create; if `num_threads = 0`,
 //! all
 //!    work pushed to the pool will be done in the main thread.
 inline ThreadPool::ThreadPool(size_t n_workers)
   : n_workers_{ n_workers }
 {
-    for (size_t id = 0; id != n_workers; ++id) {
+    for (size_t id = 0; id < n_workers; ++id) {
         this->start_worker(id);
     }
 }

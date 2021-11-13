@@ -139,12 +139,12 @@ class RingBuffer
 
 // exchange is not available in C++11, use implementatino from
 // https://en.cppreference.com/w/cpp/utility/exchange
-template<class T, class U = T>
+template<class T>
 T
-exchange(T& obj, U&& new_value) noexcept
+exchange(T& obj, T&& new_value) noexcept
 {
     T old_value = std::move(obj);
-    obj = std::forward<U>(new_value);
+    obj = std::forward<T>(new_value);
     return old_value;
 }
 

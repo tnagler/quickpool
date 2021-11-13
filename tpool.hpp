@@ -68,6 +68,18 @@ class FinishLine
             std::rethrow_exception(exception_ptr_);
     }
 
+    //! waits for all active runners to cross the finish line.
+    //! @param duration maximal waiting time (as `std::chrono::duration`).
+    template<typename Duration>
+    void wait_for(const Duration& duration) noexcept
+    {
+        std::unique_lock<std::mutex> lk(mtx_);
+        while ((runners_ > 0) && !exception_ptr_)
+            cv_.wait_for(lk, duration);
+        if (exception_ptr_)
+            std::rethrow_exception(exception_ptr_);
+    }
+
     //! aborts the race.
     //! @param eptr (optional) pointer to an active exception to be rethrown by
     //! a waiting thread; typically retrieved from `std::current_exception()`.
@@ -293,6 +305,7 @@ struct TaskManager
             stopped_ = true;
         }
         cv_.notify_all();
+        this->clear();
     }
 };
 
@@ -342,7 +355,7 @@ class ThreadPool
     void clear();
 
   private:
-    void start_worker(size_t id);
+    void start_worker();
     void join_workers();
     template<class Task>
     void execute_safely(Task& task);
@@ -358,7 +371,7 @@ inline ThreadPool::ThreadPool(size_t n_workers)
   : n_workers_{ n_workers }
 {
     for (size_t id = 0; id < n_workers; ++id)
-        this->start_worker(id);
+        this->start_worker();
 }
 
 inline ThreadPool::~ThreadPool() noexcept
@@ -406,9 +419,9 @@ ThreadPool::clear()
 }
 
 inline void
-ThreadPool::start_worker(size_t id)
+ThreadPool::start_worker()
 {
-    workers_.emplace_back([this, id] {
+    workers_.emplace_back([this] {
         std::function<void()> task;
         while (!task_manager_.stopped()) {
             task_manager_.wait_for_jobs();

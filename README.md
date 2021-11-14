@@ -11,13 +11,13 @@ An easy-to-use, header-only work stealing thread pool in C++11.
 
 ## Why tpool?
 
-* **no install**: [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support) single-header library, just drop into your project and enjoy.
+* **no install**: [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support) single-header library, no external dependencies.
 
 * **fast**: Uses a [work stealing](https://en.wikipedia.org/wiki/Work_stealing)  queue with [lock-free](https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom) pops.
 
 * **user friendly**: Dead simple [API](https://tnagler.github.io/tpool/), including direct access to a global pool.
 
-* **light weight**: Less than 500 LOC including API documentation and whitespace.
+* **light weight**: Less than 500 LOC including API documentation, comments, and whitespace.
 
 ## Usage
 

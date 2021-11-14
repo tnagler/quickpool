@@ -59,6 +59,8 @@ class FinishLine
         }
     }
 
+    bool all_finished() const { return runners_ <= 0; }
+
     //! waits for all active runners to cross the finish line.
     void wait() noexcept
     {
@@ -120,17 +122,15 @@ class RingBuffer
     }
 
     size_t capacity() const { return capacity_; }
-
-    void store(size_t i, T&& x) { buffer_[i & mask_] = std::move(x); }
-
-    T load(size_t i) const { return buffer_[i & mask_]; }
+    void set_entry(size_t i, T val) { buffer_[i & mask_] = val; }
+    T get_entry(size_t i) const { return buffer_[i & mask_]; }
 
     // creates a new ring buffer with pointers to current elements.
     RingBuffer<T>* enlarge(size_t bottom, size_t top) const
     {
         RingBuffer<T>* new_buffer = new RingBuffer{ 2 * capacity_ };
         for (size_t i = top; i != bottom; ++i)
-            new_buffer->store(i, this->load(i));
+            new_buffer->set_entry(i, this->get_entry(i));
         return new_buffer;
     }
 
@@ -160,10 +160,17 @@ class TaskQueue
     //! constructs the que with a given capacity.
     //! @param capacity must be a power of two.
     TaskQueue(size_t capacity = 256)
-      : buffer_{ new RingBuffer<Task>(capacity) }
+      : buffer_{ new RingBuffer<Task*>(capacity) }
     {}
 
-    ~TaskQueue() noexcept { delete buffer_.load(); }
+    ~TaskQueue() noexcept
+    {
+        // must free memory allocated by push(), but not deallocated by pop()
+        auto buf_ptr = buffer_.load();
+        for (size_t i = top_; i < bottom_; ++i)
+            delete buf_ptr->get_entry(i);
+        delete buf_ptr;
+    }
     TaskQueue(TaskQueue const& other) = delete;
     TaskQueue& operator=(TaskQueue const& other) = delete;
 
@@ -174,9 +181,6 @@ class TaskQueue
         auto t = top_.load(m_relaxed);
         return static_cast<size_t>(b >= t ? b - t : 0);
     }
-
-    //! queries the capacity.
-    size_t capacity() const { return buffer_.load(m_relaxed)->capacity(); }
 
     //! checks if queue is empty.
     bool empty() const { return (this->size() == 0); }
@@ -200,7 +204,7 @@ class TaskQueue
 
         auto b = bottom_.load(m_relaxed);
         auto t = top_.load(m_acquire);
-        RingBuffer<Task>* buf_ptr = buffer_.load(m_relaxed);
+        RingBuffer<Task*>* buf_ptr = buffer_.load(m_relaxed);
 
         if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
             old_buffers_.emplace_back(
@@ -208,16 +212,14 @@ class TaskQueue
             buffer_.store(buf_ptr, m_relaxed);
         }
 
-        buf_ptr->store(b, std::move(task));
+        Task* task_ptr = new Task{ std::forward<Task>(task) };
+        buf_ptr->set_entry(b, task_ptr);
 
         std::atomic_thread_fence(m_release);
         bottom_.store(b + 1, m_relaxed);
 
         return true;
     }
-
-    std::atomic_size_t fail_counter{ 0 };
-    std::atomic_size_t succ_counter{ 0 };
 
     //! pops a task from the top of the queue; returns false if lost race.
     bool try_pop(Task& task)
@@ -228,9 +230,12 @@ class TaskQueue
 
         if (t < b) {
             // must load task pointer before acquiring the slot
-            task = buffer_.load(m_consume)->load(t);
-            if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed))
+            auto task_ptr = buffer_.load(m_acquire)->get_entry(t);
+            if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
+                task = std::move(*task_ptr);
+                delete task_ptr;
                 return true; // won race
+            }
         }
         return false; // queue is empty or lost race
     }
@@ -238,8 +243,8 @@ class TaskQueue
   private:
     alignas(64) std::atomic_int top_{ 0 };
     alignas(64) std::atomic_int bottom_{ 0 };
-    alignas(64) std::atomic<RingBuffer<Task>*> buffer_{ nullptr };
-    std::vector<std::unique_ptr<RingBuffer<Task>>> old_buffers_;
+    alignas(64) std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
+    std::vector<std::unique_ptr<RingBuffer<Task*>>> old_buffers_;
     std::mutex mutex_;
 
     // convenience aliases
@@ -272,7 +277,7 @@ struct TaskManager
         size_t count = 0;
         while (!queues_[push_idx_++ % num_queues_].try_push(task))
             continue;
-        cv_.notify_one();
+        cv_.notify_all();
     }
 
     bool empty()
@@ -284,7 +289,8 @@ struct TaskManager
         return true;
     }
 
-    bool try_pop(std::function<void()>& task)
+    template<typename Task>
+    bool try_pop(Task& task)
     {
         do {
             if (queues_[pop_idx_++ % num_queues_].try_pop(task))
@@ -327,8 +333,7 @@ class ThreadPool
     //! constructs a thread pool.
     //! @param n_workers number of worker threads to create; defaults to number
     //! of available (virtual) hardware cores.
-    explicit ThreadPool(
-      size_t num_threads = std::thread::hardware_concurrency());
+    explicit ThreadPool(size_t num_threads = 2);
 
     ThreadPool(ThreadPool&&) = delete;
     ThreadPool(const ThreadPool&) = delete;
@@ -367,7 +372,7 @@ class ThreadPool
     void start_worker();
     void join_workers();
     template<class Task>
-    void execute_safely(Task& task);
+    void execute_safely(const Task& task);
 
     std::vector<std::thread> workers_;
     detail::TaskManager task_manager_;
@@ -412,7 +417,7 @@ ThreadPool::async(Function&& f, Args&&... args)
     auto pack =
       std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
     auto task_ptr = std::make_shared<task>(std::move(pack));
-    task_manager_.push([task_ptr] { (*task_ptr)(); });
+    task_manager_.push([task_ptr] { return (*task_ptr)(); });
     return task_ptr->get_future();
 }
 
@@ -449,7 +454,7 @@ ThreadPool::start_worker()
 
 template<class Task>
 inline void
-ThreadPool::execute_safely(Task& task)
+ThreadPool::execute_safely(const Task& task)
 {
     try {
         task();

@@ -4,6 +4,19 @@
 int
 main()
 {
+    // tpool::detail::RingBuffer<int> buf(4);
+    // buf.set_entry(0, 1);
+    // buf.set_entry(1, 2);
+    // std::cout << buf.get_entry(0) << ", " << buf.get_entry(1) << std::endl;
+
+    // tpool::detail::TaskQueue q;
+    // int i;
+    // q.try_push([] { std::cout << "test" << std::endl; });
+    // std::function<void()> f;
+    // std::cout << static_cast<bool>(f) << std::endl;
+    // std::cout << q.try_pop(f) << std::endl;
+    // std::cout << static_cast<bool>(f) << std::endl;
+
     tpool::ThreadPool pool;
     pool.push([] { std::cout << "- push: "; });
     pool.wait();
@@ -87,9 +100,11 @@ main()
         tpool::push(job_prod, 1, 3.14);  // writes x[1]
         tpool::push(job_cons, 0);        // reads x[0]
         tpool::push(job_cons, 1);        // reads x[1]
-        finish_cons.wait();              // waits for all consumers to be done
+        finish_cons.wait();              // waits for all consumers to be
     }
     std::cout << "OK" << std::endl;
+
+
 
     // unit tests ---------------------------------------
     std::cout << "- unit tests: " << std::endl;

@@ -68,15 +68,15 @@ main()
     tpool::wait();
 
     // unit tests ---------------------------------------
-    std::cout << "- unit tests: " << std::endl;
+    std::cout << "- unit tests:        \t\r";
     auto runs = 100;
     for (auto run = 0; run < runs; run++) {
-        std::cout << "    * run " << run + 1 << "/" << runs << " -------------"
-                  << std::endl;
+        std::cout << "- unit tests: run " << run + 1 << "/" << runs << "\t\r"
+                  << std::flush;
 
         // thread pool push
         {
-            std::cout << "      * push: ";
+            // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
             // auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
             for (size_t i = 0; i < x.size(); i++)
@@ -103,12 +103,12 @@ main()
                 count_wrong += (x[i] != 2);
             if (count_wrong > 0)
                 throw std::runtime_error("push gives wrong result");
-            std::cout << "OK" << std::endl;
+            // std::cout << "OK" << std::endl;
         }
 
         // async()
         {
-            std::cout << "      * async: ";
+            // std::cout << "      * async: ";
             std::vector<size_t> x(10000, 1);
             auto dummy = [&](size_t i) { return 2 * x[i]; };
 
@@ -139,12 +139,12 @@ main()
                 count_wrong += (x[i] != 2);
             if (count_wrong > 0)
                 throw std::runtime_error("async gives wrong result");
-            std::cout << "OK" << std::endl;
+            // std::cout << "OK" << std::endl;
         }
 
         // single threaded
         {
-            std::cout << "      * single threaded: ";
+            // std::cout << "      * single threaded: ";
             tpool::ThreadPool pool(0);
             std::vector<size_t> x(1000, 1);
             auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
@@ -159,9 +159,33 @@ main()
                 count_wrong += (x[i] != 2);
             if (count_wrong > 0)
                 throw std::runtime_error("single threaded gives wrong result");
-            std::cout << "OK" << std::endl;
+            // std::cout << "OK" << std::endl;
+        }
+
+        // rethrows exceptions
+        {
+            // std::cout << "      * exception handling: ";
+            tpool::ThreadPool pool;
+            pool.push([] { throw std::runtime_error("test"); });
+            for (size_t i = 0; i < 200; i++) {
+                pool.push([&] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                });
+            }
+
+            try {
+                pool.wait();
+            } catch (const std::exception& e) {
+                if (e.what() == std::string("test")) {
+                    // std::cout << "OK" << std::endl;
+                } else {
+                    throw std::runtime_error("exception not rethrown");
+                }
+            }
         }
     }
+
+    std::cout << "- unit tests: OK              " << std::endl;
 
     return 0;
 }

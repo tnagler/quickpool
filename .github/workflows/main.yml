@@ -46,6 +46,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: codecov/codecov-action@v2
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -61,12 +62,25 @@ jobs:
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       if: runner.os == 'Windows'
-      run: "Release/tpool.exe"
+      run: "Release/test.exe"
 
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       if: runner.os != 'Windows'
-      run: ./tpool
-      
+      run: ./test
+
+    - name: Get code coverage
+      working-directory: ${{github.workspace}}/build
+      if: runner.os == 'Linux'
+      run: |
+        g++ -std=c++11 -o test -pthread -fprofile-arcs -ftest-coverage ../test.cpp
+        ./test
+        gcov -o . ../test.cpp   
+
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v2
+      if: runner.os == 'Linux'
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}

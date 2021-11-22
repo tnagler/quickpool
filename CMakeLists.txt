@@ -8,12 +8,8 @@ set(CMAKE_CXX_EXTENSIONS NO)
 
 find_package(Threads)
 
-
-include(CTest)
-enable_testing()
-
-add_executable(tpool tests.cpp)
-target_link_libraries(tpool ${CMAKE_THREAD_LIBS_INIT})
+add_executable(test test.cpp)
+target_link_libraries(test ${CMAKE_THREAD_LIBS_INIT})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

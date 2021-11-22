@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">tpool
-   &#160;<span id="projectnumber">0.1.3</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -63,24 +63,23 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespacetpool.html">tpool</a></li><li class="navelem"><a class="el" href="classtpool_1_1FinishLine.html">FinishLine</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespacetpool.html">tpool</a></li><li class="navelem"><a class="el" href="classtpool_1_1TodoList.html">TodoList</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">tpool::FinishLine Member List</div>  </div>
+<div class="title">tpool::TodoList Member List</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>This is the complete list of members for <a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a>, including all inherited members.</p>
+<p>This is the complete list of members for <a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a>, including all inherited members.</p>
 <table class="directory">
-  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#abb3f907ef7f7ec2871f9b6e23ef26819">abort</a>(std::exception_ptr eptr=nullptr) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#aad42138e431fda5491b6c3eb8b30a52a">add</a>(size_t runners=1) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#a56fa6ccd513234ef5779a3fa1e59444a">cross</a>() noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#a9739308b679d00c5455a21b6f95c44f7">FinishLine</a>(size_t runners=0) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#ab00d127e4d2b2c1176966591750bb163">start</a>() noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#a094ef8d4487de2546a1f0a8a9354c529">wait</a>() noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html#a529ba76f6679cf91200248f65a32a919">wait_for</a>(const Duration &amp;duration) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1TodoList.html#adb2aa12f95bd70c0d68dab45eb73e19e">add</a>(size_t num_tasks=1) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classtpool_1_1TodoList.html#a80d8d12098fb46df66f76bc7c6156e7f">clear</a>(std::exception_ptr eptr=nullptr) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1TodoList.html#ad23ce5136b646788f476843bd4d2ef54">cross</a>(size_t num_tasks=1)</td><td class="entry"><a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classtpool_1_1TodoList.html#a4fd16a01633911f5b82c80857ce66527">empty</a>() const noexcept</td><td class="entry"><a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classtpool_1_1TodoList.html#ad900c395f0ce371f6773206dda4e5407">TodoList</a>(size_t num_tasks=0) noexcept</td><td class="entry"><a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classtpool_1_1TodoList.html#a6711794e2f9f91e1d34f64f82b6cf7f2">wait</a>(size_t millis=0)</td><td class="entry"><a class="el" href="classtpool_1_1TodoList.html">tpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

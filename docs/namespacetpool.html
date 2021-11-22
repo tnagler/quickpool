@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">tpool
-   &#160;<span id="projectnumber">0.1.3</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -64,7 +64,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
@@ -75,26 +74,20 @@ $(function() {
 <p>tpool namespace  
 <a href="namespacetpool.html#details">More...</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
-Namespaces</h2></td></tr>
-<tr class="memitem:namespacetpool_1_1detail"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetpool_1_1detail.html">detail</a></td></tr>
-<tr class="memdesc:namespacetpool_1_1detail"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation details. <br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1FinishLine.html">FinishLine</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finish line - a synchronization primitive.  <a href="classtpool_1_1FinishLine.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1ThreadPool.html">ThreadPool</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A work stealing thread pool.  <a href="classtpool_1_1ThreadPool.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1TodoList.html">TodoList</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Todo list - a synchronization primitive.  <a href="classtpool_1_1TodoList.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:abd1433db5851deb368b77387014f94e8"><td class="memTemplParams" colspan="2">template&lt;class Function , class... Args&gt; </td></tr>
 <tr class="memitem:abd1433db5851deb368b77387014f94e8"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">push</a> (Function &amp;&amp;f, Args &amp;&amp;... args)</td></tr>
-<tr class="memdesc:abd1433db5851deb368b77387014f94e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Direct access to the global thread pool ---------------------------------&mdash;.  <a href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">More...</a><br /></td></tr>
+<tr class="memdesc:abd1433db5851deb368b77387014f94e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Direct access to the global thread pool ----------------&mdash;.  <a href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">More...</a><br /></td></tr>
 <tr class="separator:abd1433db5851deb368b77387014f94e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b2d71f8c2e029b63b780ba5f80adbd4"><td class="memTemplParams" colspan="2">template&lt;class Function , class... Args&gt; </td></tr>
 <tr class="memitem:a6b2d71f8c2e029b63b780ba5f80adbd4"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacetpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">async</a> (Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</td></tr>
@@ -104,10 +97,6 @@ Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetpool.html#a973a58b4c23318661fbbbf595b94dbfb">wait</a> ()</td></tr>
 <tr class="memdesc:a973a58b4c23318661fbbbf595b94dbfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the global thread pool. <br /></td></tr>
 <tr class="separator:a973a58b4c23318661fbbbf595b94dbfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0214f37f07cc9cbcb109cb447f424381"><td class="memItemLeft" align="right" valign="top"><a id="a0214f37f07cc9cbcb109cb447f424381"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetpool.html#a0214f37f07cc9cbcb109cb447f424381">clear</a> ()</td></tr>
-<tr class="memdesc:a0214f37f07cc9cbcb109cb447f424381"><td class="mdescLeft">&#160;</td><td class="mdescRight">clears all jobs currently running on the global thread pool. <br /></td></tr>
-<tr class="separator:a0214f37f07cc9cbcb109cb447f424381"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>tpool namespace </p>
@@ -151,7 +140,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00480">480</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00470">470</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -183,7 +172,7 @@ template&lt;class Function , class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Direct access to the global thread pool ---------------------------------&mdash;. </p>
+<p>Direct access to the global thread pool ----------------&mdash;. </p>
 <p>push a job to the global thread pool. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">f</td><td>a function. </td></tr>
@@ -192,7 +181,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00467">467</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00457">457</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>

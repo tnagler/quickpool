@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">tpool
-   &#160;<span id="projectnumber">0.1.3</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -72,10 +72,10 @@ $(function() {
 <h1><a class="anchor" id="autotoc_md1"></a>
 Why tpool?</h1>
 <ul>
-<li><b>no install</b>: <a href="https://en.cppreference.com/w/cpp/compiler_support">C++11 compliant</a> single-header library, just drop into your project and enjoy.</li>
+<li><b>no install</b>: single-header library, <a href="https://en.cppreference.com/w/cpp/compiler_support">C++11 compliant</a>, no external dependencies.</li>
 <li><b>fast</b>: Uses a <a href="https://en.wikipedia.org/wiki/Work_stealing">work stealing</a> queue with <a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom">lock-free</a> pops.</li>
 <li><b>user friendly</b>: Dead simple <a href="https://tnagler.github.io/tpool/">API</a>, including direct access to a global pool.</li>
-<li><b>light weight</b>: Less than 500 LOC including API documentation and whitespace.</li>
+<li><b>light weight</b>: Less than 500 LOC including API documentation, comments, and whitespace.</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Usage</h1>
@@ -111,35 +111,34 @@ Local thread pool</h2>
 <div class="line"><span class="comment">// threads are joined</span></div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md5"></a>
 Task synchronization</h2>
-<p>In general, the pool may process the tasks in any order. Synchronization between tasks (e.g., one thread waiting intermediate results) must be done manually. Standard tools are <a href="https://en.cppreference.com/w/cpp/thread/mutex"><code>std::mutex</code></a> and <a href="https://en.cppreference.com/w/cpp/thread/condition_variable"><code>std::condition_variable</code></a>. <code>tpool</code> exposes another synchronization primitive, <a href="https://tnagler.github.io/tpool/classtpool_1_1FinishLine.html"><code>FinishLine</code></a>, that may be useful.</p>
-<div class="fragment"><div class="line"><span class="comment">// expect two producers and two consumers</span></div>
-<div class="line"><a class="code" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a> finish_prod(2);  </div>
-<div class="line"><a class="code" href="classtpool_1_1FinishLine.html">tpool::FinishLine</a> finish_cons(2);</div>
+<p>In general, the pool may process the tasks in any order. Synchronization between tasks (e.g., one thread waiting intermediate results) must be done manually. Standard tools are <a href="https://en.cppreference.com/w/cpp/thread/mutex"><code>std::mutex</code></a> and <a href="https://en.cppreference.com/w/cpp/thread/condition_variable"><code>std::condition_variable</code></a>. <code>tpool</code> exposes another synchronization primitive, <a href="https://tnagler.github.io/tpool/classtpool_1_1TodoList.html"><code>TodoList</code></a>, that may be useful.</p>
+<div class="fragment"><div class="line">std::vector&lt;double&gt; x(2); <span class="comment">// shared resource</span></div>
+<div class="line"><a class="code" href="classtpool_1_1TodoList.html">tpool::TodoList</a> todo_prod(2);</div>
+<div class="line"><a class="code" href="classtpool_1_1TodoList.html">tpool::TodoList</a> todo_cons(2);</div>
 <div class="line"> </div>
-<div class="line">std::vector&lt;double&gt; x(2);</div>
-<div class="line"><span class="keyword">auto</span> job_prod = [&amp;] (<span class="keywordtype">int</span> i, <span class="keywordtype">double</span> val) { </div>
-<div class="line">  x.at(i) = val; </div>
-<div class="line">  finish_prod.cross(); </div>
+<div class="line"><span class="keyword">auto</span> job_prod = [&amp;](<span class="keywordtype">int</span> i, <span class="keywordtype">double</span> val) {</div>
+<div class="line">    x.at(i) = val;</div>
+<div class="line">    todo_prod.cross();</div>
 <div class="line">};</div>
-<div class="line"><span class="keyword">auto</span> job_cons = [&amp;] (<span class="keywordtype">int</span> i, <span class="keywordtype">double</span> val) { </div>
-<div class="line">  finish_prod.wait();            <span class="comment">// waits for all producers to be done</span></div>
-<div class="line">  std::cout &lt;&lt; x.at(i) &lt;&lt; std::endl; </div>
-<div class="line">  finish_cons.cross();</div>
+<div class="line"><span class="keyword">auto</span> job_cons = [&amp;](<span class="keywordtype">int</span> i) {</div>
+<div class="line">    todo_prod.wait(); <span class="comment">// waits for all producers to finish</span></div>
+<div class="line">    std::cout &lt;&lt; x.at(i) &lt;&lt; std::endl;</div>
+<div class="line">    todo_cons.cross();</div>
 <div class="line">};</div>
 <div class="line"> </div>
 <div class="line"><a class="code" href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">tpool::push</a>(job_prod, 0, 1.337); <span class="comment">// writes x[0]</span></div>
 <div class="line"><a class="code" href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">tpool::push</a>(job_prod, 1, 3.14);  <span class="comment">// writes x[1]</span></div>
 <div class="line"><a class="code" href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">tpool::push</a>(job_cons, 0);        <span class="comment">// reads x[0]</span></div>
 <div class="line"><a class="code" href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">tpool::push</a>(job_cons, 1);        <span class="comment">// reads x[1]</span></div>
-<div class="line">finish_cons.wait();              <span class="comment">// waits for all consumers to be done</span></div>
-</div><!-- fragment --><p>If the number of runners is not known up front, you can start a runner on the fly using <a href="https://tnagler.github.io/tpool/classtpool_1_1FinishLine.html"><code>FinishLine::start()</code></a>. </p>
+<div class="line">todo_cons.wait();                <span class="comment">// waits for all consumers to finish</span></div>
+</div><!-- fragment --><p>You can also add items on the fly using <a href="https://tnagler.github.io/tpool/classtpool_1_1TodoList.html"><code>TodoList::add()</code></a>. </p>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
-<div class="ttc" id="aclasstpool_1_1FinishLine_html"><div class="ttname"><a href="classtpool_1_1FinishLine.html">tpool::FinishLine</a></div><div class="ttdoc">Finish line - a synchronization primitive.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00038">tpool.hpp:38</a></div></div>
-<div class="ttc" id="anamespacetpool_html_abd1433db5851deb368b77387014f94e8"><div class="ttname"><a href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">tpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Direct access to the global thread pool ---------------------------------—.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00467">tpool.hpp:467</a></div></div>
-<div class="ttc" id="anamespacetpool_html_a973a58b4c23318661fbbbf595b94dbfb"><div class="ttname"><a href="namespacetpool.html#a973a58b4c23318661fbbbf595b94dbfb">tpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00488">tpool.hpp:488</a></div></div>
-<div class="ttc" id="aclasstpool_1_1ThreadPool_html"><div class="ttname"><a href="classtpool_1_1ThreadPool.html">tpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00318">tpool.hpp:318</a></div></div>
-<div class="ttc" id="anamespacetpool_html_a6b2d71f8c2e029b63b780ba5f80adbd4"><div class="ttname"><a href="namespacetpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">tpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00480">tpool.hpp:480</a></div></div>
+<div class="ttc" id="anamespacetpool_html_abd1433db5851deb368b77387014f94e8"><div class="ttname"><a href="namespacetpool.html#abd1433db5851deb368b77387014f94e8">tpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Direct access to the global thread pool ----------------—.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00457">tpool.hpp:457</a></div></div>
+<div class="ttc" id="anamespacetpool_html_a973a58b4c23318661fbbbf595b94dbfb"><div class="ttname"><a href="namespacetpool.html#a973a58b4c23318661fbbbf595b94dbfb">tpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00478">tpool.hpp:478</a></div></div>
+<div class="ttc" id="aclasstpool_1_1ThreadPool_html"><div class="ttname"><a href="classtpool_1_1ThreadPool.html">tpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00351">tpool.hpp:351</a></div></div>
+<div class="ttc" id="aclasstpool_1_1TodoList_html"><div class="ttname"><a href="classtpool_1_1TodoList.html">tpool::TodoList</a></div><div class="ttdoc">Todo list - a synchronization primitive.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00036">tpool.hpp:36</a></div></div>
+<div class="ttc" id="anamespacetpool_html_a6b2d71f8c2e029b63b780ba5f80adbd4"><div class="ttname"><a href="namespacetpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">tpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="tpool_8hpp_source.html#l00470">tpool.hpp:470</a></div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

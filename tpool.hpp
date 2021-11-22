@@ -59,7 +59,8 @@ class TodoList
         }
     }
 
-    bool done() const noexcept { return num_tasks_ == 0; }
+    //! checks whether list is empty.
+    bool empty() const noexcept { return num_tasks_ == 0; }
 
     //! waits for the list to be empty.
     //! @param millis if > 0; waiting aborts after waiting that many
@@ -67,7 +68,7 @@ class TodoList
     void wait(size_t millis = 0)
     {
         std::this_thread::yield();
-        auto wake_up = [this] { return (num_tasks_ <= 0) || exception_ptr_; };
+        auto wake_up = [this] { return (num_tasks_ == 0) || exception_ptr_; };
         std::unique_lock<std::mutex> lk(mtx_);
         if (millis == 0) {
             cv_.wait(lk, wake_up);
@@ -367,10 +368,10 @@ class ThreadPool
                 while (!task_manager_.stopped()) {
                     task_manager_.wait_for_jobs(id);
                     do {
-                        // inner while to save a few cash misses calling done()
+                        // inner while to save a few cash misses calling empty()
                         while (task_manager_.try_pop(task, id))
                             this->execute_safely(task);
-                    } while (!todo_list_.done());
+                    } while (!todo_list_.empty());
                 }
             });
         }

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['abort_30',['abort',['../classtpool_1_1FinishLine.html#abb3f907ef7f7ec2871f9b6e23ef26819',1,'tpool::FinishLine']]],
-  ['add_31',['add',['../classtpool_1_1FinishLine.html#aad42138e431fda5491b6c3eb8b30a52a',1,'tpool::FinishLine']]],
-  ['async_32',['async',['../classtpool_1_1ThreadPool.html#a26e6005d1412a71d76058090dbd09613',1,'tpool::ThreadPool::async()'],['../namespacetpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4',1,'tpool::async()']]]
+  ['add_15',['add',['../classtpool_1_1TodoList.html#adb2aa12f95bd70c0d68dab45eb73e19e',1,'tpool::TodoList']]],
+  ['async_16',['async',['../classtpool_1_1ThreadPool.html#a26e6005d1412a71d76058090dbd09613',1,'tpool::ThreadPool::async()'],['../namespacetpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4',1,'tpool::async()']]]
 ];

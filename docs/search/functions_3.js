@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['finishline_37',['FinishLine',['../classtpool_1_1FinishLine.html#a9739308b679d00c5455a21b6f95c44f7',1,'tpool::FinishLine']]]
+  ['global_5finstance_20',['global_instance',['../classtpool_1_1ThreadPool.html#a3456fb26d604603f1ae249c8ad2b7ffe',1,'tpool::ThreadPool']]]
 ];

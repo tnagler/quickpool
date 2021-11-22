@@ -1,22 +1,9 @@
-#include "tpool.hpp"
 #include <iostream>
+#include "tpool.hpp"
 
 int
 main()
 {
-    // tpool::detail::RingBuffer<int> buf(4);
-    // buf.set_entry(0, 1);
-    // buf.set_entry(1, 2);
-    // std::cout << buf.get_entry(0) << ", " << buf.get_entry(1) << std::endl;
-
-    // tpool::detail::TaskQueue q;
-    // int i;
-    // q.try_push([] { std::cout << "test" << std::endl; });
-    // std::function<void()> f;
-    // std::cout << static_cast<bool>(f) << std::endl;
-    // std::cout << q.try_pop(f) << std::endl;
-    // std::cout << static_cast<bool>(f) << std::endl;
-
     tpool::ThreadPool pool;
     pool.push([] { std::cout << "- push: "; });
     pool.wait();
@@ -82,28 +69,26 @@ main()
     // Task synchronization
     {
         std::vector<double> x(2); // shared resource
-        // expect two threads to cross the line
-        tpool::FinishLine finish_prod(2);
-        tpool::FinishLine finish_cons(2);
+        tpool::TodoList todo_prod(2);
+        tpool::TodoList todo_cons(2);
 
         auto job_prod = [&](int i, double val) {
             x.at(i) = val;
-            finish_prod.cross();
+            todo_prod.cross();
         };
         auto job_cons = [&](int i) {
-            finish_prod.wait(); // waits for all producers to be done
+            todo_prod.wait(); // waits for all producers to finish
             // std::cout << x.at(i) << std::endl;
-            finish_cons.cross();
+            todo_cons.cross();
         };
 
         tpool::push(job_prod, 0, 1.337); // writes x[0]
         tpool::push(job_prod, 1, 3.14);  // writes x[1]
         tpool::push(job_cons, 0);        // reads x[0]
         tpool::push(job_cons, 1);        // reads x[1]
-        finish_cons.wait();              // waits for all consumers to be
+        todo_cons.wait();                // waits for all consumers to finish
     }
     std::cout << "OK" << std::endl;
-
 
 
     // unit tests ---------------------------------------

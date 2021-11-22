@@ -69,7 +69,7 @@ main()
 
     // unit tests ---------------------------------------
     std::cout << "- unit tests: " << std::endl;
-    auto runs = 100;
+    auto runs = 1;
     for (auto run = 0; run < runs; run++) {
         std::cout << "    * run " << run + 1 << "/" << runs << " -------------"
                   << std::endl;
@@ -160,6 +160,24 @@ main()
             if (count_wrong > 0)
                 throw std::runtime_error("single threaded gives wrong result");
             std::cout << "OK" << std::endl;
+        }
+
+        // rethrows exceptions
+        {
+            std::cout << "      * exception handling: ";
+            tpool::ThreadPool pool;
+            for (size_t i = 0; i < 4; i++) {
+                pool.push([&] { throw std::runtime_error("test"); });
+            }
+            try {
+                pool.wait();
+            } catch (const std::exception& e) {
+                if (e.what() == std::string("test")) {
+                    std::cout << "OK" << std::endl;
+                } else {
+                    throw std::runtime_error("exception not rethrown");
+                }
+            }
         }
     }
 

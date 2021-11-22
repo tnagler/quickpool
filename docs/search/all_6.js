@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['wait_11',['wait',['../classtpool_1_1TodoList.html#a6711794e2f9f91e1d34f64f82b6cf7f2',1,'tpool::TodoList::wait()'],['../classtpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927',1,'tpool::ThreadPool::wait()'],['../namespacetpool.html#a973a58b4c23318661fbbbf595b94dbfb',1,'tpool::wait()']]]
+  ['tpool_7',['tpool',['../index.html',1,'']]],
+  ['threadpool_8',['ThreadPool',['../classtpool_1_1ThreadPool.html',1,'tpool::ThreadPool'],['../classtpool_1_1ThreadPool.html#a3953198e30ef37452cb0e932cf54e20e',1,'tpool::ThreadPool::ThreadPool()'],['../classtpool_1_1ThreadPool.html#ac69c3eb6bb391e6439df09f97c816e9e',1,'tpool::ThreadPool::ThreadPool(size_t n_workers)']]],
+  ['todolist_9',['TodoList',['../classtpool_1_1TodoList.html',1,'tpool::TodoList'],['../classtpool_1_1TodoList.html#ad900c395f0ce371f6773206dda4e5407',1,'tpool::TodoList::TodoList()']]],
+  ['tpool_10',['tpool',['../namespacetpool.html',1,'']]]
 ];

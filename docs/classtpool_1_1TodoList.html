@@ -94,8 +94,8 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:a4fd16a01633911f5b82c80857ce66527"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6711794e2f9f91e1d34f64f82b6cf7f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1TodoList.html#a6711794e2f9f91e1d34f64f82b6cf7f2">wait</a> (size_t millis=0)</td></tr>
 <tr class="separator:a6711794e2f9f91e1d34f64f82b6cf7f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a80d8d12098fb46df66f76bc7c6156e7f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1TodoList.html#a80d8d12098fb46df66f76bc7c6156e7f">clear</a> (std::exception_ptr eptr=nullptr) noexcept</td></tr>
-<tr class="separator:a80d8d12098fb46df66f76bc7c6156e7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a718b658418493a5deabc304e7de4e4b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1TodoList.html#a718b658418493a5deabc304e7de4e4b6">stop</a> (std::exception_ptr eptr=nullptr) noexcept</td></tr>
+<tr class="separator:a718b658418493a5deabc304e7de4e4b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Todo list - a synchronization primitive. </p>
@@ -172,40 +172,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 </div>
 </div>
-<a id="a80d8d12098fb46df66f76bc7c6156e7f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a80d8d12098fb46df66f76bc7c6156e7f">&#9670;&nbsp;</a></span>clear()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void tpool::TodoList::clear </td>
-          <td>(</td>
-          <td class="paramtype">std::exception_ptr&#160;</td>
-          <td class="paramname"><em>eptr</em> = <code>nullptr</code></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>clears the list. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">eptr</td><td>(optional) pointer to an active exception to be rethrown by a waiting thread; typically retrieved from <code>std::current_exception()</code>. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00085">85</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
-
-</div>
-</div>
 <a id="ad23ce5136b646788f476843bd4d2ef54"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad23ce5136b646788f476843bd4d2ef54">&#9670;&nbsp;</a></span>cross()</h2>
 
@@ -237,6 +203,40 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </dl>
 
 <p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00051">51</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a718b658418493a5deabc304e7de4e4b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a718b658418493a5deabc304e7de4e4b6">&#9670;&nbsp;</a></span>stop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void tpool::TodoList::stop </td>
+          <td>(</td>
+          <td class="paramtype">std::exception_ptr&#160;</td>
+          <td class="paramname"><em>eptr</em> = <code>nullptr</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>stops the list; it will forever look empty from now on. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">eptr</td><td>(optional) pointer to an active exception to be rethrown by a waiting thread; typically retrieved from <code>std::current_exception()</code>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00085">85</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>

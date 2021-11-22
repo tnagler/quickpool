@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['clear_2',['clear',['../classtpool_1_1TodoList.html#a80d8d12098fb46df66f76bc7c6156e7f',1,'tpool::TodoList']]],
-  ['cross_3',['cross',['../classtpool_1_1TodoList.html#ad23ce5136b646788f476843bd4d2ef54',1,'tpool::TodoList']]]
+  ['cross_2',['cross',['../classtpool_1_1TodoList.html#ad23ce5136b646788f476843bd4d2ef54',1,'tpool::TodoList']]]
 ];

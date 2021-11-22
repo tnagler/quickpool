@@ -36,7 +36,7 @@ jobs:
         - {
             name: "Ubuntu Latest GCC", artifact: "Linux.tar.xz",
             os: ubuntu-latest,
-            build_type: "Release", cc: "gcc", cxx: "g++"
+            build_type: "Debug", cc: "gcc", cxx: "g++"
           }
         - {
             name: "macOS Latest Clang", artifact: "macOS.tar.xz",
@@ -55,6 +55,7 @@ jobs:
 
     - name: Build
       # Build your program with the given configuration
+      if: runner.os != 'Linux'
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test

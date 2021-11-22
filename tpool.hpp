@@ -39,7 +39,7 @@ class TodoList
     //! constructs the todo list.
     //! @param num_tasks initial number of tasks.
     TodoList(size_t num_tasks = 0) noexcept
-      : num_tasks_{ static_cast<int>(num_tasks) }
+      : num_tasks_(num_tasks)
     {}
 
     //! adds tasks to the list.
@@ -52,12 +52,14 @@ class TodoList
     {
         num_tasks_.fetch_sub(num_tasks);
         if (num_tasks_ <= 0) {
-            std::lock_guard<std::mutex> lk(mtx_);
+            {
+                std::lock_guard<std::mutex> lk(mtx_); // must lock before signal
+            }
             cv_.notify_all();
         }
     }
 
-    bool done() const noexcept { return num_tasks_ <= 0; }
+    bool done() const noexcept { return num_tasks_ == 0; }
 
     //! waits for the list to be empty.
     //! @param millis if > 0; waiting aborts after waiting that many
@@ -421,7 +423,7 @@ class ThreadPool
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
         using pack_t = std::packaged_task<decltype(f(args...))()>;
         auto task_ptr = std::make_shared<pack_t>(std::move(pack));
-        task_manager_.push([task_ptr] { (*task_ptr)(); });
+        this->push([task_ptr] { (*task_ptr)(); });
         return task_ptr->get_future();
     }
 

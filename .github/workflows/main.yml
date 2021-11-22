@@ -77,10 +77,11 @@ jobs:
       run: |
         g++ -std=c++11 -o test -pthread -fprofile-arcs -ftest-coverage ../test.cpp
         ./test
-        gcov -o . ../test.cpp   
+        gcov -o . ../test.cpp
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v2
       if: runner.os == 'Linux'
       with:
         token: ${{secrets.CODECOV_TOKEN}}
+        files: tpool.hpp.gcov

@@ -60,7 +60,7 @@ class TodoList
     }
 
     //! checks whether list is empty.
-    bool empty() const noexcept { return num_tasks_ == 0; }
+    bool empty() const noexcept { return num_tasks_ <= 0; }
 
     //! waits for the list to be empty.
     //! @param millis if > 0; waiting aborts after waiting that many
@@ -68,7 +68,7 @@ class TodoList
     void wait(size_t millis = 0)
     {
         std::this_thread::yield();
-        auto wake_up = [this] { return (num_tasks_ == 0) || exception_ptr_; };
+        auto wake_up = [this] { return (num_tasks_ <= 0) || exception_ptr_; };
         std::unique_lock<std::mutex> lk(mtx_);
         if (millis == 0) {
             cv_.wait(lk, wake_up);
@@ -79,14 +79,16 @@ class TodoList
             std::rethrow_exception(exception_ptr_);
     }
 
-    //! clears the list.
+    //! stops the list; it will forever look empty from now on.
     //! @param eptr (optional) pointer to an active exception to be rethrown by
     //! a waiting thread; typically retrieved from `std::current_exception()`.
-    void clear(std::exception_ptr eptr = nullptr) noexcept
+    void stop(std::exception_ptr eptr = nullptr) noexcept
     {
         {
             std::lock_guard<std::mutex> lk(mtx_);
-            num_tasks_ = 0;
+            // Some threads may add() or cross() after we stop. The large
+            // negative number prevents num_tasks_ from becoming positive again.
+            num_tasks_ = std::numeric_limits<int>::min() / 2;
             exception_ptr_ = eptr;
         }
         cv_.notify_all();
@@ -112,10 +114,7 @@ class RingBuffer
       , capacity_{ capacity }
       , mask_{ capacity - 1 }
 
-    {
-        if (capacity_ & (capacity_ - 1))
-            throw std::runtime_error("capacity must be a power of two");
-    }
+    {}
 
     size_t capacity() const { return capacity_; }
 
@@ -177,7 +176,6 @@ class TaskQueue
     {
         return (bottom_.load(m_relaxed) <= top_.load(m_relaxed));
     }
-
 
     //! pushes a task to the bottom of the queue; returns false if queue is
     //! currently locked; enlarges the queue if full.
@@ -293,6 +291,8 @@ struct TaskManager
     template<typename Task>
     void push(Task&& task)
     {
+        if (stopped_)
+            return;
         for (size_t count = 0; count < num_queues_ * 20; count++) {
             if (queues_[push_idx_++ % num_queues_].try_push(task))
                 return;
@@ -303,6 +303,8 @@ struct TaskManager
     template<typename Task>
     bool try_pop(Task& task, size_t worker_id = 0)
     {
+        if (stopped_)
+            return false;
         for (size_t k = 0; k <= num_queues_; k++) {
             if (queues_[(worker_id + k) % num_queues_].try_pop(task))
                 return true;
@@ -346,7 +348,7 @@ class ThreadPool
                     task_manager_.wait_for_jobs(id);
                     do {
                         // inner while to save a few cash misses calling empty()
-                        while (task_manager_.try_pop(task, id))
+                        if (task_manager_.try_pop(task, id))
                             this->execute_safely(task);
                     } while (!todo_list_.empty());
                 }
@@ -415,7 +417,8 @@ class ThreadPool
             task();
             todo_list_.cross();
         } catch (...) {
-            todo_list_.clear(std::current_exception());
+            todo_list_.stop(std::current_exception());
+            task_manager_.stop();
         }
     }
 

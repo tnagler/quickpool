@@ -35,8 +35,9 @@ template<typename T>
 class aligned_atomic : public std::atomic<T>
 {
   public:
-    aligned_atomic(T value)
+    explicit aligned_atomic(T value)
       : std::atomic<T>(value)
+      , padding_{}
     {}
 
   private:

@@ -4,7 +4,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ed2deb06d4454ab3b488536426ec3066)](https://www.codacy.com/gh/tnagler/tpool/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tnagler/tpool&amp;utm_campaign=Badge_Grade)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/website/http/tnagler.github.io/tpool.svg)](https://vinecopulib.github.io/pyvinecopulib/)
-<!-- [![DOI](https://zenodo.org/badge/427536398.svg)](https://zenodo.org/badge/latestdoi/427536398) -->
+[![DOI](https://zenodo.org/badge/427536398.svg)](https://zenodo.org/badge/latestdoi/427536398)
 
 
 An easy-to-use, header-only work stealing thread pool in C++11.
@@ -88,12 +88,12 @@ goes out of scope, all threads joined.
 ### Task synchronization
 
 In general, the pool may process the tasks in any order. Synchronization between
- tasks (e.g., one thread waiting intermediate results) must be done manually. 
- Standard tools are [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex) 
- and [`std::condition_variable`](https://en.cppreference.com/w/cpp/thread/condition_variable). 
- `tpool` exposes another synchronization primitive, 
- [`TodoList`](https://tnagler.github.io/tpool/classtpool_1_1TodoList.html), that 
- may be useful.
+tasks (e.g., one thread waiting intermediate results) must be done manually. 
+Standard tools are [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex) 
+and [`std::condition_variable`](https://en.cppreference.com/w/cpp/thread/condition_variable). 
+`tpool` exposes another synchronization primitive, 
+[`TodoList`](https://tnagler.github.io/tpool/classtpool_1_1TodoList.html), that 
+may be useful.
 
 ```cpp
 std::vector<double> x(2); // shared resource
@@ -116,6 +116,5 @@ tpool::push(job_cons, 0);        // reads x[0]
 tpool::push(job_cons, 1);        // reads x[1]
 todo_cons.wait();                // waits for all consumers to finish
 ```
-
-If the number of items is not known up front, you can add an items on the fly 
+You can also add items on the fly 
 using [`TodoList::add()`](https://tnagler.github.io/tpool/classtpool_1_1TodoList.html).

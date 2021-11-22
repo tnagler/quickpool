@@ -426,10 +426,7 @@ class ThreadPool
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
-    void wait()
-    {
-        todo_list_.wait();
-    }
+    void wait() { todo_list_.wait(); }
 
   private:
     void execute_safely(std::function<void()>& task)
@@ -447,7 +444,7 @@ class ThreadPool
     std::vector<std::thread> workers_;
 };
 
-//! Direct access to the global thread pool ------------------------------------
+//! Direct access to the global thread pool -------------------
 
 //! @brief push a job to the global thread pool.
 //! @param f a function.
@@ -480,4 +477,4 @@ wait()
     ThreadPool::global_instance().wait();
 }
 
-}
+} // end namespace tpool

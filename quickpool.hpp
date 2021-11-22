@@ -348,7 +348,7 @@ class ThreadPool
                     task_manager_.wait_for_jobs(id);
                     do {
                         // inner while to save a few cash misses calling empty()
-                        if (task_manager_.try_pop(task, id))
+                        while (task_manager_.try_pop(task, id))
                             this->execute_safely(task);
                     } while (!todo_list_.empty());
                 }

@@ -7,10 +7,8 @@ main()
 {
     auto runs = 100;
     for (auto run = 0; run < runs; run++) {
-        if (runs > 1) {
-            std::cout << "------------------------------------ run " << run + 1
-                      << "/" << runs << std::endl;
-        }
+        std::cout << "------------------------------------ run " << run + 1
+                  << "/" << runs << std::endl;
 
         tpool::ThreadPool pool;
         pool.push([] { std::cout << "- push: "; });

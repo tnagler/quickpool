@@ -80,35 +80,35 @@ $(function() {
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <span class="comment">// Static access to a global pool</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    {</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <a class="code" href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a>(); <span class="comment">// waits for all current jobs to finish</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>(); <span class="comment">// waits for all current jobs to finish</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    }</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160; </div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="comment">// async</span></div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    {</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keyword">auto</span> f = <a class="code" href="namespacequickpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">quickpool::async</a>([] { <span class="keywordflow">return</span> 1 + 1; });</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keyword">auto</span> f = <a class="code" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a>([] { <span class="keywordflow">return</span> 1 + 1; });</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        <span class="comment">// do something else ...</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;        <span class="keyword">auto</span> result = f.get(); <span class="comment">// waits until done and returns result</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    }</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <a class="code" href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a>();</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    <a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>();</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="comment">// extra arguments</span></div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    {</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        <span class="keyword">auto</span> work = [](<span class="keyword">const</span> std::string&amp; title, <span class="keywordtype">int</span> i) {</div>
 <div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;            <span class="comment">// std::cout &lt;&lt; title &lt;&lt; &quot;: &quot; &lt;&lt; i &lt;&lt; std::endl;</span></div>
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        };</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>(work, <span class="stringliteral">&quot;first title&quot;</span>, 5);</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <a class="code" href="namespacequickpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">quickpool::async</a>(work, <span class="stringliteral">&quot;other title&quot;</span>, 99);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <a class="code" href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a>();</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>(work, <span class="stringliteral">&quot;first title&quot;</span>, 5);</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <a class="code" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a>(work, <span class="stringliteral">&quot;other title&quot;</span>, 99);</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>();</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    <span class="comment">// Local thread pool</span></div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    {</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <a class="code" href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a> pool; <span class="comment">// thread pool with two threads</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a5a79972018db2ebb2b7e8c2080302adf">push</a>([] { <span class="comment">/* some work */</span> });</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a26e6005d1412a71d76058090dbd09613">async</a>([] { <span class="comment">/* some work */</span> });</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">wait</a>(); <span class="comment">// waits for all current jobs to finish</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] { <span class="comment">/* some work */</span> });</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        pool.<a class="code" href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">async</a>([] { <span class="comment">/* some work */</span> });</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>(); <span class="comment">// waits for all current jobs to finish</span></div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    }</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="comment">// Task synchronization</span></div>
@@ -127,14 +127,14 @@ $(function() {
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            todo_cons.cross();</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        };</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>(job_prod, 0, 1.337); <span class="comment">// writes x[0]</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>(job_prod, 1, 3.14);  <span class="comment">// writes x[1]</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>(job_cons, 0);        <span class="comment">// reads x[0]</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>(job_cons, 1);        <span class="comment">// reads x[1]</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>(job_prod, 0, 1.337); <span class="comment">// writes x[0]</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>(job_prod, 1, 3.14);  <span class="comment">// writes x[1]</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>(job_cons, 0);        <span class="comment">// reads x[0]</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>(job_cons, 1);        <span class="comment">// reads x[1]</span></div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        todo_cons.wait();                <span class="comment">// waits for all consumers to finish</span></div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    }</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;OK&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <a class="code" href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a>();</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>();</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="comment">// unit tests ---------------------------------------</span></div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;- unit tests:        \t\r&quot;</span>;</div>
@@ -149,8 +149,8 @@ $(function() {
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;            std::vector&lt;size_t&gt; x(10000, 1);</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            <span class="comment">// auto dummy = [&amp;](size_t i) -&gt; void { x[i] = 2 * x[i]; };</span></div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                <a class="code" href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a>([&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; }, i);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            <a class="code" href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a>();</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                <a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>([&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; }, i);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            <a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>();</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++) {</div>
@@ -164,8 +164,8 @@ $(function() {
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a> pool;</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            x = std::vector&lt;size_t&gt;(10000, 1);</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a5a79972018db2ebb2b7e8c2080302adf">push</a>([&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; }, i);</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">wait</a>();</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; }, i);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>();</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160; </div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            count_wrong = 0;</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -183,10 +183,10 @@ $(function() {
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;            std::vector&lt;std::future&lt;size_t&gt;&gt; fut(x.size());</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                fut[i] = <a class="code" href="namespacequickpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">quickpool::async</a>(dummy, i);</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                fut[i] = <a class="code" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a>(dummy, i);</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;                x[i] = fut[i].get();</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            <a class="code" href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a>();</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            <a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>();</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -198,10 +198,10 @@ $(function() {
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            x = std::vector&lt;size_t&gt;(10000, 1);</div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            std::vector&lt;std::future&lt;size_t&gt;&gt; fut2(x.size());</div>
 <div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                fut2[i] = pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a26e6005d1412a71d76058090dbd09613">async</a>(dummy, i);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                fut2[i] = pool.<a class="code" href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">async</a>(dummy, i);</div>
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                x[i] = fut2[i].get();</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">wait</a>();</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>();</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
 <div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;            count_wrong = 0;</div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -219,9 +219,9 @@ $(function() {
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            <span class="keyword">auto</span> dummy = [&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; };</div>
 <div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160; </div>
 <div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++) {</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a5a79972018db2ebb2b7e8c2080302adf">push</a>(dummy, i);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>(dummy, i);</div>
 <div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;            }</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">wait</a>();</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>();</div>
 <div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -235,15 +235,15 @@ $(function() {
 <div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        {</div>
 <div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * exception handling: &quot;;</span></div>
 <div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a> pool;</div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a5a79972018db2ebb2b7e8c2080302adf">push</a>([] { <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;test&quot;</span>); });</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] { <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;test&quot;</span>); });</div>
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; 200; i++) {</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a5a79972018db2ebb2b7e8c2080302adf">push</a>([&amp;] {</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] {</div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                    std::this_thread::sleep_for(std::chrono::milliseconds(20));</div>
 <div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                });</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;            }</div>
 <div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160; </div>
 <div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">wait</a>();</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>();</div>
 <div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            } <span class="keywordflow">catch</span> (<span class="keyword">const</span> std::exception&amp; e) {</div>
 <div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                <span class="keywordflow">if</span> (e.what() == std::string(<span class="stringliteral">&quot;test&quot;</span>)) {</div>
 <div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                    <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
@@ -259,14 +259,14 @@ $(function() {
 <div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;    <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a26e6005d1412a71d76058090dbd09613"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a26e6005d1412a71d76058090dbd09613">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00399">quickpool.hpp:399</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_abd1433db5851deb368b77387014f94e8"><div class="ttname"><a href="namespacequickpool.html#abd1433db5851deb368b77387014f94e8">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Direct access to the global thread pool ----------------—.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00437">quickpool.hpp:437</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a973a58b4c23318661fbbbf595b94dbfb"><div class="ttname"><a href="namespacequickpool.html#a973a58b4c23318661fbbbf595b94dbfb">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00458">quickpool.hpp:458</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00330">quickpool.hpp:330</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00450">quickpool.hpp:450</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a0d8a3e00d2095145a4899b97080471ce"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00411">quickpool.hpp:411</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00458">quickpool.hpp:458</a></div></div>
 <div class="ttc" id="aclassquickpool_1_1TodoList_html"><div class="ttname"><a href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></div><div class="ttdoc">Todo list - a synchronization primitive.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00036">quickpool.hpp:36</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a174fdfa1700322b4c298299f5e5a7927"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00411">quickpool.hpp:411</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a5a79972018db2ebb2b7e8c2080302adf"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a5a79972018db2ebb2b7e8c2080302adf">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00384">quickpool.hpp:384</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a6b2d71f8c2e029b63b780ba5f80adbd4"><div class="ttname"><a href="namespacequickpool.html#a6b2d71f8c2e029b63b780ba5f80adbd4">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00450">quickpool.hpp:450</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00399">quickpool.hpp:399</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00330">quickpool.hpp:330</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00384">quickpool.hpp:384</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Direct access to the global thread pool ----------------—.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00437">quickpool.hpp:437</a></div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

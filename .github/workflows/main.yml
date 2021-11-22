@@ -84,4 +84,4 @@ jobs:
       if: runner.os == 'Linux'
       with:
         token: ${{secrets.CODECOV_TOKEN}}
-        files: tpool.hpp.gcov
+        files: quickpool.hpp.gcov

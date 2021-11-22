@@ -27,8 +27,8 @@
 #include <thread>
 #include <vector>
 
-//! tpool namespace
-namespace tpool {
+//! quickpool namespace
+namespace quickpool {
 
 //! @brief Todo list - a synchronization primitive.
 //! @details Add a task with `add()`, cross it off with `cross()`, and wait for
@@ -460,4 +460,4 @@ wait()
     ThreadPool::global_instance().wait();
 }
 
-} // end namespace tpool
+} // end namespace quickpool

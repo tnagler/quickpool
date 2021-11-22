@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>tpool: Member List</title>
+<title>quickpool: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">tpool
+   <div id="projectname">quickpool
    &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
@@ -63,22 +63,23 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="namespacetpool.html">tpool</a></li><li class="navelem"><a class="el" href="namespacetpool_1_1detail.html">detail</a></li><li class="navelem"><a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">RingBuffer</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespacequickpool.html">quickpool</a></li><li class="navelem"><a class="el" href="classquickpool_1_1TodoList.html">TodoList</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">tpool::detail::RingBuffer&lt; T &gt; Member List</div>  </div>
+<div class="title">quickpool::TodoList Member List</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>This is the complete list of members for <a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a>, including all inherited members.</p>
+<p>This is the complete list of members for <a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>capacity</b>() const (defined in <a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>enlarged_copy</b>(size_t bottom, size_t top) const (defined in <a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>get_entry</b>(size_t i) const (defined in <a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>RingBuffer</b>(size_t capacity) (defined in <a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">explicit</span></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>set_entry</b>(size_t i, T val) (defined in <a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a>)</td><td class="entry"><a class="el" href="classtpool_1_1detail_1_1RingBuffer.html">tpool::detail::RingBuffer&lt; T &gt;</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html#a29ec33475a91396ee0d7318bfc8be898">add</a>(size_t num_tasks=1) noexcept</td><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html#aaf159795a22b9fdf2a459fc1e7afbcb0">cross</a>(size_t num_tasks=1)</td><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html#a6bfbbc299d5ed07125727a203dc47352">empty</a>() const noexcept</td><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html#a01dd953ebc1c6988c621c474faf8a73c">stop</a>(std::exception_ptr eptr=nullptr) noexcept</td><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html#a11bb98b8f7bc86d7931d4d61c62605dd">TodoList</a>(size_t num_tasks=0) noexcept</td><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html#a7a8e0c6b036bf9c414b8458c1d8bb03f">wait</a>(size_t millis=0)</td><td class="entry"><a class="el" href="classquickpool_1_1TodoList.html">quickpool::TodoList</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

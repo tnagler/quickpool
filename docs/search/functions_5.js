@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['stop_21',['stop',['../classtpool_1_1TodoList.html#a718b658418493a5deabc304e7de4e4b6',1,'tpool::TodoList']]]
+  ['stop_21',['stop',['../classquickpool_1_1TodoList.html#a01dd953ebc1c6988c621c474faf8a73c',1,'quickpool::TodoList']]]
 ];

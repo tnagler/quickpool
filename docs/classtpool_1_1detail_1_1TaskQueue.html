@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">tpool
-   &#160;<span id="projectnumber">0.1.3</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -82,7 +82,7 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:abbd85064617d492ed77bf223d5d5b5c0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#abbd85064617d492ed77bf223d5d5b5c0">TaskQueue</a> (size_t <a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a9a6aef8e07299445eaab314ba067fffe">capacity</a>=256)</td></tr>
+<tr class="memitem:abbd85064617d492ed77bf223d5d5b5c0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#abbd85064617d492ed77bf223d5d5b5c0">TaskQueue</a> (size_t capacity=256)</td></tr>
 <tr class="separator:abbd85064617d492ed77bf223d5d5b5c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6100dc7e5a8075074eb58e376125be62"><td class="memItemLeft" align="right" valign="top"><a id="a6100dc7e5a8075074eb58e376125be62"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>TaskQueue</b> (<a class="el" href="classtpool_1_1detail_1_1TaskQueue.html">TaskQueue</a> const &amp;other)=delete</td></tr>
@@ -90,14 +90,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8b4fb55553e2d22bb81f32dc5599de44"><td class="memItemLeft" align="right" valign="top"><a id="a8b4fb55553e2d22bb81f32dc5599de44"></a>
 <a class="el" href="classtpool_1_1detail_1_1TaskQueue.html">TaskQueue</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (<a class="el" href="classtpool_1_1detail_1_1TaskQueue.html">TaskQueue</a> const &amp;other)=delete</td></tr>
 <tr class="separator:a8b4fb55553e2d22bb81f32dc5599de44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfe8ba182e3d0d41ab177d53c9232d41"><td class="memItemLeft" align="right" valign="top"><a id="acfe8ba182e3d0d41ab177d53c9232d41"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#acfe8ba182e3d0d41ab177d53c9232d41">size</a> () const</td></tr>
-<tr class="memdesc:acfe8ba182e3d0d41ab177d53c9232d41"><td class="mdescLeft">&#160;</td><td class="mdescRight">queries the size. <br /></td></tr>
-<tr class="separator:acfe8ba182e3d0d41ab177d53c9232d41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a6aef8e07299445eaab314ba067fffe"><td class="memItemLeft" align="right" valign="top"><a id="a9a6aef8e07299445eaab314ba067fffe"></a>
-size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a9a6aef8e07299445eaab314ba067fffe">capacity</a> () const</td></tr>
-<tr class="memdesc:a9a6aef8e07299445eaab314ba067fffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">queries the capacity. <br /></td></tr>
-<tr class="separator:a9a6aef8e07299445eaab314ba067fffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7af3d5cd6055b204f3aefcaa1558272e"><td class="memItemLeft" align="right" valign="top"><a id="a7af3d5cd6055b204f3aefcaa1558272e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a7af3d5cd6055b204f3aefcaa1558272e">empty</a> () const</td></tr>
 <tr class="memdesc:a7af3d5cd6055b204f3aefcaa1558272e"><td class="mdescLeft">&#160;</td><td class="mdescRight">checks if queue is empty. <br /></td></tr>
@@ -108,15 +100,29 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:ad091fd6afea409913c396ec251c528b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8fd0ab537ce800f9388f1fe0016acf7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#ab8fd0ab537ce800f9388f1fe0016acf7">try_push</a> (Task &amp;&amp;task)</td></tr>
 <tr class="separator:ab8fd0ab537ce800f9388f1fe0016acf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bb940b4d9e27dc037f5e9f6c249fa59"><td class="memItemLeft" align="right" valign="top"><a id="a9bb940b4d9e27dc037f5e9f6c249fa59"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a9bb940b4d9e27dc037f5e9f6c249fa59">force_push</a> (Task &amp;&amp;task)</td></tr>
+<tr class="memdesc:a9bb940b4d9e27dc037f5e9f6c249fa59"><td class="mdescLeft">&#160;</td><td class="mdescRight">pushes a task to the bottom of the queue; enlarges the queue if full. <br /></td></tr>
+<tr class="separator:a9bb940b4d9e27dc037f5e9f6c249fa59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c1e785ad586d8d32478396decc9a2a7"><td class="memItemLeft" align="right" valign="top"><a id="a1c1e785ad586d8d32478396decc9a2a7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a1c1e785ad586d8d32478396decc9a2a7">push_unsafe</a> (Task &amp;&amp;task)</td></tr>
+<tr class="memdesc:a1c1e785ad586d8d32478396decc9a2a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">pushes a task without locking the queue (enough for single producer) <br /></td></tr>
+<tr class="separator:a1c1e785ad586d8d32478396decc9a2a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b5d1adff3c55d6cc0ed4bf5fb008935"><td class="memItemLeft" align="right" valign="top"><a id="a4b5d1adff3c55d6cc0ed4bf5fb008935"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1detail_1_1TaskQueue.html#a4b5d1adff3c55d6cc0ed4bf5fb008935">try_pop</a> (Task &amp;task)</td></tr>
 <tr class="memdesc:a4b5d1adff3c55d6cc0ed4bf5fb008935"><td class="mdescLeft">&#160;</td><td class="mdescRight">pops a task from the top of the queue; returns false if lost race. <br /></td></tr>
 <tr class="separator:a4b5d1adff3c55d6cc0ed4bf5fb008935"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aad71c45189121bcb9a8776021481178c"><td class="memItemLeft" align="right" valign="top"><a id="aad71c45189121bcb9a8776021481178c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>wait</b> ()</td></tr>
+<tr class="separator:aad71c45189121bcb9a8776021481178c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbd86bd79218c93405e3d0c3bb0e37bc"><td class="memItemLeft" align="right" valign="top"><a id="afbd86bd79218c93405e3d0c3bb0e37bc"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>stop</b> ()</td></tr>
+<tr class="separator:afbd86bd79218c93405e3d0c3bb0e37bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A multi-producer, multi-consumer queue; pops are lock free. </p>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00152">152</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00151">151</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="abbd85064617d492ed77bf223d5d5b5c0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abbd85064617d492ed77bf223d5d5b5c0">&#9670;&nbsp;</a></span>TaskQueue()</h2>
@@ -141,14 +147,14 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   </tr>
 </table>
 </div><div class="memdoc">
-<p>constructs the que with a given capacity. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>constructs the queue with a given capacity. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">capacity</td><td>must be a power of two. </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00159">159</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00158">158</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -178,7 +184,7 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </div><div class="memdoc">
 <p>pushes a task to the bottom of the queue; returns false if queue is currently locked; enlarges the queue if full. </p>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00190">190</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00200">200</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>

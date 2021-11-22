@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">tpool
-   &#160;<span id="projectnumber">0.1.3</span>
+   &#160;<span id="projectnumber">0.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -83,8 +83,12 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a88ff2b626d38a3b5c240af4945e391bd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1ThreadPool.html#a88ff2b626d38a3b5c240af4945e391bd">ThreadPool</a> (size_t num_threads=std::thread::hardware_concurrency())</td></tr>
-<tr class="separator:a88ff2b626d38a3b5c240af4945e391bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3953198e30ef37452cb0e932cf54e20e"><td class="memItemLeft" align="right" valign="top"><a id="a3953198e30ef37452cb0e932cf54e20e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1ThreadPool.html#a3953198e30ef37452cb0e932cf54e20e">ThreadPool</a> ()</td></tr>
+<tr class="memdesc:a3953198e30ef37452cb0e932cf54e20e"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructs a thread pool with as many workers as there are cores. <br /></td></tr>
+<tr class="separator:a3953198e30ef37452cb0e932cf54e20e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac69c3eb6bb391e6439df09f97c816e9e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1ThreadPool.html#ac69c3eb6bb391e6439df09f97c816e9e">ThreadPool</a> (size_t n_workers)</td></tr>
+<tr class="separator:ac69c3eb6bb391e6439df09f97c816e9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0062dd9bf2138b277d2454a2fd57c388"><td class="memItemLeft" align="right" valign="top"><a id="a0062dd9bf2138b277d2454a2fd57c388"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ThreadPool</b> (<a class="el" href="classtpool_1_1ThreadPool.html">ThreadPool</a> &amp;&amp;)=delete</td></tr>
 <tr class="separator:a0062dd9bf2138b277d2454a2fd57c388"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -109,10 +113,6 @@ Public Member Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927">wait</a> ()</td></tr>
 <tr class="memdesc:a174fdfa1700322b4c298299f5e5a7927"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the global thread pool. <br /></td></tr>
 <tr class="separator:a174fdfa1700322b4c298299f5e5a7927"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a51b796ccc7e0845c80a94782eee94ac9"><td class="memItemLeft" align="right" valign="top"><a id="a51b796ccc7e0845c80a94782eee94ac9"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classtpool_1_1ThreadPool.html#a51b796ccc7e0845c80a94782eee94ac9">clear</a> ()</td></tr>
-<tr class="memdesc:a51b796ccc7e0845c80a94782eee94ac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">clears all jobs currently running on the global thread pool. <br /></td></tr>
-<tr class="separator:a51b796ccc7e0845c80a94782eee94ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -124,10 +124,10 @@ static <a class="el" href="classtpool_1_1ThreadPool.html">ThreadPool</a> &amp;&#
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A work stealing thread pool. </p>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00318">318</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00351">351</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a88ff2b626d38a3b5c240af4945e391bd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a88ff2b626d38a3b5c240af4945e391bd">&#9670;&nbsp;</a></span>ThreadPool()</h2>
+<a id="ac69c3eb6bb391e6439df09f97c816e9e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac69c3eb6bb391e6439df09f97c816e9e">&#9670;&nbsp;</a></span>ThreadPool()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -139,7 +139,7 @@ static <a class="el" href="classtpool_1_1ThreadPool.html">ThreadPool</a> &amp;&#
           <td class="memname">tpool::ThreadPool::ThreadPool </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>num_threads</em> = <code>std::thread::hardware_concurrency()</code></td><td>)</td>
+          <td class="paramname"><em>n_workers</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -156,7 +156,7 @@ static <a class="el" href="classtpool_1_1ThreadPool.html">ThreadPool</a> &amp;&#
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00373">373</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00362">362</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -168,6 +168,9 @@ static <a class="el" href="classtpool_1_1ThreadPool.html">ThreadPool</a> &amp;&#
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class Function , class... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">auto tpool::ThreadPool::async </td>
@@ -184,9 +187,15 @@ template&lt;class Function , class... Args&gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; std::future&lt;decltype(f(args...))&gt;</td>
+          <td></td><td> -&gt; std::future&lt;decltype(f(args...))&gt;
+    </td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>executes a job asynchronously the global thread pool. </p>
@@ -199,7 +208,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00400">400</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00420">420</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -210,6 +219,9 @@ template&lt;class Function , class... Args&gt; </div>
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class Function , class... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void tpool::ThreadPool::push </td>
@@ -229,6 +241,11 @@ template&lt;class Function , class... Args&gt; </div>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>pushes a job to the thread pool. </p>
@@ -240,7 +257,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00392">392</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="tpool_8hpp_source.html#l00405">405</a> of file <a class="el" href="tpool_8hpp_source.html">tpool.hpp</a>.</p>
 
 </div>
 </div>

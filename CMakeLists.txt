@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(tpool VERSION 0.1.3)
+project(tpool VERSION 0.2.0)
 
 ## Project-wide setup
 set(CMAKE_CXX_STANDARD 11)

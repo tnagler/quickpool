@@ -1,7 +1,4 @@
 var searchData=
 [
-  ['taskqueue_42',['TaskQueue',['../classtpool_1_1detail_1_1TaskQueue.html#abbd85064617d492ed77bf223d5d5b5c0',1,'tpool::detail::TaskQueue']]],
-  ['threadpool_43',['ThreadPool',['../classtpool_1_1ThreadPool.html#a88ff2b626d38a3b5c240af4945e391bd',1,'tpool::ThreadPool']]],
-  ['try_5fpop_44',['try_pop',['../classtpool_1_1detail_1_1TaskQueue.html#a4b5d1adff3c55d6cc0ed4bf5fb008935',1,'tpool::detail::TaskQueue']]],
-  ['try_5fpush_45',['try_push',['../classtpool_1_1detail_1_1TaskQueue.html#ab8fd0ab537ce800f9388f1fe0016acf7',1,'tpool::detail::TaskQueue']]]
+  ['wait_41',['wait',['../classtpool_1_1TodoList.html#a6711794e2f9f91e1d34f64f82b6cf7f2',1,'tpool::TodoList::wait()'],['../classtpool_1_1ThreadPool.html#a174fdfa1700322b4c298299f5e5a7927',1,'tpool::ThreadPool::wait()'],['../namespacetpool.html#a973a58b4c23318661fbbbf595b94dbfb',1,'tpool::wait()']]]
 ];

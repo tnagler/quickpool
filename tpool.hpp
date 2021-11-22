@@ -178,23 +178,6 @@ class TaskQueue
         return (bottom_.load(m_relaxed) <= top_.load(m_relaxed));
     }
 
-    //! clears the queue.
-    void clear()
-    {
-        std::lock_guard<std::mutex> lk(mutex_); // prevents concurrent push
-        auto buf_ptr = buffer_.load();
-        auto b = bottom_.load(m_relaxed);
-        int t;
-        while (true) {
-            // try until we can set top = bottom; this might fail if someone
-            // pops concurrently
-            t = top_.load(m_relaxed);
-            if (top_.compare_exchange_weak(t, b, m_release, m_relaxed))
-                break;
-        }
-        for (int i = t; i < b; ++i)
-            delete buf_ptr->get_entry(i); // free memory for unpopped items
-    }
 
     //! pushes a task to the bottom of the queue; returns false if queue is
     //! currently locked; enlarges the queue if full.
@@ -325,12 +308,6 @@ struct TaskManager
                 return true;
         }
         return false;
-    }
-
-    void clear()
-    {
-        for (auto& q : queues_)
-            q.clear();
     }
 
     void wait_for_jobs(size_t id) { queues_[id].wait(); }

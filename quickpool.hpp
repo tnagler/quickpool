@@ -37,7 +37,6 @@ class aligned_atomic : public std::atomic<T>
   public:
     explicit aligned_atomic(T value)
       : std::atomic<T>(value)
-      , padding_{}
     {}
 
   private:

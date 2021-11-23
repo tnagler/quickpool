@@ -46,7 +46,7 @@ quickpool::push([] { /* some work */ });
 quickpool::wait(); // waits for all current jobs to finish
 ```
 
-If a task also returns a result, use 
+If a task returns a result, use 
 [`async()`](https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a), 
 which returns a [`std::future`](https://en.cppreference.com/w/cpp/thread/future) 
 for the result.
@@ -59,7 +59,7 @@ auto result = f.get();  // waits until done and returns result
 
 Both [`push()`](https://tnagler.github.io/quickpool/namespacequickpool.html#affc41895dab281715c271aca3649e830)
 and [`async()`](https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a) 
-can also be called with extra arguments passed to the function.
+can be called with extra arguments passed to the function.
 
 ```cpp
 auto work = [] (const std::string& title, int i) { 
@@ -73,7 +73,7 @@ quickpool::wait();
 ### Local thread pool
 
 A [`ThreadPool`](https://tnagler.github.io/quickpool/classquickpool_1_1ThreadPool.html) 
-can also be set up manually, with an arbitrary number of threads. When the pool 
+can be set up manually, with an arbitrary number of threads. When the pool 
 goes out of scope, all threads joined.
 
 ```cpp
@@ -117,5 +117,5 @@ quickpool::push(job_cons, 0);        // reads x[0]
 quickpool::push(job_cons, 1);        // reads x[1]
 todo_cons.wait();                // waits for all consumers to finish
 ```
-You can also add items on the fly 
+You can add items on the fly 
 using [`TodoList::add()`](https://tnagler.github.io/quickpool/classquickpool_1_1TodoList.html).

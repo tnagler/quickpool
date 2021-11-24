@@ -434,7 +434,7 @@ class ThreadPool
     const size_t n_workers_;
     struct Sync
     {
-        Sync(size_t num_workers)
+        explicit Sync(size_t num_workers)
           : task_manager_{ num_workers }
         {}
         detail::TaskManager task_manager_;

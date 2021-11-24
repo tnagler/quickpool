@@ -111,8 +111,8 @@ class TodoList
 
   private:
     detail::aligned_atomic<int> num_tasks_{ 0 };
-    std::mutex mtx_;
     std::condition_variable cv_;
+    std::mutex mtx_;
     std::exception_ptr exception_ptr_{ nullptr };
 };
 
@@ -355,31 +355,35 @@ class ThreadPool
     //! @param n_workers number of worker threads to create; defaults to
     //! number of available (virtual) hardware cores.
     explicit ThreadPool(size_t n_workers)
-      : task_manager_{ n_workers }
+      : n_workers_{ n_workers }
+      , sync_{ std::make_shared<Sync>(n_workers) }
     {
+        auto sync = sync_;  // must copy shared_ptr before passing to thread
         for (size_t id = 0; id < n_workers; ++id) {
-            workers_.emplace_back([this, id] {
+            std::thread([sync, id] {
                 std::function<void()> task;
-                while (!task_manager_.stopped()) {
-                    task_manager_.wait_for_jobs(id);
+                while (!sync->task_manager_.stopped()) {
+                    sync->task_manager_.wait_for_jobs(id);
                     do {
                         // inner while to save a few cash misses calling empty()
-                        while (task_manager_.try_pop(task, id))
-                            this->execute_safely(task);
-                    } while (!todo_list_.empty());
+                        while (sync->task_manager_.try_pop(task, id)) {
+                            // got a task to do, execute safely
+                            try {
+                                task();
+                                sync->todo_list_.cross();
+                            } catch (...) {
+                                sync->todo_list_.stop(
+                                  std::current_exception());
+                                sync->task_manager_.stop();
+                            }
+                        }
+                    } while (!sync->todo_list_.empty());
                 }
-            });
+            }).detach();
         }
     }
 
-    ~ThreadPool()
-    {
-        task_manager_.stop();
-        for (auto& worker : workers_) {
-            if (worker.joinable())
-                worker.join();
-        }
-    }
+    ~ThreadPool() { sync_->task_manager_.stop(); }
 
     ThreadPool(ThreadPool&&) = delete;
     ThreadPool(const ThreadPool&) = delete;
@@ -399,10 +403,10 @@ class ThreadPool
     template<class Function, class... Args>
     void push(Function&& f, Args&&... args)
     {
-        if (workers_.size() == 0)
+        if (n_workers_ == 0)
             return f(args...);
-        todo_list_.add();
-        task_manager_.push(
+        sync_->todo_list_.add();
+        sync_->task_manager_.push(
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
     }
 
@@ -424,23 +428,19 @@ class ThreadPool
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
-    void wait() { todo_list_.wait(); }
+    void wait() { sync_->todo_list_.wait(); }
 
   private:
-    void execute_safely(std::function<void()>& task)
+    const size_t n_workers_;
+    struct Sync
     {
-        try {
-            task();
-            todo_list_.cross();
-        } catch (...) {
-            todo_list_.stop(std::current_exception());
-            task_manager_.stop();
-        }
-    }
-
-    detail::TaskManager task_manager_;
-    TodoList todo_list_{ 0 };
-    std::vector<std::thread> workers_;
+        Sync(size_t num_workers)
+          : task_manager_{ num_workers }
+        {}
+        detail::TaskManager task_manager_;
+        TodoList todo_list_{ 0 };
+    };
+    std::shared_ptr<Sync> sync_;
 };
 
 //! Direct access to the global thread pool -------------------

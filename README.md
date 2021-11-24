@@ -12,18 +12,14 @@ An easy-to-use, header-only work stealing thread pool in C++11.
 
 ## Why quickpool?
 
-* **no install**: single-header library, 
-  [C++11 compliant](https://en.cppreference.com/w/cpp/compiler_support), 
-  no external dependencies.
+* **light weight**: [single-header](https://github.com/tnagler/quickpool/blob/main/quickpool.hpp) 
+library with [permissive license](https://opensource.org/licenses/MIT), no external dependencies.
 
 * **fast**: Uses a [work stealing](https://en.wikipedia.org/wiki/Work_stealing) 
   queue with [lock-free](https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom) pops.
 
 * **user friendly**: Dead simple [API](https://tnagler.github.io/quickpool/), 
   including direct access to a global pool.
-
-* **light weight**: Less than 500 LOC including API documentation, comments, and
-  whitespace.
 
 ## Usage
 

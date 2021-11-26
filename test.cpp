@@ -62,7 +62,7 @@ main()
         quickpool::push(job_prod, 1, 3.14);  // writes x[1]
         quickpool::push(job_cons, 0);        // reads x[0]
         quickpool::push(job_cons, 1);        // reads x[1]
-        todo_cons.wait();                // waits for all consumers to finish
+        todo_cons.wait(); // waits for all consumers to finish
     }
     std::cout << "OK" << std::endl;
     quickpool::wait();
@@ -165,21 +165,25 @@ main()
         {
             // std::cout << "      * exception handling: ";
             quickpool::ThreadPool pool;
-            pool.push([] { throw std::runtime_error("test"); });
-            for (size_t i = 0; i < 200; i++) {
-                pool.push([&] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-                });
+            // pool passes exceptions either via wait() or push()
+            try {
+                pool.push([] { throw std::runtime_error("test error"); });
+                for (size_t i = 0; i < 200; i++) {
+                    pool.push([&] {
+                        std::this_thread::sleep_for(
+                          std::chrono::milliseconds(20));
+                    });
+                }
+            } catch (const std::exception& e) {
+                if (e.what() != std::string("test error"))
+                    throw std::runtime_error("exception not rethrown");
             }
 
             try {
                 pool.wait();
             } catch (const std::exception& e) {
-                if (e.what() == std::string("test")) {
-                    // std::cout << "OK" << std::endl;
-                } else {
+                if (e.what() != std::string("test error"))
                     throw std::runtime_error("exception not rethrown");
-                }
             }
         }
     }

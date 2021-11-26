@@ -209,8 +209,8 @@ class TaskQueue
             if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
                 // buffer is full, create enlarged copy before continuing
                 auto old_buf = buf_ptr;
-                buf_ptr = std::move(buf_ptr->enlarged_copy(b, t))
-                            old_buffers_.emplace_back(old_buf);
+                buf_ptr = std::move(buf_ptr->enlarged_copy(b, t));
+                old_buffers_.emplace_back(old_buf);
                 buffer_.store(buf_ptr, m_relaxed);
             }
 

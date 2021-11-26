@@ -78,7 +78,6 @@ main()
         {
             // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
-            // auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
             for (size_t i = 0; i < x.size(); i++)
                 quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
             quickpool::wait();

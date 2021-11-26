@@ -86,7 +86,7 @@ goes out of scope, all threads joined.
 // threads are joined
 ```
 
-### Task synchronization
+### Bonus: Task synchronization
 
 In general, the pool may process the tasks in any order. Synchronization between
 tasks (e.g., one thread waiting intermediate results) must be done manually. 

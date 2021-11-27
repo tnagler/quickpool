@@ -62,7 +62,7 @@ main()
         quickpool::push(job_prod, 1, 3.14);  // writes x[1]
         quickpool::push(job_cons, 0);        // reads x[0]
         quickpool::push(job_cons, 1);        // reads x[1]
-        todo_cons.wait();                // waits for all consumers to finish
+        todo_cons.wait(); // waits for all consumers to finish
     }
     std::cout << "OK" << std::endl;
     quickpool::wait();
@@ -78,7 +78,6 @@ main()
         {
             // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
-            // auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
             for (size_t i = 0; i < x.size(); i++)
                 quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
             quickpool::wait();
@@ -166,21 +165,35 @@ main()
         {
             // std::cout << "      * exception handling: ";
             quickpool::ThreadPool pool;
-            pool.push([] { throw std::runtime_error("test"); });
-            for (size_t i = 0; i < 200; i++) {
-                pool.push([&] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
-                });
+            // pool passes exceptions either via wait() or push()
+            std::exception_ptr eptr = nullptr;
+            try {
+                pool.push([] { throw std::runtime_error("test error"); });
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                for (size_t i = 0; i < 10; i++) {
+                    pool.push([&] {});
+                }
+            } catch (...) {
+                eptr = std::current_exception();
             }
 
+            if (!eptr) {
+                throw std::runtime_error("exception not rethrown");
+            } else {
+                eptr = nullptr;
+            }
+
+            // poool should be functional again
+            pool.push([] { throw std::runtime_error("test error"); });
             try {
                 pool.wait();
-            } catch (const std::exception& e) {
-                if (e.what() == std::string("test")) {
-                    // std::cout << "OK" << std::endl;
-                } else {
-                    throw std::runtime_error("exception not rethrown");
-                }
+            } catch (...) {
+                eptr = std::current_exception();
+            }
+            if (!eptr) {
+                throw std::runtime_error("exception not rethrown");
+            } else {
+                eptr = nullptr;
             }
         }
     }

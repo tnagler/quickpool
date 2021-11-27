@@ -166,26 +166,34 @@ main()
             // std::cout << "      * exception handling: ";
             quickpool::ThreadPool pool;
             // pool passes exceptions either via wait() or push()
+            std::exception_ptr eptr = nullptr;
             try {
                 pool.push([] { throw std::runtime_error("test error"); });
-                for (size_t i = 0; i < 200; i++) {
-                    pool.push([&] {
-                        std::this_thread::sleep_for(
-                          std::chrono::milliseconds(20));
-                    });
+                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                for (size_t i = 0; i < 10; i++) {
+                    pool.push([&] {});
                 }
-            } catch (const std::exception& e) {
-                if (e.what() != std::string("test error"))
-                    throw std::runtime_error("exception not rethrown");
+            } catch (...) {
+                eptr = std::current_exception();
+            }
+
+            if (!eptr) {
+                throw std::runtime_error("exception not rethrown");
+            } else {
+                eptr = nullptr;
             }
 
             // poool should be functioning again
             pool.push([] { throw std::runtime_error("test error"); });
             try {
                 pool.wait();
-            } catch (const std::exception& e) {
-                if (e.what() != std::string("test error"))
-                    throw std::runtime_error("exception not rethrown");
+            } catch (...) {
+                eptr = std::current_exception();
+            }
+            if (!eptr) {
+                throw std::runtime_error("exception not rethrown");
+            } else {
+                eptr = nullptr;
             }
         }
     }

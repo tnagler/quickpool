@@ -319,7 +319,7 @@ class TaskManager
         }
 
         queues_[id].wait();
-        num_waiting_--;
+        --num_waiting_;
     }
 
     //! @param millis if > 0: stops waiting after millis ms

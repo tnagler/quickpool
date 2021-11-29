@@ -1,11 +1,32 @@
 #include <iostream>
 
+#include "mempool.hpp"
 #include "quickpool.hpp"
 
 int
 main()
 {
 
+    using Task = std::function<void()>;
+    quickpool::memory::Mempool<Task> mempool;
+
+    std::vector<quickpool::memory::Slot<Task>*> funs;
+
+    for (int i = 0; i < 2000; i++) {
+        funs.push_back(mempool.allocate([] {}));
+    }
+
+    for (int i = 0; i < 1000; i++) {
+        (*funs[i])();
+    }
+
+    std::cout << "pushing new" << std::endl;
+
+    for (int i = 0; i < 20; i++) {
+        funs.push_back(mempool.allocate([] {}));
+    }
+
+    return 0;
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
 

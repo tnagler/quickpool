@@ -32,6 +32,11 @@ namespace quickpool {
 
 namespace detail {
 
+static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
+static constexpr std::memory_order m_acquire = std::memory_order_acquire;
+static constexpr std::memory_order m_release = std::memory_order_release;
+static constexpr std::memory_order m_seq_cst = std::memory_order_seq_cst;
+
 template<typename T>
 class aligned_atomic : public std::atomic<T>
 {
@@ -44,10 +49,6 @@ class aligned_atomic : public std::atomic<T>
     using TT = std::atomic<T>;
     char padding_[64 > sizeof(TT) ? 64 - sizeof(TT) : 1];
 };
-
-}
-
-namespace memory {
 
 // forward declarations
 template<typename T>
@@ -101,12 +102,12 @@ struct Block
         }
     }
 
-    void free_one() { num_freed.fetch_add(1, std::memory_order_release); }
+    void free_one() { num_freed.fetch_add(1, m_release); }
 
     void free_all()
     {
         idx = 0;
-        num_freed.store(0, std::memory_order_relaxed);
+        num_freed.store(0, m_relaxed);
     }
 };
 
@@ -205,15 +206,15 @@ class TodoList
     //! @param num_tasks add that many tasks to the list.
     void add(size_t num_tasks = 1) noexcept
     {
-        num_tasks_.fetch_add(static_cast<int>(num_tasks));
+        num_tasks_.fetch_add(static_cast<int>(num_tasks), detail::m_release);
     }
 
     //! crosses tasks from the list.
     //! @param num_tasks cross that many tasks to the list.
     void cross(size_t num_tasks = 1)
     {
-        num_tasks_.fetch_sub(static_cast<int>(num_tasks));
-        if (num_tasks_ <= 0) {
+        num_tasks_.fetch_sub(static_cast<int>(num_tasks), detail::m_release);
+        if (num_tasks_.load(detail::m_acquire) <= 0) {
             {
                 std::lock_guard<std::mutex> lk(mtx_); // must lock before signal
             }
@@ -222,7 +223,10 @@ class TodoList
     }
 
     //! checks whether list is empty.
-    bool empty() const noexcept { return num_tasks_ <= 0; }
+    bool empty() const noexcept
+    {
+        return num_tasks_.load(detail::m_acquire) <= 0;
+    }
 
     //! waits for the list to be empty.
     //! @param millis if > 0; waiting aborts after waiting that many
@@ -309,11 +313,7 @@ class TaskQueue
 {
     // convenience aliases
     using Task = std::function<void()>;
-    using TaskSlot = memory::Slot<Task>;
-    static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
-    static constexpr std::memory_order m_acquire = std::memory_order_acquire;
-    static constexpr std::memory_order m_release = std::memory_order_release;
-    static constexpr std::memory_order m_seq_cst = std::memory_order_seq_cst;
+    using TaskSlot = detail::Slot<Task>;
 
   public:
     //! constructs the queue with a given capacity.
@@ -410,7 +410,7 @@ class TaskQueue
 
     std::atomic<RingBuffer<TaskSlot*>*> buffer_{ nullptr };
     std::vector<std::unique_ptr<RingBuffer<TaskSlot*>>> old_buffers_;
-    memory::Mempool<Task> mempool_;
+    detail::Mempool<Task> mempool_;
 
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -569,7 +569,7 @@ class ThreadPool
     {
         for (size_t id = 0; id < n_workers; ++id) {
             workers_.emplace_back([this, id] {
-                memory::Slot<std::function<void()>> task;
+                detail::Slot<std::function<void()>> task;
                 while (!task_manager_.stopped()) {
                     task_manager_.wait_for_jobs(id);
                     do {
@@ -618,7 +618,6 @@ class ThreadPool
     {
         if (workers_.size() == 0)
             return f(args...);
-        todo_list_.add();
         task_manager_.push(
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
     }
@@ -656,7 +655,6 @@ class ThreadPool
     }
 
     detail::TaskManager task_manager_;
-    TodoList todo_list_{ 0 };
     std::vector<std::thread> workers_;
 };
 

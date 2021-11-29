@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "mempool.hpp"
 #include "quickpool.hpp"
 
 int

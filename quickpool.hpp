@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "mempool.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <exception>
@@ -165,6 +166,7 @@ class TaskQueue
 {
     // convenience aliases
     using Task = std::function<void()>;
+    using TaskSlot = memory::Slot<Task>;
     static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
     static constexpr std::memory_order m_acquire = std::memory_order_acquire;
     static constexpr std::memory_order m_release = std::memory_order_release;
@@ -174,17 +176,8 @@ class TaskQueue
     //! constructs the queue with a given capacity.
     //! @param capacity must be a power of two.
     TaskQueue(size_t capacity = 256)
-      : buffer_{ new RingBuffer<Task*>(capacity) }
+      : buffer_{ new RingBuffer<TaskSlot*>(capacity) }
     {}
-
-    ~TaskQueue() noexcept
-    {
-        // must free memory allocated by push(), but not deallocated by pop()
-        auto buf_ptr = buffer_.load();
-        for (int i = top_; i < bottom_.load(m_relaxed); ++i)
-            delete buf_ptr->get_entry(i);
-        delete buf_ptr;
-    }
 
     TaskQueue(TaskQueue const& other) = delete;
     TaskQueue& operator=(TaskQueue const& other) = delete;
@@ -207,7 +200,7 @@ class TaskQueue
                 return false;
             auto b = bottom_.load(m_relaxed);
             auto t = top_.load(m_acquire);
-            RingBuffer<Task*>* buf_ptr = buffer_.load(m_relaxed);
+            RingBuffer<TaskSlot*>* buf_ptr = buffer_.load(m_relaxed);
 
             if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
                 // buffer is full, create enlarged copy before continuing
@@ -217,7 +210,7 @@ class TaskQueue
                 buffer_.store(buf_ptr, m_relaxed);
             }
 
-            buf_ptr->set_entry(b, new Task{ std::forward<Task>(task) });
+            buf_ptr->set_entry(b, mempool_.allocate(std::forward<Task>(task)));
             bottom_.store(b + 1, m_release);
         }
         cv_.notify_one();
@@ -225,7 +218,7 @@ class TaskQueue
     }
 
     //! pops a task from the top of the queue; returns false if lost race.
-    bool try_pop(Task& task)
+    bool try_pop(TaskSlot& task)
     {
         auto t = top_.load(m_acquire);
         std::atomic_thread_fence(m_seq_cst);
@@ -238,7 +231,6 @@ class TaskQueue
 
             if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
                 task = std::move(*task_ptr); // won race, get task
-                delete task_ptr; // fre memory allocated in push_unsafe()
                 return true;
             }
         }
@@ -262,11 +254,20 @@ class TaskQueue
         cv_.notify_all();
     }
 
+    void reset()
+    {
+        mempool_.reset();
+        top_.store(0);
+        bottom_.store(0);
+    }
+
   private:
     detail::aligned_atomic<int> top_{ 0 };
     detail::aligned_atomic<int> bottom_{ 0 };
-    std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
-    std::vector<std::unique_ptr<RingBuffer<Task*>>> old_buffers_;
+
+    std::atomic<RingBuffer<TaskSlot*>*> buffer_{ nullptr };
+    std::vector<std::unique_ptr<RingBuffer<TaskSlot*>>> old_buffers_;
+    memory::Mempool<Task> mempool_;
 
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -370,6 +371,8 @@ class TaskManager
 
             // before throwing: restore defaults for potential future use
             todo_list_.reset();
+            for (auto& q : queues_)
+                q.reset();
             status_ = Status::running;
             auto current_exception = err_ptr_;
             err_ptr_ = nullptr;
@@ -423,7 +426,7 @@ class ThreadPool
     {
         for (size_t id = 0; id < n_workers; ++id) {
             workers_.emplace_back([this, id] {
-                std::function<void()> task;
+                memory::Slot<std::function<void()>> task;
                 while (!task_manager_.stopped()) {
                     task_manager_.wait_for_jobs(id);
                     do {
@@ -498,7 +501,8 @@ class ThreadPool
     void wait() { task_manager_.wait_for_finish(); }
 
   private:
-    void execute_safely(std::function<void()>& task)
+    template<typename Task>
+    void execute_safely(Task& task)
     {
         try {
             task();

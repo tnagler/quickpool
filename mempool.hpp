@@ -18,7 +18,7 @@ struct Mempool;
 template<typename T>
 struct Slot
 {
-    alignas(alignof(T)) char storage[sizeof(T)];
+    char storage[sizeof(T)];
     Block<T>* mother_block;
 
     void operator()()
@@ -52,7 +52,11 @@ struct Block
 
     Slot<T>* get_slot() { return ++idx <= size ? &slots[idx - 1] : nullptr; }
 
-    void free_one() { ++num_freed == size ? this->reset() : void(); }
+    void free_one()
+    {
+        if (++num_freed == size)
+            this->reset();
+    }
 
     void reset()
     {
@@ -96,7 +100,8 @@ struct Mempool
 
         // see if there are free'd blocks to collect
         auto old_tail = tail;
-        while (tail->idx == 0) {
+        while (reinterpret_cast<std::atomic_size_t*>(tail) == 0) {
+            // cast b/c pointer offset tail->next might be wrong
             tail = tail->next;
         }
         if (tail != old_tail) {
@@ -122,7 +127,7 @@ struct Mempool
     {
         auto block = head;
         do {
-            block.reset();
+            block->reset();
             block = block->next;
         } while (block != nullptr);
         head = tail;

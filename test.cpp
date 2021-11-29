@@ -5,6 +5,23 @@
 int
 main()
 {
+    {
+        using Task = std::function<void()>;
+        quickpool::detail::Mempool<Task> mempool;
+        std::vector<quickpool::detail::Slot<Task>*> funs;
+        for (int i = 0; i < 10000; ++i) {
+            funs.push_back(mempool.allocate([] {}));
+        }
+        for (int i = 0; i < 2000; ++i) {
+            (*funs[i])();
+        }
+        for (int i = 0; i < 10000; ++i) {
+            funs.push_back(mempool.allocate([] {}));
+        }
+    }
+
+    // return 0;
+
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
 
@@ -68,8 +85,8 @@ main()
 
     // unit tests ---------------------------------------
     std::cout << "- unit tests:        \t\r";
-    auto runs = 100;
-    for (auto run = 0; run < runs; run++) {
+    auto runs = 2;
+    for (auto run = 0; run < runs; ++run) {
         std::cout << "- unit tests: run " << run + 1 << "/" << runs << "\t\r"
                   << std::flush;
 
@@ -159,6 +176,7 @@ main()
                 throw std::runtime_error("single threaded gives wrong result");
             // std::cout << "OK" << std::endl;
         }
+        return 0;
 
         // rethrows exceptions
         {

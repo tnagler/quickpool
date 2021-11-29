@@ -63,11 +63,22 @@ struct Slot
 {
     alignas(alignof(T)) char storage[sizeof(T)];
     Block<T>* mother_block;
+    bool done{ false };
 
     void operator()()
     {
         reinterpret_cast<T*>(&storage)->operator()();
+        this->destruct();
+        done = true;
         mother_block->free_one();
+    }
+    void clear()
+    {
+        if (!done) {
+            reinterpret_cast<T*>(&storage)->~T();
+        } else {
+            done = false;
+        }
     }
 };
 
@@ -325,6 +336,8 @@ class TaskQueue
     TaskQueue(TaskQueue const& other) = delete;
     TaskQueue& operator=(TaskQueue const& other) = delete;
 
+    ~TaskQueue() { delete buffer_.load(); }
+
     //! checks if queue is empty.
     bool empty() const
     {
@@ -422,7 +435,7 @@ class TaskManager
 {
   public:
     explicit TaskManager(size_t num_queues)
-      : queues_{ std::vector<TaskQueue>(num_queues) }
+      : queues_{ new TaskQueue[num_queues] }
       , num_queues_{ num_queues }
       , owner_id_{ std::this_thread::get_id() }
     {}
@@ -500,8 +513,8 @@ class TaskManager
         status_ = Status::stopped;
         todo_list_.stop();
         // Worker threads wait on queue-specific mutex -> notify all queues.
-        for (auto& q : queues_)
-            q.stop();
+        for (int i = 0; i < num_queues_; ++i)
+            queues_[i].stop();
     }
 
     void rethrow_exception()
@@ -514,8 +527,8 @@ class TaskManager
 
             // before throwing: restore defaults for potential future use
             todo_list_.reset();
-            for (auto& q : queues_)
-                q.reset();
+            for (int i = 0; i < num_queues_; ++i)
+                queues_[i].reset();
             status_ = Status::running;
             auto current_exception = err_ptr_;
             err_ptr_ = nullptr;
@@ -528,7 +541,7 @@ class TaskManager
     bool stopped() { return status_ == Status::stopped; }
 
   private:
-    std::vector<TaskQueue> queues_;
+    std::unique_ptr<TaskQueue[]> queues_;
     size_t num_queues_;
     const std::thread::id owner_id_;
 

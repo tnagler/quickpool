@@ -176,18 +176,18 @@ class Task
     BlockBase* mother_block_{ nullptr };
 };
 
-// Block of task slots.
-struct Block : BlockBase
+// TaskBlock of task slots.
+struct TaskBlock : BlockBase
 {
     detail::aligned_atomic<uint16_t> num_freed{ 0 };
     uint16_t idx{ 0 };
-    Block* next{ nullptr };
-    Block* prev{ nullptr };
+    TaskBlock* next{ nullptr };
+    TaskBlock* prev{ nullptr };
     const size_t size;
 
     std::unique_ptr<Task[]> slots;
 
-    Block(uint16_t size = 1000)
+    TaskBlock(uint16_t size = 1000)
       : size{ size }
       , slots{ std::unique_ptr<Task[]>(new Task[size]) }
     {
@@ -214,14 +214,14 @@ struct Block : BlockBase
     }
 };
 
-struct Mempool
+struct TaskAllocator
 {
-    Block* head;
-    Block* tail;
+    TaskBlock* head;
+    TaskBlock* tail;
     const size_t block_size;
 
-    Mempool(size_t block_size = 1000)
-      : head{ new Block(block_size) }
+    TaskAllocator(size_t block_size = 1000)
+      : head{ new TaskBlock(block_size) }
       , tail{ head }
       , block_size{ block_size }
     {}
@@ -259,11 +259,11 @@ struct Mempool
         }
 
         // create a new block and put and end of list.
-        this->set_head(new Block(block_size));
+        this->set_head(new TaskBlock(block_size));
         return head->get_slot();
     }
 
-    void set_head(Block* block)
+    void set_head(TaskBlock* block)
     {
         block->prev = head;
         head->next = block;
@@ -280,7 +280,7 @@ struct Mempool
         head = tail;
     }
 
-    ~Mempool()
+    ~TaskAllocator()
     {
         while (tail->next) {
             tail = tail->next;
@@ -512,7 +512,7 @@ class TaskQueue
 
     std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
     std::vector<std::unique_ptr<RingBuffer<Task*>>> old_buffers_;
-    detail::Mempool mempool_;
+    detail::TaskAllocator mempool_;
 
     std::mutex mutex_;
     std::condition_variable cv_;

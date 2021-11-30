@@ -5,6 +5,16 @@
 int
 main()
 {
+    quickpool::detail::void_function<> fun(
+      [] { std::cout << "test" << std::endl; });
+    fun();
+
+    // char test[1000];
+    // auto ff = [&] {
+    //     return std::bind([](char x[1000]) { std::cout << "a" << std::endl; },
+    //                      test);
+    // };
+    // std::cout << sizeof(ff()) << std::endl;
     {
         using Task = std::function<void()>;
         quickpool::detail::Mempool<Task> mempool;
@@ -20,8 +30,6 @@ main()
         }
     }
 
-    // return 0;
-
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
 
@@ -34,9 +42,9 @@ main()
 
     // async
     {
-        auto f = quickpool::async([] { return 1 + 1; });
+        // auto f = quickpool::async([] { return 1 + 1; });
         // do something else ...
-        auto result = f.get(); // waits until done and returns result
+        // auto result = f.get(); // waits until done and returns result
     }
     quickpool::wait();
 
@@ -45,8 +53,9 @@ main()
         auto work = [](const std::string& title, int i) {
             // std::cout << title << ": " << i << std::endl;
         };
+        std::cout << sizeof(std::bind(work, "first title", 5));
         quickpool::push(work, "first title", 5);
-        quickpool::async(work, "other title", 99);
+        // quickpool::async(work, "other title", 99);
         quickpool::wait();
     }
 
@@ -54,9 +63,10 @@ main()
     {
         quickpool::ThreadPool pool; // thread pool with two threads
         pool.push([] { /* some work */ });
-        pool.async([] { /* some work */ });
+        // pool.async([] { /* some work */ });
         pool.wait(); // waits for all current jobs to finish
     }
+    return 0;
 
     // Task synchronization
     {
@@ -176,7 +186,6 @@ main()
                 throw std::runtime_error("single threaded gives wrong result");
             // std::cout << "OK" << std::endl;
         }
-        return 0;
 
         // rethrows exceptions
         {
@@ -214,6 +223,7 @@ main()
             }
             // std::cout << "OK" << std::endl;
         }
+        return 0;
     }
 
     std::cout << "- unit tests: OK              " << std::endl;

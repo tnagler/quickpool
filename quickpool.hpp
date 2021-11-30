@@ -23,6 +23,7 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <memory>
 #include <mutex>
 #include <thread>
 #include <vector>
@@ -31,6 +32,79 @@
 namespace quickpool {
 
 namespace detail {
+
+// template<typename>
+// class void_function; // create class template
+
+template<typename... Args>
+class void_function
+{
+
+  public:
+    template<typename T>
+    void_function(T&& t)
+    {
+        using is_small = typename std::
+          integral_constant<bool, sizeof(callable<T>) <= storage_size>::type;
+        allocate(is_small(), std::forward<T>(t));
+    }
+
+    bool operator()() { return m_callable->invoke(); }
+
+    ~void_function()
+    {
+        if (m_callable && (m_callable != storage())) {
+            delete m_callable;
+        }
+    }
+
+  private:
+    void* storage() { return static_cast<void*>(addressof(m_storage)); }
+
+    template<typename T>
+    void allocate(std::true_type, T&& t)
+    {
+        m_callable = new (storage()) callable<T>(std::forward<T>(t));
+    }
+
+    template<typename T>
+    void allocate(std::false_type, T&& t)
+    {
+        m_callable = new callable<T>(std::forward<T>(t));
+    }
+
+    struct callable_base
+    {
+        callable_base() = default;
+        virtual ~callable_base(){};
+        virtual bool invoke(Args&&... args) = 0;
+    };
+
+    static constexpr size_t storage_size = 64;
+
+    template<typename F>
+    struct callable : callable_base
+    {
+        using is_small =
+          typename std::integral_constant<bool,
+                                          sizeof(F) <= storage_size>::type;
+
+        F f_;
+
+        callable(F&& f)
+          : f_(std::move(f))
+        {}
+
+        bool invoke(Args&&... args) override
+        {
+            f_(std::forward<F>(args)...);
+            return true;
+        }
+    };
+
+    callable_base* m_callable = nullptr;
+    std::aligned_storage<storage_size>::type m_storage;
+};
 
 static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
 static constexpr std::memory_order m_acquire = std::memory_order_acquire;
@@ -63,22 +137,12 @@ struct Slot
 {
     alignas(alignof(T)) char storage[sizeof(T)];
     Block<T>* mother_block;
-    bool done{ false };
 
     void operator()()
     {
         reinterpret_cast<T*>(&storage)->operator()();
-        this->destruct();
-        done = true;
+        // reinterpret_cast<T*>(&storage)->~T();
         mother_block->free_one();
-    }
-    void clear()
-    {
-        if (!done) {
-            reinterpret_cast<T*>(&storage)->~T();
-        } else {
-            done = false;
-        }
     }
 };
 

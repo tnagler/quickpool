@@ -56,6 +56,9 @@ struct BlockBase
     virtual void free_one() = 0;
 };
 
+// a lot from 
+// - https://devblogs.microsoft.com/oldnewthing/20200513-00/?p=103745
+// - https://devblogs.microsoft.com/oldnewthing/20200514-00/?p=103749
 class Task
 {
   public:
@@ -92,8 +95,7 @@ class Task
     {
         callable_->invoke();
         this->reset();
-        if (mother_block_)
-            mother_block_->free_one();
+        mother_block_->free_one();
     }
 
     void reset()
@@ -131,6 +133,7 @@ class Task
     template<typename T>
     void store(T&& t, std::false_type)
     {
+        std::cout << "big object" << std::endl;
         callable_ = new callable<T>(std::forward<T>(t));
     }
 

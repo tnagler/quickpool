@@ -5,28 +5,27 @@
 int
 main()
 {
-    {
+    // {
 
-        quickpool::detail::Mempool mempool;
-        quickpool::detail::Task fun;
-        auto ptr = mempool.allocate([] {std::cout << "test" << std::endl;});
-        ptr->operator()();
-        fun = std::move(*ptr);
-        std::unique_ptr<quickpool::detail::Task[]> funs{
-            new quickpool::detail::Task[100000]
-        };
-        for (int i = 0; i < 2000; ++i) {
-            funs[i] = std::move(*mempool.allocate([] {}));
-        }
-        std::cout << "done allocating" << std::endl;
-        for (int i = 0; i < 2000; ++i) {
-            funs[i]();
-        }
-        for (int i = 0; i < 10000; ++i) {
-            funs[i] = std::move(*mempool.allocate([] {}));
-        }
-    }
-
+    //     quickpool::detail::Mempool mempool;
+    //     quickpool::detail::Task fun;
+    //     auto ptr = mempool.allocate([] { std::cout << "test" << std::endl; });
+    //     ptr->operator()();
+    //     fun = std::move(*ptr);
+    //     std::unique_ptr<quickpool::detail::Task[]> funs{
+    //         new quickpool::detail::Task[100000]
+    //     };
+    //     for (int i = 0; i < 2000; ++i) {
+    //         funs[i] = std::move(*mempool.allocate([] {}));
+    //     }
+    //     std::cout << "done allocating" << std::endl;
+    //     for (int i = 0; i < 2000; ++i) {
+    //         funs[i]();
+    //     }
+    //     for (int i = 0; i < 10000; ++i) {
+    //         funs[i] = std::move(*mempool.allocate([] {}));
+    //     }
+    // }
 
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
@@ -91,7 +90,7 @@ main()
 
     // unit tests ---------------------------------------
     std::cout << "- unit tests:        \t\r";
-    auto runs = 200;
+    auto runs = 100;
     for (auto run = 0; run < runs; ++run) {
         std::cout << "- unit tests: run " << run + 1 << "/" << runs << "\t\r"
                   << std::flush;

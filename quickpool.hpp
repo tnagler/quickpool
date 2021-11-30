@@ -132,7 +132,6 @@ class Task
     template<typename T>
     void store(T&& t, std::false_type)
     {
-        std::cout << "big object" << std::endl;
         callable_ = new callable<T>(std::forward<T>(t));
     }
 

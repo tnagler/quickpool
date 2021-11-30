@@ -5,30 +5,28 @@
 int
 main()
 {
-    quickpool::detail::void_function<> fun(
-      [] { std::cout << "test" << std::endl; });
-    fun();
-
-    // char test[1000];
-    // auto ff = [&] {
-    //     return std::bind([](char x[1000]) { std::cout << "a" << std::endl; },
-    //                      test);
-    // };
-    // std::cout << sizeof(ff()) << std::endl;
     {
-        using Task = std::function<void()>;
-        quickpool::detail::Mempool<Task> mempool;
-        std::vector<quickpool::detail::Slot<Task>*> funs;
-        for (int i = 0; i < 10000; ++i) {
-            funs.push_back(mempool.allocate([] {}));
-        }
+
+        quickpool::detail::Mempool mempool;
+        quickpool::detail::Task fun;
+        auto ptr = mempool.allocate([] {std::cout << "test" << std::endl;});
+        ptr->operator()();
+        fun = std::move(*ptr);
+        std::unique_ptr<quickpool::detail::Task[]> funs{
+            new quickpool::detail::Task[100000]
+        };
         for (int i = 0; i < 2000; ++i) {
-            (*funs[i])();
+            funs[i] = std::move(*mempool.allocate([] {}));
+        }
+        std::cout << "done allocating" << std::endl;
+        for (int i = 0; i < 2000; ++i) {
+            funs[i]();
         }
         for (int i = 0; i < 10000; ++i) {
-            funs.push_back(mempool.allocate([] {}));
+            funs[i] = std::move(*mempool.allocate([] {}));
         }
     }
+
 
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
@@ -42,9 +40,9 @@ main()
 
     // async
     {
-        // auto f = quickpool::async([] { return 1 + 1; });
+        auto f = quickpool::async([] { return 1 + 1; });
         // do something else ...
-        // auto result = f.get(); // waits until done and returns result
+        auto result = f.get(); // waits until done and returns result
     }
     quickpool::wait();
 
@@ -53,9 +51,8 @@ main()
         auto work = [](const std::string& title, int i) {
             // std::cout << title << ": " << i << std::endl;
         };
-        std::cout << sizeof(std::bind(work, "first title", 5));
         quickpool::push(work, "first title", 5);
-        // quickpool::async(work, "other title", 99);
+        quickpool::async(work, "other title", 99);
         quickpool::wait();
     }
 
@@ -66,7 +63,6 @@ main()
         // pool.async([] { /* some work */ });
         pool.wait(); // waits for all current jobs to finish
     }
-    return 0;
 
     // Task synchronization
     {
@@ -95,7 +91,7 @@ main()
 
     // unit tests ---------------------------------------
     std::cout << "- unit tests:        \t\r";
-    auto runs = 2;
+    auto runs = 200;
     for (auto run = 0; run < runs; ++run) {
         std::cout << "- unit tests: run " << run + 1 << "/" << runs << "\t\r"
                   << std::flush;
@@ -223,7 +219,6 @@ main()
             }
             // std::cout << "OK" << std::endl;
         }
-        return 0;
     }
 
     std::cout << "- unit tests: OK              " << std::endl;

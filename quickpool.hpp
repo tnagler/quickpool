@@ -33,79 +33,6 @@ namespace quickpool {
 
 namespace detail {
 
-// template<typename>
-// class void_function; // create class template
-
-template<typename... Args>
-class void_function
-{
-
-  public:
-    template<typename T>
-    void_function(T&& t)
-    {
-        using is_small = typename std::
-          integral_constant<bool, sizeof(callable<T>) <= storage_size>::type;
-        allocate(is_small(), std::forward<T>(t));
-    }
-
-    bool operator()() { return m_callable->invoke(); }
-
-    ~void_function()
-    {
-        if (m_callable && (m_callable != storage())) {
-            delete m_callable;
-        }
-    }
-
-  private:
-    void* storage() { return static_cast<void*>(addressof(m_storage)); }
-
-    template<typename T>
-    void allocate(std::true_type, T&& t)
-    {
-        m_callable = new (storage()) callable<T>(std::forward<T>(t));
-    }
-
-    template<typename T>
-    void allocate(std::false_type, T&& t)
-    {
-        m_callable = new callable<T>(std::forward<T>(t));
-    }
-
-    struct callable_base
-    {
-        callable_base() = default;
-        virtual ~callable_base(){};
-        virtual bool invoke(Args&&... args) = 0;
-    };
-
-    static constexpr size_t storage_size = 64;
-
-    template<typename F>
-    struct callable : callable_base
-    {
-        using is_small =
-          typename std::integral_constant<bool,
-                                          sizeof(F) <= storage_size>::type;
-
-        F f_;
-
-        callable(F&& f)
-          : f_(std::move(f))
-        {}
-
-        bool invoke(Args&&... args) override
-        {
-            f_(std::forward<F>(args)...);
-            return true;
-        }
-    };
-
-    callable_base* m_callable = nullptr;
-    std::aligned_storage<storage_size>::type m_storage;
-};
-
 static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
 static constexpr std::memory_order m_acquire = std::memory_order_acquire;
 static constexpr std::memory_order m_release = std::memory_order_release;
@@ -124,51 +51,151 @@ class aligned_atomic : public std::atomic<T>
     char padding_[64 > sizeof(TT) ? 64 - sizeof(TT) : 1];
 };
 
-// forward declarations
-template<typename T>
-struct Block;
-
-template<typename T>
-struct Mempool;
-
-// Storage slot.
-template<typename T>
-struct Slot
+struct BlockBase
 {
-    alignas(alignof(T)) char storage[sizeof(T)];
-    Block<T>* mother_block;
+    virtual void free_one() = 0;
+};
+
+class Task
+{
+  public:
+    Task() = default;
+
+    template<typename T>
+    Task(T&& t)
+    {
+        this->store(std::forward<T>(t), typename callable<T>::is_small());
+    }
+
+    Task& operator=(Task&& other)
+    {
+        std::swap(mother_block_, other.mother_block_);
+        if (other.callable_ == other.storage()) {
+            callable_ = other.callable_->move_to(&storage_);
+            exchange(other.callable_, nullptr)->destroy();
+        } else if (other.callable_) {
+            callable_ = exchange(other.callable_, nullptr);
+        }
+        return *this;
+    }
+
+    template<typename T>
+    void set_task(T&& t)
+    {
+        this->reset();
+        this->store(std::forward<T>(t), typename callable<T>::is_small());
+    }
+
+    void set_mother_block(BlockBase* block) { mother_block_ = block; }
 
     void operator()()
     {
-        reinterpret_cast<T*>(&storage)->operator()();
-        // reinterpret_cast<T*>(&storage)->~T();
-        mother_block->free_one();
+        callable_->invoke();
+        this->reset();
+        if (mother_block_)
+            mother_block_->free_one();
     }
-};
 
-// Block of task slots.
-template<typename T>
-struct Block
-{
-    detail::aligned_atomic<uint16_t> num_freed{ 0 };
-    uint16_t idx{ 0 };
-    Block<T>* next{ nullptr };
-    Block<T>* prev{ nullptr };
-    const size_t size;
-
-    std::unique_ptr<Slot<T>[]> slots;
-    Mempool<T>* mother_pool;
-
-    Block(uint16_t size = 1000)
-      : size{ size }
-      , slots{ std::unique_ptr<Slot<T>[]>(new Slot<T>[size]) }
+    void reset()
     {
-        for (size_t i = 0; i < size; ++i) {
-            slots[i].mother_block = this;
+        if (callable_ != nullptr) {
+            if (callable_ != storage()) {
+                delete callable_;
+            } else {
+                callable_->destroy();
+            }
+            callable_ = nullptr;
         }
     }
 
-    Slot<T>* get_slot()
+    ~Task() { this->reset(); }
+
+  private:
+  
+    template<class T, class U = T>
+    T exchange(T& obj, U&& new_value) noexcept
+    {
+        T old_value = std::move(obj);
+        obj = std::forward<U>(new_value);
+        return old_value;
+    }
+
+    void* storage() { return static_cast<void*>(std::addressof(storage_)); }
+
+    template<typename T>
+    void store(T&& t, std::true_type)
+    {
+        callable_ = new (storage()) callable<T>(std::forward<T>(t));
+    }
+
+    template<typename T>
+    void store(T&& t, std::false_type)
+    {
+        callable_ = new callable<T>(std::forward<T>(t));
+    }
+
+    struct callable_base
+    {
+        callable_base() = default;
+        virtual void invoke() = 0;
+        virtual void destroy() = 0;
+        virtual callable_base* move_to(void* address) = 0;
+        virtual ~callable_base() {}
+    };
+
+    static constexpr size_t storage_size_ =
+      128 - sizeof(callable_base*) - sizeof(BlockBase*);
+
+    template<typename F>
+    struct callable : callable_base
+    {
+        using is_small =
+          typename std::integral_constant<bool,
+                                          sizeof(F) <= storage_size_>::type;
+
+        F f_;
+
+        callable(F&& f)
+          : f_(std::move(f))
+        {}
+
+        callable& operator=(callable&& other) { f_ = std::move(other.f_); }
+        callable_base* move_to(void* address)
+        {
+            return new (address) callable(std::move(f_));
+        }
+
+        void invoke() override { f_(); }
+        void destroy() override { f_.~F(); }
+        ~callable() override { destroy(); }
+    };
+
+    char storage_[storage_size_];
+    callable_base* callable_{ nullptr };
+    BlockBase* mother_block_{ nullptr };
+};
+
+// Block of task slots.
+struct Block : BlockBase
+{
+    detail::aligned_atomic<uint16_t> num_freed{ 0 };
+    uint16_t idx{ 0 };
+    Block* next{ nullptr };
+    Block* prev{ nullptr };
+    const size_t size;
+
+    std::unique_ptr<Task[]> slots;
+
+    Block(uint16_t size = 1000)
+      : size{ size }
+      , slots{ std::unique_ptr<Task[]>(new Task[size]) }
+    {
+        for (size_t i = 0; i < size; ++i) {
+            slots[i].set_mother_block(this);
+        }
+    }
+
+    Task* get_slot()
     {
         if (idx++ < size) {
             return &slots[idx++];
@@ -186,28 +213,27 @@ struct Block
     }
 };
 
-template<typename T>
 struct Mempool
 {
-    Block<T>* head;
-    Block<T>* tail;
+    Block* head;
+    Block* tail;
     const size_t block_size;
 
     Mempool(size_t block_size = 1000)
-      : head{ new Block<T>(block_size) }
+      : head{ new Block(block_size) }
       , tail{ head }
       , block_size{ block_size }
     {}
 
-    template<typename... Args>
-    Slot<T>* allocate(Args&&... args)
+    template<typename T>
+    Task* allocate(T&& task)
     {
-        Slot<T>* slot = get_slot();
-        new (&slot->storage) T(std::forward<T>(args)...);
+        Task* slot = get_slot();
+        slot->set_task(std::move(task));
         return slot;
     }
 
-    Slot<T>* get_slot()
+    Task* get_slot()
     {
         // try to get memory slot in current block.
         if (auto slot = head->get_slot())
@@ -232,11 +258,11 @@ struct Mempool
         }
 
         // create a new block and put and end of list.
-        this->set_head(new Block<T>(block_size));
+        this->set_head(new Block(block_size));
         return head->get_slot();
     }
 
-    void set_head(Block<T>* block)
+    void set_head(Block* block)
     {
         block->prev = head;
         head->next = block;
@@ -369,7 +395,7 @@ class RingBuffer
 
     T get_entry(size_t i) const { return buffer_[i & mask_]; }
 
-    RingBuffer<T>* enlarged_copy(size_t bottom, size_t top) const
+    RingBuffer* enlarged_copy(size_t bottom, size_t top) const
     {
         RingBuffer<T>* new_buffer = new RingBuffer{ 2 * capacity_ };
         for (size_t i = top; i != bottom; ++i)
@@ -386,15 +412,12 @@ class RingBuffer
 //! A multi-producer, multi-consumer queue; pops are lock free.
 class TaskQueue
 {
-    // convenience aliases
-    using Task = std::function<void()>;
-    using TaskSlot = detail::Slot<Task>;
 
   public:
     //! constructs the queue with a given capacity.
     //! @param capacity must be a power of two.
     TaskQueue(size_t capacity = 256)
-      : buffer_{ new RingBuffer<TaskSlot*>(capacity) }
+      : buffer_{ new RingBuffer<Task*>(capacity) }
     {}
 
     TaskQueue(TaskQueue const& other) = delete;
@@ -410,7 +433,8 @@ class TaskQueue
 
     //! pushes a task to the bottom of the queue; returns false if queue is
     //! currently locked; enlarges the queue if full.
-    bool try_push(Task&& task)
+    template<typename T>
+    bool try_push(T&& task)
     {
         {
             // must hold lock in case of multiple producers, abort if already
@@ -420,7 +444,7 @@ class TaskQueue
                 return false;
             auto b = bottom_.load(m_relaxed);
             auto t = top_.load(m_acquire);
-            RingBuffer<TaskSlot*>* buf_ptr = buffer_.load(m_relaxed);
+            RingBuffer<Task*>* buf_ptr = buffer_.load(m_relaxed);
 
             if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
                 // buffer is full, create enlarged copy before continuing
@@ -430,7 +454,7 @@ class TaskQueue
                 buffer_.store(buf_ptr, m_relaxed);
             }
 
-            buf_ptr->set_entry(b, mempool_.allocate(std::forward<Task>(task)));
+            buf_ptr->set_entry(b, mempool_.allocate(std::forward<T>(task)));
             bottom_.store(b + 1, m_release);
         }
         cv_.notify_one();
@@ -438,7 +462,7 @@ class TaskQueue
     }
 
     //! pops a task from the top of the queue; returns false if lost race.
-    bool try_pop(TaskSlot& task)
+    bool try_pop(Task& task)
     {
         auto t = top_.load(m_acquire);
         std::atomic_thread_fence(m_seq_cst);
@@ -485,9 +509,9 @@ class TaskQueue
     detail::aligned_atomic<int> top_{ 0 };
     detail::aligned_atomic<int> bottom_{ 0 };
 
-    std::atomic<RingBuffer<TaskSlot*>*> buffer_{ nullptr };
-    std::vector<std::unique_ptr<RingBuffer<TaskSlot*>>> old_buffers_;
-    detail::Mempool<Task> mempool_;
+    std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
+    std::vector<std::unique_ptr<RingBuffer<Task*>>> old_buffers_;
+    detail::Mempool mempool_;
 
     std::mutex mutex_;
     std::condition_variable cv_;
@@ -646,7 +670,7 @@ class ThreadPool
     {
         for (size_t id = 0; id < n_workers; ++id) {
             workers_.emplace_back([this, id] {
-                detail::Slot<std::function<void()>> task;
+                detail::Task task;
                 while (!task_manager_.stopped()) {
                     task_manager_.wait_for_jobs(id);
                     do {

@@ -56,7 +56,7 @@ struct BlockBase
     virtual void free_one() = 0;
 };
 
-// a lot from 
+// a lot from
 // - https://devblogs.microsoft.com/oldnewthing/20200513-00/?p=103745
 // - https://devblogs.microsoft.com/oldnewthing/20200514-00/?p=103749
 class Task
@@ -113,7 +113,6 @@ class Task
     ~Task() { this->reset(); }
 
   private:
-  
     template<class T, class U = T>
     T exchange(T& obj, U&& new_value) noexcept
     {
@@ -147,7 +146,7 @@ class Task
     };
 
     static constexpr size_t storage_size_ =
-      128 - sizeof(callable_base*) - sizeof(BlockBase*);
+      64 - sizeof(callable_base*) - sizeof(BlockBase*);
 
     template<typename F>
     struct callable : callable_base

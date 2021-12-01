@@ -353,7 +353,7 @@ class TaskManager
 
     void report_success()
     {
-        auto n = todo_.fetch_sub(1, mem::release) - 1;
+        auto n = todo_.fetch_sub(1, mem::relaxed) - 1;
         if (n <= 0) {
             // all jobs are done; lock before signal to prevent spurious failure
             {
@@ -415,7 +415,10 @@ class TaskManager
         return status_.load(mem::relaxed) == Status::running;
     }
 
-    bool errored() const { return status_ == Status::errored; }
+    bool errored() const
+    {
+        return status_.load(mem::relaxed) == Status::errored;
+    }
 
     bool stopped() const
     {

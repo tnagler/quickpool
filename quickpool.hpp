@@ -519,7 +519,7 @@ class ThreadPool
 //! @param f a function.
 //! @param args (optional) arguments passed to `f`.
 template<class Function, class... Args>
-void
+inline void
 push(Function&& f, Args&&... args)
 {
     ThreadPool::global_instance().push(std::forward<Function>(f),
@@ -532,7 +532,7 @@ push(Function&& f, Args&&... args)
 //! @return A `std::future` for the task. Call `future.get()` to retrieve the
 //! results at a later point in time (blocking).
 template<class Function, class... Args>
-auto
+inline auto
 async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>
 {
     return ThreadPool::global_instance().async(std::forward<Function>(f),

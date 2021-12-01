@@ -466,7 +466,6 @@ class ThreadPool
     {
         if (workers_.size() == 0)
             return f(args...);
-        todo_list_.add();
         task_manager_.push(
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
     }
@@ -503,7 +502,6 @@ class ThreadPool
     }
 
     detail::TaskManager task_manager_;
-    TodoList todo_list_{ 0 };
     std::vector<std::thread> workers_;
 };
 

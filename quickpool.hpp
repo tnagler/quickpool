@@ -30,8 +30,9 @@
 //! quickpool namespace
 namespace quickpool {
 
-//! convenience definitions
 namespace mem {
+
+//! convenience definitions
 static constexpr std::memory_order relaxed = std::memory_order_relaxed;
 static constexpr std::memory_order acquire = std::memory_order_acquire;
 static constexpr std::memory_order release = std::memory_order_release;
@@ -122,8 +123,6 @@ struct alignas(Align) aligned_atomic
         // where to free what we malloc()'ed above.
         *(static_cast<void**>(p_algn) - 1) = p;
 
-        std::cout << "aligned operator" << std::endl;
-
         return p_algn;
     }
 
@@ -136,88 +135,6 @@ struct alignas(Align) aligned_atomic
 };
 
 }
-
-//! @brief Todo list - a synchronization primitive.
-//! @details Add a task with `add()`, cross it off with `cross()`, and wait for
-//! all tasks to complete with `wait()`.
-class TodoList
-{
-  public:
-    //! constructs the todo list.
-    //! @param num_tasks initial number of tasks.
-    TodoList(size_t num_tasks = 0) noexcept
-      : num_tasks_{ static_cast<int>(num_tasks) }
-    {}
-
-    //! adds tasks to the list.
-    //! @param num_tasks add that many tasks to the list.
-    void add(size_t num_tasks = 1) noexcept
-    {
-        num_tasks_.fetch_add(static_cast<int>(num_tasks), mem::release);
-    }
-
-    //! crosses tasks from the list.
-    //! @param num_tasks cross that many tasks to the list.
-    void cross(size_t num_tasks = 1)
-    {
-        auto n =
-          num_tasks_.fetch_sub(static_cast<int>(num_tasks), mem::release);
-        if (n - 1 <= 0) {
-            {
-                // lock before signal to prevent spurious failure
-                std::lock_guard<std::mutex> lk(mtx_);
-            }
-            cv_.notify_all();
-        }
-    }
-
-    //! checks whether list is empty.
-    bool empty() const noexcept { return num_tasks_.load(mem::acquire) <= 0; }
-
-    //! waits for the list to be empty.
-    //! @param millis if > 0; waiting aborts after waiting that many
-    //! milliseconds.
-    void wait(size_t millis = 0)
-    {
-        auto wake_up = [this] { return empty() || exception_ptr_; };
-        std::unique_lock<std::mutex> lk(mtx_);
-        if (millis == 0) {
-            cv_.wait(lk, wake_up);
-        } else {
-            cv_.wait_for(lk, std::chrono::milliseconds(millis), wake_up);
-        }
-        if (exception_ptr_)
-            std::rethrow_exception(exception_ptr_);
-    }
-
-    //! stops the list; it will forever look empty from now on.
-    //! @param eptr (optional) pointer to an active exception to be rethrown by
-    //! a waiting thread; typically retrieved from `std::current_exception()`.
-    void stop(std::exception_ptr eptr = nullptr) noexcept
-    {
-        {
-            std::lock_guard<std::mutex> lk(mtx_);
-            // Some threads may add() or cross() after we stop. The large
-            // negative number prevents num_tasks_ from becoming positive again.
-            num_tasks_.store(std::numeric_limits<int>::min() / 2);
-            exception_ptr_ = eptr;
-        }
-        cv_.notify_all();
-    }
-
-    //! resets the todo list into initial state.
-    void reset() noexcept
-    {
-        exception_ptr_ = nullptr;
-        num_tasks_.store(0);
-    }
-
-  private:
-    mem::aligned_atomic<int> num_tasks_{ 0 };
-    std::mutex mtx_;
-    std::condition_variable cv_;
-    std::exception_ptr exception_ptr_{ nullptr };
-};
 
 //! Implementation details
 namespace detail {
@@ -377,9 +294,10 @@ class TaskManager
     void push(Task&& task)
     {
         rethrow_exception();
-        todo_list_.add();
+        todo_.fetch_add(1, mem::relaxed);
+
         size_t q_idx;
-        while (status_ == Status::running) {
+        while (running()) {
             q_idx = push_idx_.fetch_add(1, mem::relaxed) % num_queues_;
             if (queues_[q_idx].try_push(task))
                 return;
@@ -389,23 +307,22 @@ class TaskManager
     template<typename Task>
     bool try_pop(Task& task, size_t worker_id = 0)
     {
-        if (status_ != Status::running)
-            return false;
-
         for (size_t k = 0; k <= num_queues_; k++) {
-            if (queues_[(worker_id + k) % num_queues_].try_pop(task))
-                return true;
+            if (queues_[(worker_id + k) % num_queues_].try_pop(task)) {
+                if (running())
+                    return true;
+            }
         }
         return false;
     }
 
     void wait_for_jobs(size_t id)
     {
-        if (status_ == Status::errored) {
+        if (errored()) {
             // main thread may be waiting to reset the pool
-            std::lock_guard<std::mutex> lk(err_mtx_);
+            std::lock_guard<std::mutex> lk(mtx_);
             if (++num_waiting_ == num_queues_)
-                err_cv_.notify_all();
+                cv_.notify_all();
         } else {
             ++num_waiting_;
         }
@@ -417,36 +334,60 @@ class TaskManager
     //! @param millis if > 0: stops waiting after millis ms
     void wait_for_finish(size_t millis = 0)
     {
-        if (running())
-            todo_list_.wait(millis);
+        if (running()) {
+            auto wake_up = [this] { return (todo_ <= 0) || !running(); };
+            std::unique_lock<std::mutex> lk(mtx_);
+            if (millis == 0) {
+                cv_.wait(lk, wake_up);
+            } else {
+                cv_.wait_for(lk, std::chrono::milliseconds(millis), wake_up);
+            }
+        }
         rethrow_exception();
     }
 
     bool called_from_owner_thread() const
     {
-        return std::this_thread::get_id() == owner_id_;
+        return (std::this_thread::get_id() == owner_id_);
     }
 
-    bool done() const { return todo_list_.empty(); }
-
-    void report_success() { todo_list_.cross(); }
+    void report_success()
+    {
+        auto n = todo_.fetch_sub(1, mem::release) - 1;
+        if (n <= 0) {
+            // all jobs are done; lock before signal to prevent spurious failure
+            {
+                std::lock_guard<std::mutex> lk{ mtx_ };
+            }
+            cv_.notify_all();
+        }
+    }
 
     void report_fail(std::exception_ptr err_ptr)
     {
-        if (!errored()) { // only catch first exception
-            std::lock_guard<std::mutex> lk(err_mtx_);
-            if (errored()) // double check
-                return;
-            err_ptr_ = err_ptr;
-            status_ = Status::errored;
-            todo_list_.stop();
-        }
+        if (errored()) // only catch first exception
+            return;
+
+        std::lock_guard<std::mutex> lk(mtx_);
+        if (errored()) // double check under lock
+            return;
+
+        // Some threads may add() or cross() after we stop. The large
+        // negative number prevents num_tasks_ from becoming positive
+        // again.
+        err_ptr_ = err_ptr;
+        status_ = Status::errored;
+        todo_.store(std::numeric_limits<int>::min() / 2);
+
+        cv_.notify_all();
     }
 
     void stop()
     {
-        status_ = Status::stopped;
-        todo_list_.stop();
+        {
+            std::lock_guard<std::mutex> lk(mtx_);
+            status_ = Status::stopped;
+        }
         // Worker threads wait on queue-specific mutex -> notify all queues.
         for (auto& q : queues_)
             q.stop();
@@ -456,22 +397,32 @@ class TaskManager
     {
         if (called_from_owner_thread() && errored()) {
             // wait for all threads to idle
-            std::unique_lock<std::mutex> lk(err_mtx_);
-            err_cv_.wait(lk, [this] { return num_waiting_ == num_queues_; });
+            std::unique_lock<std::mutex> lk(mtx_);
+            cv_.wait(lk, [this] { return num_waiting_ == num_queues_; });
             lk.unlock();
 
             // before throwing: restore defaults for potential future use
-            todo_list_.reset();
-            status_ = Status::running;
+            todo_ = 0;
             auto current_exception = err_ptr_;
             err_ptr_ = nullptr;
+            status_ = Status::running;
             std::rethrow_exception(current_exception);
         }
     }
 
-    bool running() { return status_ == Status::running; }
-    bool errored() { return status_ == Status::errored; }
-    bool stopped() { return status_ == Status::stopped; }
+    bool running() const
+    {
+        return status_.load(mem::relaxed) == Status::running;
+    }
+
+    bool errored() const { return status_ == Status::errored; }
+
+    bool stopped() const
+    {
+        return status_.load(mem::relaxed) == Status::stopped;
+    }
+
+    bool done() const { return (todo_.load(mem::relaxed) <= 0); }
 
   private:
     std::vector<TaskQueue> queues_;
@@ -481,8 +432,7 @@ class TaskManager
     // task management
     mem::aligned_atomic<size_t> num_waiting_{ 0 };
     mem::aligned_atomic<size_t> push_idx_{ 0 };
-    TodoList todo_list_{ 0 };
-    std::exception_ptr err_ptr_{ nullptr };
+    mem::aligned_atomic<int> todo_{ 0 };
 
     // synchronization in case of error to make pool reusable
     enum class Status
@@ -491,9 +441,10 @@ class TaskManager
         errored,
         stopped
     };
-    std::atomic<Status> status_{ Status::running };
-    std::mutex err_mtx_;
-    std::condition_variable err_cv_;
+    mem::aligned_atomic<Status> status_{ Status::running };
+    std::mutex mtx_;
+    std::condition_variable cv_;
+    std::exception_ptr err_ptr_{ nullptr };
 };
 
 } // end namespace detail

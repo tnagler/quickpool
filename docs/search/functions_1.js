@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['cross_17',['cross',['../classquickpool_1_1TodoList.html#aaf159795a22b9fdf2a459fc1e7afbcb0',1,'quickpool::TodoList']]]
+  ['global_5finstance_20',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
 ];

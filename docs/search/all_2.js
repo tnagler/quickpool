@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['empty_3',['empty',['../classquickpool_1_1TodoList.html#a6bfbbc299d5ed07125727a203dc47352',1,'quickpool::TodoList']]]
+  ['global_5finstance_3',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
 ];

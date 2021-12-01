@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['push_20',['push',['../classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e',1,'quickpool::ThreadPool::push()'],['../namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286',1,'quickpool::push()']]]
+  ['wait_23',['wait',['../classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce',1,'quickpool::ThreadPool::wait()'],['../namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291',1,'quickpool::wait()']]]
 ];

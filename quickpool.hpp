@@ -26,24 +26,11 @@
 #include <mutex>
 #include <thread>
 #include <vector>
+#include "aligned_atomic.hpp"
 
 //! quickpool namespace
 namespace quickpool {
 
-namespace detail {
-template<typename T>
-class aligned_atomic : public std::atomic<T>
-{
-  public:
-    explicit aligned_atomic(T value)
-      : std::atomic<T>(value)
-    {}
-
-  private:
-    using TT = std::atomic<T>;
-    char padding_[64 > sizeof(TT) ? 64 - sizeof(TT) : 1];
-};
-}
 
 //! @brief Todo list - a synchronization primitive.
 //! @details Add a task with `add()`, cross it off with `cross()`, and wait for
@@ -120,7 +107,7 @@ class TodoList
     }
 
   private:
-    detail::aligned_atomic<int> num_tasks_{ 0 };
+    aligned_atomic<int> num_tasks_{ 0 };
     std::mutex mtx_;
     std::condition_variable cv_;
     std::exception_ptr exception_ptr_{ nullptr };
@@ -263,8 +250,8 @@ class TaskQueue
     }
 
   private:
-    detail::aligned_atomic<int> top_{ 0 };
-    detail::aligned_atomic<int> bottom_{ 0 };
+    aligned_atomic<int> top_{ 0 };
+    aligned_atomic<int> bottom_{ 0 };
     std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
     std::vector<std::unique_ptr<RingBuffer<Task*>>> old_buffers_;
 
@@ -387,8 +374,8 @@ class TaskManager
     const std::thread::id owner_id_;
 
     // task management
-    detail::aligned_atomic<size_t> num_waiting_{ 0 };
-    detail::aligned_atomic<size_t> push_idx_{ 0 };
+    aligned_atomic<size_t> num_waiting_{ 0 };
+    aligned_atomic<size_t> push_idx_{ 0 };
     TodoList todo_list_{ 0 };
     std::exception_ptr err_ptr_{ nullptr };
 

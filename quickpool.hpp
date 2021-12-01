@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "aligned_atomic.hpp"
 #include <atomic>
 #include <condition_variable>
 #include <exception>
@@ -26,11 +27,17 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-#include "aligned_atomic.hpp"
 
 //! quickpool namespace
 namespace quickpool {
 
+//! convenience definitions
+namespace mem {
+static constexpr std::memory_order relaxed = std::memory_order_relaxed;
+static constexpr std::memory_order acquire = std::memory_order_acquire;
+static constexpr std::memory_order release = std::memory_order_release;
+static constexpr std::memory_order seq_cst = std::memory_order_seq_cst;
+}
 
 //! @brief Todo list - a synchronization primitive.
 //! @details Add a task with `add()`, cross it off with `cross()`, and wait for
@@ -48,32 +55,33 @@ class TodoList
     //! @param num_tasks add that many tasks to the list.
     void add(size_t num_tasks = 1) noexcept
     {
-        num_tasks_.fetch_add(static_cast<int>(num_tasks));
+        num_tasks_.fetch_add(static_cast<int>(num_tasks), mem::release);
     }
 
     //! crosses tasks from the list.
     //! @param num_tasks cross that many tasks to the list.
     void cross(size_t num_tasks = 1)
     {
-        num_tasks_.fetch_sub(static_cast<int>(num_tasks));
-        if (num_tasks_ <= 0) {
+        auto n =
+          num_tasks_.fetch_sub(static_cast<int>(num_tasks), mem::release);
+        if (n - 1 <= 0) {
             {
-                std::lock_guard<std::mutex> lk(mtx_); // must lock before signal
+                // lock before signal to prevent spurious failure
+                std::lock_guard<std::mutex> lk(mtx_);
             }
             cv_.notify_all();
         }
     }
 
     //! checks whether list is empty.
-    bool empty() const noexcept { return num_tasks_ <= 0; }
+    bool empty() const noexcept { return num_tasks_.load(mem::acquire) <= 0; }
 
     //! waits for the list to be empty.
     //! @param millis if > 0; waiting aborts after waiting that many
     //! milliseconds.
     void wait(size_t millis = 0)
     {
-        std::this_thread::yield();
-        auto wake_up = [this] { return (num_tasks_ <= 0) || exception_ptr_; };
+        auto wake_up = [this] { return empty() || exception_ptr_; };
         std::unique_lock<std::mutex> lk(mtx_);
         if (millis == 0) {
             cv_.wait(lk, wake_up);
@@ -152,10 +160,6 @@ class TaskQueue
 {
     // convenience aliases
     using Task = std::function<void()>;
-    static constexpr std::memory_order m_relaxed = std::memory_order_relaxed;
-    static constexpr std::memory_order m_acquire = std::memory_order_acquire;
-    static constexpr std::memory_order m_release = std::memory_order_release;
-    static constexpr std::memory_order m_seq_cst = std::memory_order_seq_cst;
 
   public:
     //! constructs the queue with a given capacity.
@@ -168,7 +172,7 @@ class TaskQueue
     {
         // must free memory allocated by push(), but not deallocated by pop()
         auto buf_ptr = buffer_.load();
-        for (int i = top_; i < bottom_.load(m_relaxed); ++i)
+        for (int i = top_; i < bottom_.load(mem::relaxed); ++i)
             delete buf_ptr->get_entry(i);
         delete buf_ptr;
     }
@@ -179,7 +183,7 @@ class TaskQueue
     //! checks if queue is empty.
     bool empty() const
     {
-        return (bottom_.load(m_relaxed) <= top_.load(m_relaxed));
+        return (bottom_.load(mem::relaxed) <= top_.load(mem::relaxed));
     }
 
     //! pushes a task to the bottom of the queue; returns false if queue is
@@ -192,20 +196,20 @@ class TaskQueue
             std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
             if (!lk)
                 return false;
-            auto b = bottom_.load(m_relaxed);
-            auto t = top_.load(m_acquire);
-            RingBuffer<Task*>* buf_ptr = buffer_.load(m_relaxed);
+            auto b = bottom_.load(mem::relaxed);
+            auto t = top_.load(mem::acquire);
+            RingBuffer<Task*>* buf_ptr = buffer_.load(mem::relaxed);
 
             if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
                 // buffer is full, create enlarged copy before continuing
                 auto old_buf = buf_ptr;
                 buf_ptr = std::move(buf_ptr->enlarged_copy(b, t));
                 old_buffers_.emplace_back(old_buf);
-                buffer_.store(buf_ptr, m_relaxed);
+                buffer_.store(buf_ptr, mem::relaxed);
             }
 
             buf_ptr->set_entry(b, new Task{ std::forward<Task>(task) });
-            bottom_.store(b + 1, m_release);
+            bottom_.store(b + 1, mem::release);
         }
         cv_.notify_one();
         return true;
@@ -214,16 +218,17 @@ class TaskQueue
     //! pops a task from the top of the queue; returns false if lost race.
     bool try_pop(Task& task)
     {
-        auto t = top_.load(m_acquire);
-        std::atomic_thread_fence(m_seq_cst);
-        auto b = bottom_.load(m_acquire);
+        auto t = top_.load(mem::acquire);
+        std::atomic_thread_fence(mem::seq_cst);
+        auto b = bottom_.load(mem::acquire);
 
         if (t < b) {
             // must load task pointer before acquiring the slot, because it
             // could be overwritten immediately after
-            auto task_ptr = buffer_.load(m_acquire)->get_entry(t);
+            auto task_ptr = buffer_.load(mem::acquire)->get_entry(t);
 
-            if (top_.compare_exchange_strong(t, t + 1, m_seq_cst, m_relaxed)) {
+            if (top_.compare_exchange_strong(
+                  t, t + 1, mem::seq_cst, mem::relaxed)) {
                 task = std::move(*task_ptr); // won race, get task
                 delete task_ptr; // fre memory allocated in push_unsafe()
                 return true;
@@ -275,8 +280,10 @@ class TaskManager
     {
         rethrow_exception();
         todo_list_.add();
+        size_t q_idx;
         while (status_ == Status::running) {
-            if (queues_[push_idx_++ % num_queues_].try_push(task))
+            q_idx = push_idx_.fetch_add(1, mem::relaxed) % num_queues_;
+            if (queues_[q_idx].try_push(task))
                 return;
         }
     }

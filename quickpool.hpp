@@ -57,7 +57,7 @@ struct padding_bytes
     static constexpr size_t free_space =
       Align - mod(sizeof(std::atomic<T>), Align);
     static constexpr size_t padding_size_ = free_space > 1 ? free_space : 1;
-    char padding_[padding_size_];
+    char padding_[padding_size_ + sizeof(void*)];
 };
 
 struct empty_struct
@@ -121,8 +121,8 @@ struct alignas(Align) aligned_atomic
         (void)std::align(alignment, count, p_algn, space);
 
         // Store unaligned pointer with offset sizeof(void*) before aligned
-        // location. Later we'll know where to look for the pointer telling us
-        // where to free what we malloc()'ed above.
+        // location. Later we'll know where to look for the pointer telling
+        // us where to free what we malloc()'ed above.
         *(static_cast<void**>(p_algn) - 1) = p;
 
         return p_algn;
@@ -145,13 +145,11 @@ struct Range
     Range(int begin, int end)
       : pos{ begin }
       , end{ end }
-      , check{ end }
     {}
 
     Range(const Range& other)
       : pos{ other.pos.load() }
       , end{ other.end.load() }
-      , check{ other.check.load() }
     {}
 
     bool empty() const { return end - pos < 1; }
@@ -161,68 +159,59 @@ struct Range
     {
         p = pos + 1;
         pos = p;
-        if (p <= check) {
+        if (p < end) {
             p = p - 1;
             return true;
         }
-        if (p > check && (check != end)) {
-            check = end.load();
-            if (p < check) {
-                p = p - 1;
-                return true;
-            } else {
-                pos = p - 1;
-                return false;
-            }
+        // conflict detected: rollback under lock
+        pos = p - 1;
+        {
+            std::lock_guard<std::mutex> lk(mutex);
+            p = pos;
+            if (p < end)
+                pos = p + 1;
         }
-        return false;
-    }
 
-    void set_new_range(int new_begin, int new_end)
-    {
-        check = -1; // need to protect for end battle
-        // branching ensures that range looks empty until done
-        if (new_end > end) {
-            pos = new_begin;
-            end = new_end;
-        } else {
-            end = new_end;
-            pos = new_begin;
-        }
-        check = new_end; // only now can be stolen
+        if (p < pos)
+            return true;
+        return false;
     }
 
     bool try_steal_range(Range& other_range)
     {
-        int old_end = other_range.end;
-        int other_pos = other_range.pos;
-        if (old_end <= other_pos) {
-            return false; // range is empty by now
-        }
-        auto chunk_size = (old_end - other_pos) / 2;
-        auto ck = old_end - chunk_size;
-        if (!other_range.check.compare_exchange_strong(old_end, ck)) {
-            return false; // other stealer was faster
-        }
-
-        // this thread has modified check, nobody else will until
-        // we reset check = old_end
-        if (other_range.pos > ck) {
-            // worker caught up too quickly, abort
-            other_range.check.compare_exchange_strong(ck, old_end);
+        if (this == &other_range)
             return false;
-        }
-
-        if (!other_range.end.compare_exchange_strong(old_end, ck))
+        if ((other_range.end - other_range.pos) < 0)
             return false;
 
-        this->set_new_range(ck, old_end);
+        int e, chunk_size;
+        {
+            std::unique_lock<std::mutex> lk_other(other_range.mutex,
+                                                  std::try_to_lock);
+            if (!lk_other) {
+                return false;
+            }
+            e = other_range.end;
+            chunk_size = (e - other_range.pos) / 2;
+            e = e - chunk_size;
+            other_range.end = e;
+            if (e <= other_range.pos) {
+                // rollback and abort */
+                other_range.end = e + chunk_size;
+                return false;
+            }
+        }
+
+        std::lock_guard<std::mutex> lk_self(mutex);
+        pos = e;
+        end = e + chunk_size;
+
         return true;
     }
 
     mem::aligned_atomic<int> pos;
     mem::aligned_atomic<int> end;
-    mem::aligned_atomic<int> check;
+    std::mutex mutex;
 };
 
 class Ranges
@@ -231,11 +220,11 @@ class Ranges
     Ranges(int begin, int end, size_t num_ranges)
     {
         auto num_tasks = end - begin;
+        ranges_.reserve(num_ranges);
         for (size_t i = 0; i < num_ranges; i++) {
             ranges_.emplace_back(begin + num_tasks * i / num_ranges,
                                  begin + num_tasks * (i + 1) / num_ranges);
         }
-        return;
     }
 
     Range& operator[](uint index) { return ranges_[index]; }
@@ -441,6 +430,7 @@ class TaskManager
     {
         rethrow_exception();
         todo_.fetch_add(1, mem::relaxed);
+        // std::cout << todo_.fetch_add(1, mem::relaxed) << "+" << std::endl;;
 
         size_t q_idx;
         while (running()) {
@@ -500,6 +490,7 @@ class TaskManager
     void report_success()
     {
         auto n = todo_.fetch_sub(1, mem::relaxed) - 1;
+        // std::cout << n << "-" << std::endl;
         if (n <= 0) {
             // all jobs are done; lock before signal to prevent spurious failure
             {
@@ -697,28 +688,28 @@ class ThreadPool
 
         // each worker has its dedicated range, but can steal part of another
         // worker's ranges when done with own
-        auto ranges = loop::Ranges(begin, end, nthreads);
-        const auto run_worker = [&ranges, f](size_t id) {
+        auto ranges = std::make_shared<loop::Ranges>(begin, end, nthreads);
+        const auto run_worker = [=](int id) {
             do {
                 int pos;
-                while (ranges[id].try_local_work(pos)) {
+                while ((*ranges)[id].try_local_work(pos)) {
                     f(pos);
                 };
-                ranges.distribute_to(ranges[id]);
-            } while (!ranges[id].empty());
+                ranges->distribute_to((*ranges)[id]);
+            } while (!(*ranges)[id].empty());
         };
 
-        for (int k = 0; k <= nthreads; k++)
+        for (int k = 0; k < nthreads; k++)
             this->push(run_worker, k);
+        this->wait();
     }
 
     template<class Function, class Items>
-    void parallel_for_each(Items& items, Function f)
+    void parallel_for_each(Items& items, Function&& f)
     {
-        // loop index indicates iterator offset
-        const auto begin_it = std::begin(items);
-        const auto n = std::distance(begin_it, std::end(items));
-        this->parallel_for(0, n, [f, &begin_it](int i) { f(*(begin_it + i)); });
+        this->parallel_for(
+          0, items.size(), [&items, &f](size_t i) { f(items[i]); });
+        this->wait();
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
@@ -787,8 +778,7 @@ template<class Function, class Items>
 inline void
 parallel_for_each(Items& items, Function&& f)
 {
-    ThreadPool::global_instance().parallel_for_each(items,
-                                                    std::forward<Function>(f));
+    ThreadPool::global_instance().parallel_for_each(items, f);
 }
 
 } // end namespace quickpool

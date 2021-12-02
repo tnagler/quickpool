@@ -246,7 +246,7 @@ class Ranges
         }
     }
 
-    Range& operator[](uint index) { return ranges_[index]; }
+    Range& operator[](size_t index) { return ranges_[index]; }
 
     bool seems_empty() const
     {

@@ -136,6 +136,23 @@ struct alignas(Align) aligned_atomic
     }
 };
 
+// fast atomic with no memory ordering guarantees
+template<typename T>
+struct relaxed_atomic : public aligned_atomic<T>
+{
+    relaxed_atomic(T value)
+      : mem::aligned_atomic<T>(value)
+    {}
+
+    operator T() const noexcept { return this->load(mem::relaxed); }
+
+    T operator=(T desired) noexcept
+    {
+        this->store(desired, mem::relaxed);
+        return desired;
+    }
+};
+
 }
 
 namespace loop {
@@ -159,6 +176,7 @@ struct Range
     {
         p = pos + 1;
         pos = p;
+        std::atomic_thread_fence(mem::seq_cst);
         if (p < end) {
             p = p - 1;
             return true;
@@ -181,7 +199,7 @@ struct Range
     {
         if (this == &other_range)
             return false;
-        if ((other_range.end - other_range.pos) < 0)
+        if (other_range.end < other_range.pos)
             return false;
 
         int e, chunk_size;
@@ -195,8 +213,9 @@ struct Range
             chunk_size = (e - other_range.pos) / 2;
             e = e - chunk_size;
             other_range.end = e;
+            std::atomic_thread_fence(std::memory_order_acq_rel);
             if (e <= other_range.pos) {
-                // rollback and abort */
+                // rollback and abort
                 other_range.end = e + chunk_size;
                 return false;
             }
@@ -209,8 +228,8 @@ struct Range
         return true;
     }
 
-    mem::aligned_atomic<int> pos;
-    mem::aligned_atomic<int> end;
+    mem::relaxed_atomic<int> pos;
+    mem::relaxed_atomic<int> end;
     std::mutex mutex;
 };
 
@@ -430,7 +449,6 @@ class TaskManager
     {
         rethrow_exception();
         todo_.fetch_add(1, mem::relaxed);
-        // std::cout << todo_.fetch_add(1, mem::relaxed) << "+" << std::endl;;
 
         size_t q_idx;
         while (running()) {
@@ -490,7 +508,6 @@ class TaskManager
     void report_success()
     {
         auto n = todo_.fetch_sub(1, mem::relaxed) - 1;
-        // std::cout << n << "-" << std::endl;
         if (n <= 0) {
             // all jobs are done; lock before signal to prevent spurious failure
             {

@@ -5,7 +5,6 @@
 int
 main()
 {
-
     // README contents --------------------------------------------
     std::cout << "- Running contents from README: ";
 
@@ -42,30 +41,7 @@ main()
         pool.wait(); // waits for all current jobs to finish
     }
 
-    // Task synchronization
-    {
-        std::vector<double> x(2); // shared resource
-        quickpool::TodoList todo_prod(2);
-        quickpool::TodoList todo_cons(2);
-
-        auto job_prod = [&](int i, double val) {
-            x.at(i) = val;
-            todo_prod.cross();
-        };
-        auto job_cons = [&](int i) {
-            todo_prod.wait(); // waits for all producers to finish
-            // std::cout << x.at(i) << std::endl;
-            todo_cons.cross();
-        };
-
-        quickpool::push(job_prod, 0, 1.337); // writes x[0]
-        quickpool::push(job_prod, 1, 3.14);  // writes x[1]
-        quickpool::push(job_cons, 0);        // reads x[0]
-        quickpool::push(job_cons, 1);        // reads x[1]
-        todo_cons.wait(); // waits for all consumers to finish
-    }
     std::cout << "OK" << std::endl;
-    quickpool::wait();
 
     // unit tests ---------------------------------------
     std::cout << "- unit tests:        \t\r";
@@ -169,7 +145,7 @@ main()
             std::exception_ptr eptr = nullptr;
             try {
                 pool.push([] { throw std::runtime_error("test error"); });
-                std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 for (size_t i = 0; i < 10; i++) {
                     pool.push([&] {});
                 }
@@ -178,7 +154,7 @@ main()
             }
 
             if (!eptr) {
-                throw std::runtime_error("exception not rethrown");
+                throw std::runtime_error("exception not rethrown by push");
             } else {
                 eptr = nullptr;
             }
@@ -191,10 +167,11 @@ main()
                 eptr = std::current_exception();
             }
             if (!eptr) {
-                throw std::runtime_error("exception not rethrown");
+                throw std::runtime_error("exception not rethrown by wait");
             } else {
                 eptr = nullptr;
             }
+            // std::cout << "OK" << std::endl;
         }
     }
 

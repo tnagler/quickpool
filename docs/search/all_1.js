@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['cross_2',['cross',['../classquickpool_1_1TodoList.html#aaf159795a22b9fdf2a459fc1e7afbcb0',1,'quickpool::TodoList']]]
+  ['empty_5fstruct_2',['empty_struct',['../structquickpool_1_1mem_1_1padding__impl_1_1empty__struct.html',1,'quickpool::mem::padding_impl']]]
 ];

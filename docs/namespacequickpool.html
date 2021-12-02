@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">quickpool
-   &#160;<span id="projectnumber">1.1.0</span>
+   &#160;<span id="projectnumber">1.2.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -79,9 +79,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html">ThreadPool</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A work stealing thread pool.  <a href="classquickpool_1_1ThreadPool.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1TodoList.html">TodoList</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Todo list - a synchronization primitive.  <a href="classquickpool_1_1TodoList.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
@@ -108,6 +105,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class Function , class... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">auto quickpool::async </td>
@@ -128,6 +128,11 @@ template&lt;class Function , class... Args&gt; </div>
 </td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>executes a job asynchronously the global thread pool. </p>
@@ -140,7 +145,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00466">466</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00577">577</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -151,6 +156,9 @@ template&lt;class Function , class... Args&gt; </div>
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class Function , class... Args&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void quickpool::push </td>
@@ -170,6 +178,11 @@ template&lt;class Function , class... Args&gt; </div>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 <p>Direct access to the global thread pool ----------------&mdash;. </p>
@@ -181,7 +194,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00453">453</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00564">564</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>

@@ -85,37 +85,3 @@ goes out of scope, all threads joined.
 }
 // threads are joined
 ```
-
-### Bonus: Task synchronization
-
-In general, the pool may process the tasks in any order. Synchronization between
-tasks (e.g., one thread waiting intermediate results) must be done manually. 
-Standard tools are [`std::mutex`](https://en.cppreference.com/w/cpp/thread/mutex) 
-and [`std::condition_variable`](https://en.cppreference.com/w/cpp/thread/condition_variable). 
-`quickpool` exposes another synchronization primitive, 
-[`TodoList`](https://tnagler.github.io/quickpool/classquickpool_1_1TodoList.html), that 
-may be useful.
-
-```cpp
-std::vector<double> x(2); // shared resource
-quickpool::TodoList todo_prod(2);
-quickpool::TodoList todo_cons(2);
-
-auto job_prod = [&](int i, double val) {
-    x.at(i) = val;
-    todo_prod.cross();
-};
-auto job_cons = [&](int i) {
-    todo_prod.wait(); // waits for all producers to finish
-    std::cout << x.at(i) << std::endl;
-    todo_cons.cross();
-};
-
-quickpool::push(job_prod, 0, 1.337); // writes x[0]
-quickpool::push(job_prod, 1, 3.14);  // writes x[1]
-quickpool::push(job_cons, 0);        // reads x[0]
-quickpool::push(job_cons, 1);        // reads x[1]
-todo_cons.wait();                // waits for all consumers to finish
-```
-You can add items on the fly 
-using [`TodoList::add()`](https://tnagler.github.io/quickpool/classquickpool_1_1TodoList.html).

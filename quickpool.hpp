@@ -18,12 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <exception>
 #include <functional>
 #include <future>
 #include <mutex>
+#include <numeric>
 #include <thread>
 #include <vector>
 
@@ -52,8 +54,8 @@ mod(size_t a, size_t b)
 template<class T, size_t Align>
 struct padding_bytes
 {
-    static constexpr size_t obj_size = sizeof(std::atomic<T>);
-    static constexpr size_t free_space = Align - mod(obj_size, Align);
+    static constexpr size_t free_space =
+      Align - mod(sizeof(std::atomic<T>), Align);
     static constexpr size_t padding_size_ = free_space > 1 ? free_space : 1;
     char padding_[padding_size_];
 };
@@ -135,6 +137,150 @@ struct alignas(Align) aligned_atomic
 };
 
 }
+
+namespace loop {
+
+struct Range
+{
+    Range(int begin, int end)
+      : pos{ begin }
+      , end{ end }
+      , check{ end }
+    {}
+
+    Range(const Range& other)
+      : pos{ other.pos.load() }
+      , end{ other.end.load() }
+      , check{ other.check.load() }
+    {}
+
+    bool empty() const { return end - pos < 1; }
+    int size() const { return end - pos; }
+
+    bool try_local_work(int& p)
+    {
+        p = pos + 1;
+        pos = p;
+        if (p <= check) {
+            p = p - 1;
+            return true;
+        }
+        if (p > check && (check != end)) {
+            check = end.load();
+            if (p < check) {
+                p = p - 1;
+                return true;
+            } else {
+                pos = p - 1;
+                return false;
+            }
+        }
+        return false;
+    }
+
+    void set_new_range(int new_begin, int new_end)
+    {
+        check = -1; // need to protect for end battle
+        // branching ensures that range looks empty until done
+        if (new_end > end) {
+            pos = new_begin;
+            end = new_end;
+        } else {
+            end = new_end;
+            pos = new_begin;
+        }
+        check = new_end; // only now can be stolen
+    }
+
+    bool try_steal_range(Range& other_range)
+    {
+        int old_end = other_range.end;
+        int other_pos = other_range.pos;
+        if (old_end <= other_pos) {
+            return false; // range is empty by now
+        }
+        auto chunk_size = (old_end - other_pos) / 2;
+        auto ck = old_end - chunk_size;
+        if (!other_range.check.compare_exchange_strong(old_end, ck)) {
+            return false; // other stealer was faster
+        }
+
+        // this thread has modified check, nobody else will until
+        // we reset check = old_end
+        if (other_range.pos > ck) {
+            // worker caught up too quickly, abort
+            other_range.check.compare_exchange_strong(ck, old_end);
+            return false;
+        }
+
+        if (!other_range.end.compare_exchange_strong(old_end, ck))
+            return false;
+
+        this->set_new_range(ck, old_end);
+        return true;
+    }
+
+    mem::aligned_atomic<int> pos;
+    mem::aligned_atomic<int> end;
+    mem::aligned_atomic<int> check;
+};
+
+class Ranges
+{
+  public:
+    Ranges(int begin, int end, size_t num_ranges)
+    {
+        auto num_tasks = end - begin;
+        for (size_t i = 0; i < num_ranges; i++) {
+            ranges_.emplace_back(begin + num_tasks * i / num_ranges,
+                                 begin + num_tasks * (i + 1) / num_ranges);
+        }
+        return;
+    }
+
+    Range& operator[](uint index) { return ranges_[index]; }
+
+    bool seems_empty() const
+    {
+        for (const auto& range : ranges_) {
+            if (!range.empty())
+                return false;
+        }
+        return true;
+    }
+
+    std::vector<size_t> range_order() const
+    {
+        std::vector<size_t> range_sizes;
+        range_sizes.reserve(ranges_.size());
+        for (const auto& range : ranges_)
+            range_sizes.push_back(range.size());
+
+        std::vector<size_t> order(ranges_.size());
+        std::iota(order.begin(), order.end(), 0);
+        std::sort(order.begin(), order.end(), [&](size_t i, size_t j) {
+            return range_sizes[i] > range_sizes[j];
+        });
+
+        return order;
+    }
+
+    void distribute_to(Range& range)
+    {
+        const auto n = ranges_.size();
+        const auto order = range_order();
+        size_t idx = 0;
+        while (!seems_empty()) {
+            if (range.try_steal_range(ranges_[order[idx++ % n]]))
+                break;
+        }
+    }
+
+  private:
+    std::vector<Range> ranges_;
+};
+
+} // end namespace loop
 
 //! Implementation details
 namespace detail {
@@ -539,6 +685,42 @@ class ThreadPool
         return task_ptr->get_future();
     }
 
+    template<class Function>
+    void parallel_for(int begin,
+                      int end,
+                      Function&& f,
+                      size_t nthreads = std::thread::hardware_concurrency())
+    {
+        if (end <= begin)
+            return;
+        nthreads = std::min(end - begin, static_cast<int>(nthreads));
+
+        // each worker has its dedicated range, but can steal part of another
+        // worker's ranges when done with own
+        auto ranges = loop::Ranges(begin, end, nthreads);
+        const auto run_worker = [&ranges, f](size_t id) {
+            do {
+                int pos;
+                while (ranges[id].try_local_work(pos)) {
+                    f(pos);
+                };
+                ranges.distribute_to(ranges[id]);
+            } while (!ranges[id].empty());
+        };
+
+        for (int k = 0; k <= nthreads; k++)
+            this->push(run_worker, k);
+    }
+
+    template<class Function, class Items>
+    void parallel_for_each(Items& items, Function f)
+    {
+        // loop index indicates iterator offset
+        const auto begin_it = std::begin(items);
+        const auto n = std::distance(begin_it, std::end(items));
+        this->parallel_for(0, n, [f, &begin_it](int i) { f(*(begin_it + i)); });
+    }
+
     //! @brief waits for all jobs currently running on the global thread pool.
     void wait() { task_manager_.wait_for_finish(); }
 
@@ -588,6 +770,25 @@ inline void
 wait()
 {
     ThreadPool::global_instance().wait();
+}
+
+template<class Function>
+inline void
+parallel_for(int begin,
+             int end,
+             Function&& f,
+             size_t nthreads = std::thread::hardware_concurrency())
+{
+    ThreadPool::global_instance().parallel_for(
+      begin, end, std::forward<Function>(f), nthreads);
+}
+
+template<class Function, class Items>
+inline void
+parallel_for_each(Items& items, Function&& f)
+{
+    ThreadPool::global_instance().parallel_for_each(items,
+                                                    std::forward<Function>(f));
 }
 
 } // end namespace quickpool

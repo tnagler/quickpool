@@ -234,15 +234,13 @@ struct Worker
                 if (state.compare_exchange_weak(
                       s_old, s, mem::seq_cst, mem::relaxed)) {
                     f(s_old.pos); // succeeded, do work
-                } else {
-                    continue;
                 }
+                continue;
             }
-            if (s.pos == s.end) {
-                // Reached end of own range, steal range from others. Range
-                // remains empty if all work is done, so we can leave the loop.
-                this->steal_range(*others);
-            }
+
+            // Reached end of own range, steal range from others. Range
+            // remains empty if all work is done, so we can leave the loop.
+            this->steal_range(*others);
         } while (!this->done());
     }
 
@@ -771,7 +769,6 @@ class ThreadPool
             this->push([=] { workers->at(k).run(workers); });
         this->wait();
     }
-
 
     //! @brief computes a iterator-based parallel for loop.
     //!

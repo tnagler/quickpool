@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['empty_25',['empty',['../classquickpool_1_1sched_1_1TaskQueue.html#aa000c0ccde76348dd6c6945c8734efe1',1,'quickpool::sched::TaskQueue']]]
+  ['global_5finstance_12',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
 ];

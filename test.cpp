@@ -5,7 +5,7 @@
 int
 main()
 {
-    auto runs = 1000;
+    auto runs = 100;
     for (auto run = 0; run < runs; run++) {
         std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs << "\t\r"
                   << std::flush;
@@ -167,7 +167,7 @@ main()
             std::exception_ptr eptr = nullptr;
             try {
                 pool.push([] { throw std::runtime_error("test error"); });
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));
                 for (size_t i = 0; i < 10; i++) {
                     pool.push([&] {});
                 }

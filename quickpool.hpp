@@ -664,19 +664,18 @@ class TaskManager
 
 } // end namespace sched
 
-
 // 4. ------------------------------------------------------------------------
 
 //! A work stealing thread pool.
 class ThreadPool
 {
   public:
-    //! constructs a thread pool with as many workers as there are cores.
+    //! @brief constructs a thread pool with as many workers as there are cores.
     ThreadPool()
       : ThreadPool(std::thread::hardware_concurrency())
     {}
 
-    //! constructs a thread pool.
+    //! @brief constructs a thread pool.
     //! @param n_workers number of worker threads to create; defaults to
     //! number of available (virtual) hardware cores.
     explicit ThreadPool(size_t n_workers)
@@ -737,7 +736,7 @@ class ThreadPool
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
     }
 
-    //! @brief executes a job asynchronously the global thread pool.
+    //! @brief executes a job asynchronously on the global thread pool.
     //! @param f a function.
     //! @param args (optional) arguments passed to `f`.
     //! @return A `std::future` for the task. Call `future.get()` to retrieve
@@ -754,7 +753,12 @@ class ThreadPool
         return task_ptr->get_future();
     }
 
-    //! computes an index-based parallel for loop.
+    //! @brief computes an index-based parallel for loop.
+    //!
+    //! Waits until all tasks have finished, unless called from a thread that
+    //! didn't create the pool. If this is taken into account, parallel loops
+    //! can be nested.
+    //!
     //! @param begin first index of the loop.
     //! @param end the loop runs in the range `[begin, end)`.
     //! @param f a function taking `int` argument (the 'loop body').
@@ -775,11 +779,16 @@ class ThreadPool
         this->wait();
     }
 
-    //! computes a range-based parllel for loop.
+    //! @brief computes a iterator-based parallel for loop.
+    //!
+    //! Waits until all tasks have finished, unless called from a thread that
+    //! didn't create the pool. If this is taken into account, parallel loops
+    //! can be nested.
+    //!
     //! @param begin iterator for first element.
     //! @param end iterator for last element.
-    //! @param f function to be applied to the result of dereferencing
-    //! the iterator in the range `[begin, end)` (the 'loop body').
+    //! @param f function to be applied as `f(*it)` for the iterator in the
+    //! range `[begin, end)` (the 'loop body').
     template<class InputIt, class UnaryFunction>
     inline void parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
     {
@@ -788,10 +797,15 @@ class ThreadPool
         this->wait();
     }
 
-    //! computes a range-based parllel for loop.
+    //! @brief computes a iterator-based parallel for loop.
+    //!
+    //! Waits until all tasks have finished, unless called from a thread that
+    //! didn't create the pool. If this is taken into account, parallel loops
+    //! can be nested.
+    //!
     //! @param items an object allowing for `std::begin()` and `std::end()`.
-    //! @param f function to be applied to the result of dereferencing
-    //! the iterator in the range `[begin, end)` (the 'loop body').
+    //! @param f function to be applied as `f(*it)` for the iterator in the
+    //! range `[begin, end)` (the 'loop body').
     template<class Items, class UnaryFunction>
     inline void parallel_for_each(Items& items, UnaryFunction&& f)
     {
@@ -799,7 +813,8 @@ class ThreadPool
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
-    void wait() { task_manager_.wait_for_finish(); }
+    //! @param millis if > 0: stops waiting after millis ms.
+    void wait(size_t millis = 0) { task_manager_.wait_for_finish(millis); }
 
   private:
     void execute_safely(std::function<void()>& task)
@@ -849,7 +864,12 @@ wait()
     ThreadPool::global_instance().wait();
 }
 
-//! computes an index-based parallel for loop.
+//! @brief computes an index-based parallel for loop.
+//!
+//! Waits until all tasks have finished, unless called from a thread that
+//! didn't create the pool. If this is taken into account, parallel loops
+//! can be nested.
+//!
 //! @param begin first index of the loop.
 //! @param end the loop runs in the range `[begin, end)`.
 //! @param f a function taking `int` argument (the 'loop body').
@@ -865,13 +885,16 @@ parallel_for(int begin,
       begin, end, std::forward<Function>(f), nthreads);
 }
 
-//! computes a range-based parllel for loop.
+//! @brief computes a iterator-based parallel for loop.
+//!
+//! Waits until all tasks have finished, unless called from a thread that
+//! didn't create the pool. If this is taken into account, parallel loops
+//! can be nested.
+//!
 //! @param begin iterator for first element.
 //! @param end iterator for last element.
-//! @param f function to be applied to the result of dereferencing
-//! the iterator in the range `[begin, end)` (the 'loop body').
-//! **Caution**: if the iterations are not independent from another,
-//! the tasks need to be synchronized manually (e.g., using mutexes).
+//! @param f function to be applied as `f(*it)` for the iterator in the
+//! range `[begin, end)` (the 'loop body').
 template<class InputIt, class UnaryFunction>
 inline void
 parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
@@ -879,10 +902,15 @@ parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
     ThreadPool::global_instance().parallel_for_each(begin, end, f);
 }
 
-//! computes a range-based parllel for loop.
+//! @brief computes a iterator-based parallel for loop.
+//!
+//! Waits until all tasks have finished, unless called from a thread that
+//! didn't create the pool. If this is taken into account, parallel loops
+//! can be nested.
+//!
 //! @param items an object allowing for `std::begin()` and `std::end()`.
-//! @param f function to be applied to the result of dereferencing
-//! the iterator in the range `[begin, end)` (the 'loop body').
+//! @param f function to be applied as `f(*it)` for the iterator in the
+//! range `[begin, end)` (the 'loop body').
 template<class Items, class UnaryFunction>
 inline void
 parallel_for_each(Items& items, UnaryFunction&& f)

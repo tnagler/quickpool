@@ -5,49 +5,9 @@
 int
 main()
 {
-    // README contents --------------------------------------------
-    std::cout << "- Running contents from README: ";
-
-    // Static access to a global pool
-    {
-        quickpool::push([] { /* some work */ });
-        quickpool::push([] { /* some work */ });
-        quickpool::wait(); // waits for all current jobs to finish
-    }
-
-    // async
-    {
-        auto f = quickpool::async([] { return 1 + 1; });
-        // do something else ...
-        auto result = f.get(); // waits until done and returns result
-    }
-    quickpool::wait();
-
-    // extra arguments
-    {
-        auto work = [](const std::string& title, int i) {
-            // std::cout << title << ": " << i << std::endl;
-        };
-        quickpool::push(work, "first title", 5);
-        quickpool::async(work, "other title", 99);
-        quickpool::wait();
-    }
-
-    // Local thread pool
-    {
-        quickpool::ThreadPool pool; // thread pool with two threads
-        pool.push([] { /* some work */ });
-        pool.async([] { /* some work */ });
-        pool.wait(); // waits for all current jobs to finish
-    }
-
-    std::cout << "OK" << std::endl;
-
-    // unit tests ---------------------------------------
-    std::cout << "- unit tests:        \t\r";
     auto runs = 100;
     for (auto run = 0; run < runs; run++) {
-        std::cout << "- unit tests: run " << run + 1 << "/" << runs << "\t\r"
+        std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs << "\t\r"
                   << std::flush;
 
         // thread pool push

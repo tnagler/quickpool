@@ -7,15 +7,16 @@ main()
 {
     auto runs = 1000;
     for (auto run = 0; run < runs; run++) {
-        std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs << "\t\r"
-                  << std::flush;
+        std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs
+                  << "\t\r" << std::flush;
 
         // thread pool push
         {
             // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
             for (size_t i = 0; i < x.size(); i++)
-                quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
+                quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; },
+                i);
             quickpool::wait();
 
             size_t count_wrong = 0;
@@ -95,7 +96,7 @@ main()
                   "static parallel_for gives wrong result");
             }
 
-            quickpool::ThreadPool pool;
+            quickpool::ThreadPool pool(4);
             pool.parallel_for(0, x.size(), fun);
 
             count_wrong = 0;
@@ -167,7 +168,7 @@ main()
             std::exception_ptr eptr = nullptr;
             try {
                 pool.push([] { throw std::runtime_error("test error"); });
-                std::this_thread::sleep_for(std::chrono::milliseconds(30));
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
                 for (size_t i = 0; i < 10; i++) {
                     pool.push([&] {});
                 }

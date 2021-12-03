@@ -77,12 +77,20 @@ wait();
 Existing sequential loops are easy to parallelize:
 ```cpp
 std::vector<double> x(10, 1);
+
 // sequential version
 for (int i = 0; i < x.size(); ++i) 
   x[i] *= 2;
-
-// parallel  versions
+  
+// parallel version
 parallel_for(0, x.size(), [&] (int i) { x[i] *= 2; };
+
+
+// sequential version
+for (auto& xx : x) 
+  xx *= 2;
+
+// parallel version
 parallel_for_each(x, [] (double& xx) { xx *= 2; };
 ```
 The loop functions automatically wait for all jobs to finish, but only when 

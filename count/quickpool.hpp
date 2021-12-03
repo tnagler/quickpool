@@ -244,6 +244,8 @@ struct Worker
                 this->steal_range(*others);
             }
         } while (!this->done());
+        std::cout << "worker " << std::this_thread::get_id() << "done"
+                  << std::endl;
     }
 
     //! @param workers vector of all workers.
@@ -490,15 +492,14 @@ class TaskManager
     {
         rethrow_exception(); // push() should throw if task has errored.
 
-        todo_.fetch_add(1, mem::release);
+        todo_.fetch_add(1, mem::relaxed);
 
         size_t q_idx;
         while (is_running()) {
-            if (queues_[push_idx_++ % num_queues_].try_push(task))
+            q_idx = push_idx_.fetch_add(1, mem::relaxed) % num_queues_;
+            if (queues_[q_idx].try_push(task))
                 return;
         }
-        // Failed pushing, loop might have finished.
-        todo_.fetch_sub(1, mem::release);
     }
 
     template<typename Task>
@@ -555,7 +556,7 @@ class TaskManager
 
     void report_success()
     {
-        auto n = todo_.fetch_sub(1, mem::release) - 1;
+        auto n = todo_.fetch_sub(1, mem::relaxed) - 1;
         if (n <= 0) {
             // all jobs are done; lock before signal to prevent spurious failure
             {
@@ -638,8 +639,8 @@ class TaskManager
     size_t num_queues_;
 
     //! task management
-    mem::relaxed_atomic<size_t> num_waiting_{ 0 };
-    mem::relaxed_atomic<size_t> push_idx_{ 0 };
+    mem::aligned_atomic<size_t> num_waiting_{ 0 };
+    mem::aligned_atomic<size_t> push_idx_{ 0 };
     mem::aligned_atomic<int> todo_{ 0 };
 
     //! synchronization variables
@@ -760,18 +761,24 @@ class ThreadPool
     template<class UnaryFunction>
     void parallel_for(int begin,
                       int end,
-                      UnaryFunction f,
+                      UnaryFunction&& f,
                       size_t nthreads = std::thread::hardware_concurrency())
     {
         // each worker has its dedicated range, but can steal part of another
         // worker's ranges when done with own
         nthreads = std::min(end - begin, static_cast<int>(nthreads));
-        nthreads = std::min(nthreads, workers_.size());
-        auto workers =
-          loop::create_workers<UnaryFunction>(f, begin, end, nthreads);
+        auto workers = loop::create_workers<UnaryFunction>(
+                            std::cout << "worker " << std::this_thread::get_id() << "done"
+                          << std::endl;
+
+          std::forward<UnaryFunction>(f), begin, end, nthreads);
         for (int k = 0; k < nthreads; k++)
             this->push([=] {
-                workers->at(k).run(workers);
+                       std::cout << "worker " << std::this_thread::get_id() << "start"
+                          << std::endl;
+         workers->at(k).run(workers);
+                std::cout << "worker " << std::this_thread::get_id() << "done"
+                          << std::endl;
             });
         this->wait();
     }
@@ -785,12 +792,8 @@ class ThreadPool
     //! @param items an object allowing for `std::begin()` and `std::end()`.
     //! @param f function to be applied as `f(*it)` for the iterator in the
     //! range `[begin, end)` (the 'loop body').
-    //! @param nthreads optional; limits the number of threads.
     template<class Items, class UnaryFunction>
-    inline void parallel_for_each(
-      Items& items,
-      UnaryFunction&& f,
-      size_t nthreads = std::thread::hardware_concurrency())
+    inline void parallel_for_each(Items& items, UnaryFunction&& f)
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
@@ -882,12 +885,9 @@ parallel_for(int begin,
 //! @param items an object allowing for `std::begin()` and `std::end()`.
 //! @param f function to be applied as `f(*it)` for the iterator in the
 //! range `[begin, end)` (the 'loop body').
-//! @param nthreads optional; limits the number of threads.
 template<class Items, class UnaryFunction>
 inline void
-parallel_for_each(Items& items,
-                  UnaryFunction&& f,
-                  size_t nthreads = std::thread::hardware_concurrency())
+parallel_for_each(Items& items, UnaryFunction&& f)
 {
     ThreadPool::global_instance().parallel_for_each(items, f);
 }

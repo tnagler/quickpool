@@ -42,6 +42,8 @@
 //    - Ring buffer
 //    - Task queue
 //    - Task manager
+// 4. Thread pool class
+// 5. Free-standing functions (main API)
 
 //! quickpool namespace
 namespace quickpool {
@@ -831,7 +833,9 @@ class ThreadPool
     std::vector<std::thread> workers_;
 };
 
-//! Direct access to the global thread pool -------------------
+// 5. ---------------------------------------------------
+
+//! Free-standing functions (main API) 
 
 //! @brief push a job to the global thread pool.
 //! @param f a function.

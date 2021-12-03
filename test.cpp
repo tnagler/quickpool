@@ -110,36 +110,36 @@ main()
             // std::cout << "OK" << std::endl;
         }
 
-        // parallel_for_each()
-        {
-            // std::cout << "      * parallel_for_each: ";
+        // // parallel_for_each()
+        // {
+        //     // std::cout << "      * parallel_for_each: ";
 
-            std::vector<size_t> x(10000, 1);
-            auto fun = [](size_t& xx) { xx = 2 * xx; };
-            quickpool::parallel_for_each(x, fun);
+        //     std::vector<size_t> x(10000, 1);
+        //     auto fun = [](size_t& xx) { xx = 2 * xx; };
+        //     quickpool::parallel_for_each(x, fun);
 
-            size_t count_wrong = 0;
-            for (size_t i = 0; i < x.size(); i++)
-                count_wrong += (x[i] != 2);
-            if (count_wrong > 0) {
-                for (auto xx : x)
-                    std::cout << xx;
-                throw std::runtime_error(
-                  "static parallel_for_each gives wrong result");
-            }
+        //     size_t count_wrong = 0;
+        //     for (size_t i = 0; i < x.size(); i++)
+        //         count_wrong += (x[i] != 2);
+        //     if (count_wrong > 0) {
+        //         for (auto xx : x)
+        //             std::cout << xx;
+        //         throw std::runtime_error(
+        //           "static parallel_for_each gives wrong result");
+        //     }
 
-            quickpool::ThreadPool pool;
-            pool.parallel_for_each(x, fun);
+        //     quickpool::ThreadPool pool;
+        //     pool.parallel_for_each(x, fun);
 
-            count_wrong = 0;
-            for (size_t i = 0; i < x.size(); i++)
-                count_wrong += (x[i] != 4);
-            if (count_wrong > 0)
-                throw std::runtime_error(
-                  "parallel_for_each gives wrong result");
+        //     count_wrong = 0;
+        //     for (size_t i = 0; i < x.size(); i++)
+        //         count_wrong += (x[i] != 4);
+        //     if (count_wrong > 0)
+        //         throw std::runtime_error(
+        //           "parallel_for_each gives wrong result");
 
-            // std::cout << "OK" << std::endl;
-        }
+        //     // std::cout << "OK" << std::endl;
+        // }
 
         // single threaded
         {

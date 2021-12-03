@@ -72,21 +72,15 @@ mod(size_t a, size_t b)
     return a - b * (a / b);
 }
 
-//! Compute the number of padding bytes required to fill space between end of an
-//! aligned object and the next aligned location.
-template<class T, size_t Align>
-constexpr size_t
-required_bytes()
-{
-    size_t free_space = Align - mod(sizeof(std::atomic<T>), Align);
-    return free_space = free_space > 1 ? free_space : 1;
-}
-
-//! Padding bytes from end of aligned object until next alignment point.
+// Padding bytes from end of aligned object until next alignment point. char[]
+// must hold at least one byte.
 template<class T, size_t Align>
 struct padding_bytes
 {
-    char padding_[required_bytes<T, Align>()];
+    static constexpr size_t free_space =
+      Align - mod(sizeof(std::atomic<T>), Align);
+    static constexpr size_t required = free_space > 1 ? free_space : 1;
+    char padding_[required];
 };
 
 struct empty_struct
@@ -835,7 +829,7 @@ class ThreadPool
 
 // 5. ---------------------------------------------------
 
-//! Free-standing functions (main API) 
+//! Free-standing functions (main API)
 
 //! @brief push a job to the global thread pool.
 //! @param f a function.

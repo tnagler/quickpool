@@ -163,137 +163,115 @@ struct State
     int end;
 };
 
-struct Range
+template<typename Function>
+struct Worker
 {
-    Range(int begin, int end)
+
+    Worker() {}
+    Worker(int begin, int end, Function f)
       : state{ State{ begin, end } }
+      , f{ f }
     {}
 
-    Range(const Range& other)
+    Worker(const Worker& other)
       : state{ other.state.load(mem::relaxed) }
+      , f{ other.f }
     {}
 
-    bool empty() const
+    Worker(Worker&& other)
+      : state{ other.state.load(mem::relaxed) }
+      , f{ std::forward<Function>(other.f) }
+    {}
+
+    bool done() const
     {
         auto s = state.load(mem::relaxed);
         return s.end - s.pos < 1;
     }
-    int size() const
+    int tasks_left() const
     {
         auto s = state.load(mem::relaxed);
         return s.end - s.pos;
     }
 
-    bool try_local_work(int& p)
+    void run(std::shared_ptr<std::vector<Worker>> others)
     {
-        auto s = state.load(mem::relaxed);
-        if (s.pos < s.end) {
-            // try to advance position before doing work
-            auto old_s = s;
-            p = s.pos++;
-            if (state.compare_exchange_strong(
-                  old_s, s, mem::seq_cst, mem::relaxed)) {
-                return true; // succeeded
+        State s;
+        do {
+            s = state.load(mem::relaxed);
+            if (s.pos < s.end) {
+                // try to advance position before doing work
+                auto old_s = s;
+                s.pos++;
+                if (state.compare_exchange_weak(
+                      old_s, s, mem::seq_cst, mem::relaxed)) {
+                    f(s.pos - 1); // succeeded
+                }
+            } else {
+                this->steal_range(*others);
             }
-        }
-        return false;
+        } while (!done());
     }
 
-    bool try_steal_range(Range& other_range)
+    void steal_range(std::vector<Worker>& workers)
     {
-        if (this == &other_range) {
-            return false;
-        }
+        do {
+            auto other = find_victim(workers);
+            auto s = other.state.load(mem::relaxed);
+            if (s.pos >= s.end - 1)
+                continue;
 
-        auto s = other_range.state.load(mem::relaxed);
+            auto old_s = s;
+            s.end -= (s.end - s.pos + 1) / 2;
+            if (!other.state.compare_exchange_strong(
+                  old_s, s, mem::seq_cst, mem::relaxed))
+                continue;
 
-        if (s.pos >= s.end - 1)
-            return false;
-
-        State old_s = s;
-        s.end -= (s.end - s.pos + 1) / 2;
-        if (!other_range.state.compare_exchange_strong(old_s, s))
-            return false;
-
-        state.store(State{ s.end, old_s.end }, mem::relaxed);
-        return true;
+            state.store(State{ s.end, old_s.end }, mem::relaxed);
+            break;
+        } while (!all_done(workers));
     }
 
-    mem::aligned_atomic<State> state;
-};
-
-class Ranges
-{
-  public:
-    Ranges(int begin, int end, size_t num_ranges)
+    bool all_done(const std::vector<Worker>& workers)
     {
-        auto num_tasks = end - begin;
-        ranges_.reserve(num_ranges);
-        for (size_t i = 0; i < num_ranges; i++) {
-            ranges_.emplace_back(begin + num_tasks * i / num_ranges,
-                                 begin + num_tasks * (i + 1) / num_ranges);
-        }
-    }
-
-    Range& operator[](size_t index) { return ranges_[index]; }
-
-    bool seems_empty() const
-    {
-        for (const auto& range : ranges_) {
-            if (!range.empty())
+        for (const auto& worker : workers) {
+            if (!worker.done())
                 return false;
         }
         return true;
     }
 
-    std::vector<int> sizes() const
+    Worker& find_victim(std::vector<Worker>& workers)
     {
-        std::vector<int> range_sizes;
-        range_sizes.reserve(ranges_.size());
-        for (const auto& range : ranges_)
-            range_sizes.push_back(range.size());
-        return range_sizes;
-    }
-
-    Range& find_largest_range()
-    {
-        const auto sizes = this->sizes();
-        auto idx = std::distance(sizes.begin(),
-                                 std::max_element(sizes.begin(), sizes.end()));
-        return ranges_[idx];
-    }
-
-    void distribute_to(Range& range)
-    {
-        while (!this->seems_empty()) {
-            if (range.try_steal_range(this->find_largest_range()))
-                break;
+        std::vector<size_t> tasks_left;
+        tasks_left.reserve(workers.size());
+        for (const auto& worker : workers) {
+            tasks_left.push_back(worker.tasks_left());
         }
+
+        auto idx =
+          std::distance(tasks_left.begin(),
+                        std::max_element(tasks_left.begin(), tasks_left.end()));
+        return workers[idx];
     }
 
-  private:
-    std::vector<Range> ranges_;
+    mem::aligned_atomic<State> state;
+    Function f;
 };
 
 template<typename Function>
-void
-run_worker(Function f, std::shared_ptr<Ranges> ranges, size_t id)
+std::shared_ptr<std::vector<Worker<Function>>>
+create_workers(const Function& f, int begin, int end, size_t num_workers)
 {
-    State s, old_s;
-    do {
-        s = (*ranges)[id].state.load(mem::relaxed);
-        if (s.pos < s.end) {
-            // try to advance position before doing work
-            old_s = s;
-            s.pos++;
-            if ((*ranges)[id].state.compare_exchange_strong(
-                  old_s, s, mem::seq_cst, mem::relaxed)) {
-                f(s.pos - 1);
-            }
-        } else {
-            ranges->distribute_to((*ranges)[id]);
-        }
-    } while (!(*ranges)[id].empty());
+    auto num_tasks = std::max(end - begin, static_cast<int>(0));
+    auto workers = new std::vector<Worker<Function>>;
+    workers->reserve(num_workers);
+    for (size_t i = 0; i < num_workers; i++) {
+        workers->emplace_back(begin + num_tasks * i / num_workers,
+                              begin + num_tasks * (i + 1) / num_workers,
+                              f);
+    }
+    return std::shared_ptr<std::vector<Worker<Function>>>(std::move(workers));
 }
 
 } // end namespace loop
@@ -707,18 +685,13 @@ class ThreadPool
                       Function&& f,
                       size_t nthreads = std::thread::hardware_concurrency())
     {
-        if (end <= begin)
-            return;
-        nthreads = std::min(end - begin, static_cast<int>(nthreads));
-
         // each worker has its dedicated range, but can steal part of another
         // worker's ranges when done with own
-        auto ranges = std::make_shared<loop::Ranges>(begin, end, nthreads);
+        nthreads = std::min(end - begin, static_cast<int>(nthreads));
+        auto workers = loop::create_workers<Function>(
+          std::forward<Function>(f), begin, end, nthreads);
         for (int k = 0; k < nthreads; k++)
-            this->push(&loop::run_worker<Function>,
-                       std::forward<Function>(f),
-                       ranges,
-                       k);
+            this->push([=] { workers->at(k).run(workers); });
         this->wait();
     }
 
@@ -764,8 +737,8 @@ push(Function&& f, Args&&... args)
 //! @brief executes a job asynchronously the global thread pool.
 //! @param f a function.
 //! @param args (optional) arguments passed to `f`.
-//! @return A `std::future` for the task. Call `future.get()` to retrieve the
-//! results at a later point in time (blocking).
+//! @return A `std::future` for the task. Call `future.get()` to retrieve
+//! the results at a later point in time (blocking).
 template<class Function, class... Args>
 inline auto
 async(Function&& f, Args&&... args) -> std::future<decltype(f(args...))>

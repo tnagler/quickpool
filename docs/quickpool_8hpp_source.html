@@ -243,9 +243,9 @@ $(function() {
 <div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="keyword">struct </span>Worker</div>
 <div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;{</div>
 <div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    Worker() {}</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    Worker(<span class="keywordtype">int</span> begin, <span class="keywordtype">int</span> end, Function f)</div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    Worker(<span class="keywordtype">int</span> begin, <span class="keywordtype">int</span> end, Function fun)</div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;      : state{ State{ begin, end } }</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;      , f{ f }</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;      , f{ fun }</div>
 <div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    {}</div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160; </div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    Worker(Worker&amp;&amp; other)</div>

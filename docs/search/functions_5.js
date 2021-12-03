@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['stop_21',['stop',['../classquickpool_1_1TodoList.html#a01dd953ebc1c6988c621c474faf8a73c',1,'quickpool::TodoList']]]
+  ['taskqueue_57',['TaskQueue',['../classquickpool_1_1detail_1_1TaskQueue.html#a76f8eeb2cd6a74c31099c30344eec2eb',1,'quickpool::detail::TaskQueue']]],
+  ['threadpool_58',['ThreadPool',['../classquickpool_1_1ThreadPool.html#a77be0411acd893ba35e966beb05834b0',1,'quickpool::ThreadPool::ThreadPool()'],['../classquickpool_1_1ThreadPool.html#ab067ffcc9f09b64eb16591b36a6b9f4a',1,'quickpool::ThreadPool::ThreadPool(size_t n_workers)']]],
+  ['try_5fpop_59',['try_pop',['../classquickpool_1_1detail_1_1TaskQueue.html#a988489039d927557ee5d74f31e485520',1,'quickpool::detail::TaskQueue']]],
+  ['try_5fpush_60',['try_push',['../classquickpool_1_1detail_1_1TaskQueue.html#a7667f08bc10d5d83d6c2ab248016940e',1,'quickpool::detail::TaskQueue']]]
 ];

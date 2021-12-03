@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['global_5finstance_20',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
+  ['global_5finstance_12',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
 ];

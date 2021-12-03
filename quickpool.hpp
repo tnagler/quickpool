@@ -679,28 +679,48 @@ class ThreadPool
         return task_ptr->get_future();
     }
 
-    template<class Function>
+    //! computes an index-based parallel for loop.
+    //! @param begin first index of the loop.
+    //! @param end the loop runs in the range `[begin, end)`.
+    //! @param f a function taking `int` argument (the 'loop body').
+    //! @param nthreads optional; limits the number of threads.
+    template<class UnaryFunction>
     void parallel_for(int begin,
                       int end,
-                      Function&& f,
+                      UnaryFunction&& f,
                       size_t nthreads = std::thread::hardware_concurrency())
     {
         // each worker has its dedicated range, but can steal part of another
         // worker's ranges when done with own
         nthreads = std::min(end - begin, static_cast<int>(nthreads));
-        auto workers = loop::create_workers<Function>(
-          std::forward<Function>(f), begin, end, nthreads);
+        auto workers = loop::create_workers<UnaryFunction>(
+          std::forward<UnaryFunction>(f), begin, end, nthreads);
         for (int k = 0; k < nthreads; k++)
             this->push([=] { workers->at(k).run(workers); });
         this->wait();
     }
 
-    template<class Function, class Items>
-    void parallel_for_each(Items& items, Function&& f)
+    //! computes a range-based parllel for loop.
+    //! @param begin iterator for first element.
+    //! @param end iterator for last element.
+    //! @param f function to be applied to the result of dereferencing
+    //! the iterator in the range `[begin, end)` (the 'loop body').
+    template<class InputIt, class UnaryFunction>
+    inline void parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
     {
-        this->parallel_for(
-          0, items.size(), [&items, &f](size_t i) { f(items[i]); });
+        auto size = std::distance(begin, end);
+        this->parallel_for(0, size, [&, f](ptrdiff_t i) { f(*(begin + i)); });
         this->wait();
+    }
+
+    //! computes a range-based parllel for loop.
+    //! @param items an object allowing for `std::begin()` and `std::end()`.
+    //! @param f function to be applied to the result of dereferencing
+    //! the iterator in the range `[begin, end)` (the 'loop body').
+    template<class Items, class UnaryFunction>
+    inline void parallel_for_each(Items& items, UnaryFunction&& f)
+    {
+        this->parallel_for_each(std::begin(items), std::end(items), f);
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
@@ -754,6 +774,11 @@ wait()
     ThreadPool::global_instance().wait();
 }
 
+//! computes an index-based parallel for loop.
+//! @param begin first index of the loop.
+//! @param end the loop runs in the range `[begin, end)`.
+//! @param f a function taking `int` argument (the 'loop body').
+//! @param nthreads optional; limits the number of threads.
 template<class Function>
 inline void
 parallel_for(int begin,
@@ -765,9 +790,27 @@ parallel_for(int begin,
       begin, end, std::forward<Function>(f), nthreads);
 }
 
-template<class Function, class Items>
+//! computes a range-based parllel for loop.
+//! @param begin iterator for first element.
+//! @param end iterator for last element.
+//! @param f function to be applied to the result of dereferencing
+//! the iterator in the range `[begin, end)` (the 'loop body').
+//! **Caution**: if the iterations are not independent from another,
+//! the tasks need to be synchronized manually (e.g., using mutexes).
+template<class InputIt, class UnaryFunction>
 inline void
-parallel_for_each(Items& items, Function&& f)
+parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
+{
+    ThreadPool::global_instance().parallel_for_each(begin, end, f);
+}
+
+//! computes a range-based parllel for loop.
+//! @param items an object allowing for `std::begin()` and `std::end()`.
+//! @param f function to be applied to the result of dereferencing
+//! the iterator in the range `[begin, end)` (the 'loop body').
+template<class Items, class UnaryFunction>
+inline void
+parallel_for_each(Items& items, UnaryFunction&& f)
 {
     ThreadPool::global_instance().parallel_for_each(items, f);
 }

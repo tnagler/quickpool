@@ -78,17 +78,13 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a98f54e1ad962afe63e56d75225c8a92e"><td class="memItemLeft" align="right" valign="top"><a id="a98f54e1ad962afe63e56d75225c8a92e"></a>
-char&#160;</td><td class="memItemRight" valign="bottom"><b>padding_</b> [padding_size_]</td></tr>
-<tr class="separator:a98f54e1ad962afe63e56d75225c8a92e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae57ca3abe737c541a91aed16b9c8aa68"><td class="memItemLeft" align="right" valign="top"><a id="ae57ca3abe737c541a91aed16b9c8aa68"></a>
+char&#160;</td><td class="memItemRight" valign="bottom"><b>padding_</b> [padding_size_+sizeof(void *)]</td></tr>
+<tr class="separator:ae57ca3abe737c541a91aed16b9c8aa68"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
-<tr class="memitem:a191ababf034cefceb4ff9ec7427eabaf"><td class="memItemLeft" align="right" valign="top"><a id="a191ababf034cefceb4ff9ec7427eabaf"></a>
-static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>obj_size</b> = sizeof(std::atomic&lt;T&gt;)</td></tr>
-<tr class="separator:a191ababf034cefceb4ff9ec7427eabaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00135aeafc01297e843054b76e2fa9dc"><td class="memItemLeft" align="right" valign="top"><a id="a00135aeafc01297e843054b76e2fa9dc"></a>
-static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>free_space</b> = Align - mod(obj_size, Align)</td></tr>
+<tr class="memitem:a00135aeafc01297e843054b76e2fa9dc"><td class="memItemLeft" align="right" valign="top">static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>free_space</b></td></tr>
 <tr class="separator:a00135aeafc01297e843054b76e2fa9dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3bafd84d124b0db8e6b430d155f12b7f"><td class="memItemLeft" align="right" valign="top"><a id="a3bafd84d124b0db8e6b430d155f12b7f"></a>
 static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>padding_size_</b> = free_space &gt; 1 ? free_space : 1</td></tr>
@@ -99,8 +95,37 @@ static constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>pa
 struct quickpool::mem::padding_impl::padding_bytes&lt; T, Align &gt;</h3>
 
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00053">53</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00055">55</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+</div><h2 class="groupheader">Member Data Documentation</h2>
+<a id="a00135aeafc01297e843054b76e2fa9dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00135aeafc01297e843054b76e2fa9dc">&#9670;&nbsp;</a></span>free_space</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class T , size_t Align&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr size_t <a class="el" href="structquickpool_1_1mem_1_1padding__impl_1_1padding__bytes.html">quickpool::mem::padding_impl::padding_bytes</a>&lt; T, Align &gt;::free_space</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">      Align - mod(<span class="keyword">sizeof</span>(std::atomic&lt;T&gt;), Align)</div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00057">57</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
 <li><a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a></li>
 </ul>
 </div><!-- contents -->

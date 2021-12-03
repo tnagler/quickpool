@@ -68,30 +68,38 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><object type="image/svg+xml" data="https://github.com/tnagler/quickpool/actions/workflows/main.yml/badge.svg?branch=main" style="pointer-events: none;">build status</object> <a href="https://www.codacy.com/gh/tnagler/quickpool/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tnagler/quickpool&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/ed2deb06d4454ab3b488536426ec3066" alt="Codacy Badge" class="inline"/></a> <a href="https://codecov.io/gh/tnagler/quickpool"><object type="image/svg+xml" data="https://codecov.io/gh/tnagler/quickpool/branch/main/graph/badge.svg?token=ERPXZC8378" style="pointer-events: none;">codecov</object></a> <a href="https://opensource.org/licenses/MIT"><object type="image/svg+xml" data="https://img.shields.io/badge/License-MIT-yellow.svg" style="pointer-events: none;">License: MIT</object></a> <a href="https://vinecopulib.github.io/pyvinecopulib/"><object type="image/svg+xml" data="https://img.shields.io/website/http/tnagler.github.io/quickpool.svg" style="pointer-events: none;">Documentation</object></a> <a href="https://zenodo.org/badge/latestdoi/427536398"><object type="image/svg+xml" data="https://zenodo.org/badge/427536398.svg" style="pointer-events: none;">DOI</object></a></p>
-<p>An easy-to-use, header-only work stealing thread pool in C++11.</p>
+<p>Blazing fast and easy thread pool and parallel loops in C++11.</p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Why quickpool?</h1>
 <ul>
-<li><b>no install</b>: single-header library, <a href="https://en.cppreference.com/w/cpp/compiler_support">C++11 compliant</a>, no external dependencies.</li>
-<li><b>fast</b>: Uses a <a href="https://en.wikipedia.org/wiki/Work_stealing">work stealing</a> queue with <a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom">lock-free</a> pops.</li>
-<li><b>user friendly</b>: Dead simple <a href="https://tnagler.github.io/quickpool/">API</a>, including direct access to a global pool.</li>
-<li><b>light weight</b>: Less than 500 LOC including API documentation, comments, and whitespace.</li>
+<li><b>no install</b>: single-header library, C++11 compliant, no external dependencies.</li>
+<li><b>high speed</b>:<ul>
+<li><a href="https://en.wikipedia.org/wiki/Work_stealing">Work stealing</a> task queue with <a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom">lock-free</a> pops.</li>
+<li><a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm#Lock-freedom">Lock-free</a> parallel loops with <a href="https://en.wikipedia.org/wiki/Load_balancing_(computing)">perfect load balancing</a>.</li>
 </ul>
+</li>
+<li><b>user friendly</b>: Dead simple <a href="https://tnagler.github.io/quickpool/">API</a>, including direct access to a global pool.</li>
+</ul>
+<p>Basic usage is demonstrated below, see also the <a href="https://tnagler.github.io/quickpool/">API documentation</a>.</p>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Usage</h1>
-<p>Basic usage is demonstrated below. See the <a href="https://tnagler.github.io/quickpool/">API documentation</a> for more details.</p>
+<p>The easiest method is to use the free-standing functions:</p><ul>
+<li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#affc41895dab281715c271aca3649e830"><code>quickpool::push(f, args...)</code></a> schedules a task running <code>f(args...)</code> with no return, <br  />
+</li>
+<li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a"><code>quickpool::async(f, args...)</code></a> schedules a task running <code>f(args...)</code> and returns a <a href="https://en.cppreference.com/w/cpp/thread/future"><code>std::future</code></a>,</li>
+<li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#a086671a25cc4f207112bc82a00688301"><code>quickpool::wait()</code></a> waits for all scheduled tasks to finish.</li>
+<li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c"><code>quickpool::parallel_for(b, e, f)</code></a> runs <code>f(i)</code> for all <code>b &lt;= i &lt; e</code>,</li>
+<li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#aeb91fe18664b8d06523aba081174abe3"><code>quickpool::parallel_for_each(x, f)</code></a> runs <code>f(*it)</code> for all <code>x.begin() &lt;= it &lt; x.end()</code>.</li>
+</ul>
+<p>They all dispatch to a global thread pool instantiated only once with as many threads as there are cores.</p>
 <h2><a class="anchor" id="autotoc_md3"></a>
-Static access to a global pool</h2>
-<p>The easiest method is to use the <a href="https://tnagler.github.io/quickpool/namespacequickpool.html#affc41895dab281715c271aca3649e830"><code>quickpool::push()</code></a>, <a href="https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a"><code>quickpool::async()</code></a>, and <a href="https://tnagler.github.io/quickpool/namespacequickpool.html#a086671a25cc4f207112bc82a00688301"><code>quickpool::wait()</code></a> functions. They give access to a global thread pool that is only instantiated once with as many threads as there are cores.</p>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;quickpool.hpp&quot;</span></div>
+Thread pool</h2>
+<div class="fragment"><div class="line"><a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
+<div class="line"><a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>(); <span class="comment">// wait for current jobs to finish</span></div>
 <div class="line"> </div>
-<div class="line"><a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
-<div class="line"><a class="code" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a>([] { <span class="comment">/* some work */</span> });</div>
-<div class="line"><a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>(); <span class="comment">// waits for all current jobs to finish</span></div>
-</div><!-- fragment --><p>If a task returns a result, use <a href="https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a"><code>async()</code></a>, which returns a <a href="https://en.cppreference.com/w/cpp/thread/future"><code>std::future</code></a> for the result.</p>
-<div class="fragment"><div class="line"><span class="keyword">auto</span> f = <a class="code" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a>([] { <span class="keywordflow">return</span> 1 + 1; });</div>
+<div class="line"><span class="keyword">auto</span> f = <a class="code" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a>([] { <span class="keywordflow">return</span> 1 + 1; }); <span class="comment">// get future for result</span></div>
 <div class="line"><span class="comment">// do something else ...</span></div>
-<div class="line"><span class="keyword">auto</span> result = f.get();  <span class="comment">// waits until done and returns result</span></div>
+<div class="line"><span class="keyword">auto</span> result = f.get(); <span class="comment">// waits until done and returns result</span></div>
 </div><!-- fragment --><p>Both <a href="https://tnagler.github.io/quickpool/namespacequickpool.html#affc41895dab281715c271aca3649e830"><code>push()</code></a> and <a href="https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a"><code>async()</code></a> can be called with extra arguments passed to the function.</p>
 <div class="fragment"><div class="line"><span class="keyword">auto</span> work = [] (<span class="keyword">const</span> std::string&amp; title, <span class="keywordtype">int</span> i) { </div>
 <div class="line">  std::cout &lt;&lt; title &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; i &lt;&lt; std::endl; </div>
@@ -100,24 +108,59 @@ Static access to a global pool</h2>
 <div class="line"><a class="code" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a>(work, <span class="stringliteral">&quot;other title&quot;</span>, 99);</div>
 <div class="line"><a class="code" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a>();</div>
 </div><!-- fragment --><h2><a class="anchor" id="autotoc_md4"></a>
+Parallel loops</h2>
+<p>Existing sequential loops are easy to parallelize: </p><div class="fragment"><div class="line">std::vector&lt;double&gt; x(10, 1);</div>
+<div class="line"><span class="comment">// sequential version</span></div>
+<div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; x.size(); ++i) </div>
+<div class="line">  x[i] *= 2;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// parallel  versions</span></div>
+<div class="line"><a class="code" href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">quickpool::parallel_for</a>(0, x.size(), [&amp;] (<span class="keywordtype">int</span> i) { x[i] *= 2; };</div>
+<div class="line"><a class="code" href="namespacequickpool.html#aa25ec2f27552cfb9647e1d50e2251e74">quickpool::parallel_for_each</a>(x.begin(), x.end(), [] (<span class="keywordtype">double</span>&amp; xx) { xx *= 2; };</div>
+<div class="line"><a class="code" href="namespacequickpool.html#aa25ec2f27552cfb9647e1d50e2251e74">quickpool::parallel_for_each</a>(x, [] (<span class="keywordtype">double</span>&amp; xx) { xx *= 2; };</div>
+</div><!-- fragment --><p>The loop functions automatically wait for all jobs to finish, but only when called from the main thread.</p>
+<h2><a class="anchor" id="autotoc_md5"></a>
+Nested parallel loops</h2>
+<p>It is possible to nest parallel for loops, provided that we don't need to wait for inner loops. </p><div class="fragment"><div class="line">std::vector&lt;double&gt; x(10, 1);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// sequential version</span></div>
+<div class="line"><span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; x.size(); ++i) {</div>
+<div class="line">  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 4; j &lt; 9; j++) {</div>
+<div class="line">    x[i] *= j;</div>
+<div class="line">  }</div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// parallel version</span></div>
+<div class="line"><a class="code" href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">quickpool::parallel_for</a>(0, x.size(), [&amp;] (<span class="keywordtype">int</span> i) { </div>
+<div class="line">  <span class="comment">// *important*: capture i by copy</span></div>
+<div class="line">  quickpool::parallel_for(4, 9, [&amp;, i] (int j) {  x[i] *= j; }); <span class="comment">// doesn&#39;t wait</span></div>
+<div class="line">}; <span class="comment">// does wait</span></div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md6"></a>
 Local thread pool</h2>
 <p>A <a href="https://tnagler.github.io/quickpool/classquickpool_1_1ThreadPool.html"><code>ThreadPool</code></a> can be set up manually, with an arbitrary number of threads. When the pool goes out of scope, all threads joined.</p>
-<div class="fragment"><div class="line">{</div>
-<div class="line">  <a class="code" href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a> pool(2);  <span class="comment">// thread pool with two threads</span></div>
-<div class="line">  pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] {});</div>
-<div class="line">  pool.<a class="code" href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">async</a>([] {});</div>
-<div class="line">  pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>();</div>
-<div class="line">}</div>
-<div class="line"><span class="comment">// threads are joined</span></div>
+<div class="fragment"><div class="line"><a class="code" href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a> pool(2); <span class="comment">// thread pool with two threads</span></div>
+<div class="line"> </div>
+<div class="line">pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] {});</div>
+<div class="line">pool.<a class="code" href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">async</a>([] {});</div>
+<div class="line">pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a>();</div>
+<div class="line"> </div>
+<div class="line">pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a4aaab51f600b20c7a6524a201c8b84e0">parallel_for</a>(2, 5, [&amp;] (<span class="keywordtype">int</span> i) {});</div>
+<div class="line"><span class="keyword">auto</span> x = std::vector&lt;double&gt;{10};</div>
+<div class="line">pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a55e065e0ab3ea40505a7db85b1194e72">parallel_for_each</a>(x.begin(), x.end(), [] (<span class="keywordtype">double</span>&amp; xx) {});</div>
+<div class="line">pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a55e065e0ab3ea40505a7db85b1194e72">parallel_for_each</a>(x, [] (<span class="keywordtype">double</span>&amp; xx) {});</div>
 </div><!-- fragment --> </div></div><!-- PageDoc -->
 </div><!-- contents -->
-<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00577">quickpool.hpp:577</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a0d8a3e00d2095145a4899b97080471ce"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00540">quickpool.hpp:540</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00585">quickpool.hpp:585</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00528">quickpool.hpp:528</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00453">quickpool.hpp:453</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00514">quickpool.hpp:514</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Direct access to the global thread pool ----------------—.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00564">quickpool.hpp:564</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a55e065e0ab3ea40505a7db85b1194e72"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a55e065e0ab3ea40505a7db85b1194e72">quickpool::ThreadPool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(InputIt begin, InputIt end, UnaryFunction &amp;&amp;f)</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00709">quickpool.hpp:709</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00764">quickpool.hpp:764</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a0d8a3e00d2095145a4899b97080471ce"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00727">quickpool.hpp:727</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_aa72b140a64eabe34cd9302bab837c24c"><div class="ttname"><a href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">quickpool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, Function &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00784">quickpool.hpp:784</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00772">quickpool.hpp:772</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_aa25ec2f27552cfb9647e1d50e2251e74"><div class="ttname"><a href="namespacequickpool.html#aa25ec2f27552cfb9647e1d50e2251e74">quickpool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(InputIt begin, InputIt end, UnaryFunction &amp;&amp;f)</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00802">quickpool.hpp:802</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a4aaab51f600b20c7a6524a201c8b84e0"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a4aaab51f600b20c7a6524a201c8b84e0">quickpool::ThreadPool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, UnaryFunction &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00688">quickpool.hpp:688</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00671">quickpool.hpp:671</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00596">quickpool.hpp:596</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00657">quickpool.hpp:657</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Direct access to the global thread pool ----------------—.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00751">quickpool.hpp:751</a></div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

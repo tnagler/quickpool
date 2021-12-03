@@ -109,6 +109,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af803164106b0c9181e01eb59bf9abdcc"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">async</a> (Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</td></tr>
 <tr class="memdesc:af803164106b0c9181e01eb59bf9abdcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">executes a job asynchronously the global thread pool.  <a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">More...</a><br /></td></tr>
 <tr class="separator:af803164106b0c9181e01eb59bf9abdcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4aaab51f600b20c7a6524a201c8b84e0"><td class="memTemplParams" colspan="2">template&lt;class UnaryFunction &gt; </td></tr>
+<tr class="memitem:a4aaab51f600b20c7a6524a201c8b84e0"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a4aaab51f600b20c7a6524a201c8b84e0">parallel_for</a> (int begin, int end, UnaryFunction &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</td></tr>
+<tr class="separator:a4aaab51f600b20c7a6524a201c8b84e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55e065e0ab3ea40505a7db85b1194e72"><td class="memTemplParams" colspan="2">template&lt;class InputIt , class UnaryFunction &gt; </td></tr>
+<tr class="memitem:a55e065e0ab3ea40505a7db85b1194e72"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a55e065e0ab3ea40505a7db85b1194e72">parallel_for_each</a> (InputIt begin, InputIt end, UnaryFunction &amp;&amp;f)</td></tr>
+<tr class="separator:a55e065e0ab3ea40505a7db85b1194e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad156c576dcd6fb314071ee8a028f2739"><td class="memTemplParams" colspan="2">template&lt;class Items , class UnaryFunction &gt; </td></tr>
+<tr class="memitem:ad156c576dcd6fb314071ee8a028f2739"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a> (Items &amp;items, UnaryFunction &amp;&amp;f)</td></tr>
+<tr class="separator:ad156c576dcd6fb314071ee8a028f2739"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d8a3e00d2095145a4899b97080471ce"><td class="memItemLeft" align="right" valign="top"><a id="a0d8a3e00d2095145a4899b97080471ce"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce">wait</a> ()</td></tr>
 <tr class="memdesc:a0d8a3e00d2095145a4899b97080471ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the global thread pool. <br /></td></tr>
@@ -124,7 +133,7 @@ static <a class="el" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> &am
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A work stealing thread pool. </p>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00453">453</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00596">596</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ab067ffcc9f09b64eb16591b36a6b9f4a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab067ffcc9f09b64eb16591b36a6b9f4a">&#9670;&nbsp;</a></span>ThreadPool()</h2>
@@ -156,7 +165,7 @@ static <a class="el" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> &am
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00464">464</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00607">607</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -208,7 +217,169 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00528">528</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00671">671</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a4aaab51f600b20c7a6524a201c8b84e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4aaab51f600b20c7a6524a201c8b84e0">&#9670;&nbsp;</a></span>parallel_for()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class UnaryFunction &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void quickpool::ThreadPool::parallel_for </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UnaryFunction &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>nthreads</em> = <code>std::thread::hardware_concurrency()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>computes an index-based parallel for loop. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">begin</td><td>first index of the loop. </td></tr>
+    <tr><td class="paramname">end</td><td>the loop runs in the range <code>[begin, end)</code>. </td></tr>
+    <tr><td class="paramname">f</td><td>a function taking <code>int</code> argument (the 'loop body'). </td></tr>
+    <tr><td class="paramname">nthreads</td><td>optional; limits the number of threads. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00688">688</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a55e065e0ab3ea40505a7db85b1194e72"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55e065e0ab3ea40505a7db85b1194e72">&#9670;&nbsp;</a></span>parallel_for_each() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class InputIt , class UnaryFunction &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void quickpool::ThreadPool::parallel_for_each </td>
+          <td>(</td>
+          <td class="paramtype">InputIt&#160;</td>
+          <td class="paramname"><em>begin</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">InputIt&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UnaryFunction &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>computes a range-based parllel for loop. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">begin</td><td>iterator for first element. </td></tr>
+    <tr><td class="paramname">end</td><td>iterator for last element. </td></tr>
+    <tr><td class="paramname">f</td><td>function to be applied to the result of dereferencing the iterator in the range <code>[begin, end)</code> (the 'loop body'). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00709">709</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+
+</div>
+</div>
+<a id="ad156c576dcd6fb314071ee8a028f2739"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad156c576dcd6fb314071ee8a028f2739">&#9670;&nbsp;</a></span>parallel_for_each() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Items , class UnaryFunction &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void quickpool::ThreadPool::parallel_for_each </td>
+          <td>(</td>
+          <td class="paramtype">Items &amp;&#160;</td>
+          <td class="paramname"><em>items</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">UnaryFunction &amp;&amp;&#160;</td>
+          <td class="paramname"><em>f</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>computes a range-based parllel for loop. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">items</td><td>an object allowing for <code>std::begin()</code> and <code>std::end()</code>. </td></tr>
+    <tr><td class="paramname">f</td><td>function to be applied to the result of dereferencing the iterator in the range <code>[begin, end)</code> (the 'loop body'). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00721">721</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -257,7 +428,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00514">514</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00657">657</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>

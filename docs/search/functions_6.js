@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['threadpool_22',['ThreadPool',['../classquickpool_1_1ThreadPool.html#a77be0411acd893ba35e966beb05834b0',1,'quickpool::ThreadPool::ThreadPool()'],['../classquickpool_1_1ThreadPool.html#ab067ffcc9f09b64eb16591b36a6b9f4a',1,'quickpool::ThreadPool::ThreadPool(size_t n_workers)']]],
-  ['todolist_23',['TodoList',['../classquickpool_1_1TodoList.html#a11bb98b8f7bc86d7931d4d61c62605dd',1,'quickpool::TodoList']]]
+  ['wait_61',['wait',['../classquickpool_1_1detail_1_1TaskQueue.html#a8fc1d49770992f5721327d9194d15708',1,'quickpool::detail::TaskQueue::wait()'],['../classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce',1,'quickpool::ThreadPool::wait()'],['../namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291',1,'quickpool::wait()']]],
+  ['wait_5ffor_5ffinish_62',['wait_for_finish',['../classquickpool_1_1detail_1_1TaskManager.html#a3c1ea595358046d82ddce5eecb3ba78e',1,'quickpool::detail::TaskManager']]]
 ];

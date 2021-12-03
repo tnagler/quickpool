@@ -29,9 +29,26 @@
 #include <thread>
 #include <vector>
 
+// Layout of quickpool.hpp
+//
+// 1. Memory related utilities.
+//    - Memory order aliases
+//    - Class for padding bytes
+//    - Class for cache aligned atomics
+//    - Class for load/assign atomics with relaxed order
+// 2. Loop related utilities.
+//    - Worker class for parallel for loops
+// 3. Task management utilities.
+//    - Ring buffer
+//    - Task queue
+//    - Task manager 
+
 //! quickpool namespace
 namespace quickpool {
 
+// 1. --------------------------------------------------------------------------
+
+//! Memory related utilities.
 namespace mem {
 
 //! convenience definitions
@@ -40,29 +57,41 @@ static constexpr std::memory_order acquire = std::memory_order_acquire;
 static constexpr std::memory_order release = std::memory_order_release;
 static constexpr std::memory_order seq_cst = std::memory_order_seq_cst;
 
+//! Padding char[]s always must hold at least one char. If the size of the
+//! object ends at an alignment point, we don't want to pad one extra byte
+//! however. The construct below ensures that padding bytes are only added if
+//! necessary.
 namespace padding_impl {
 
-// Padding char[]s always must hold at least one char. We do some template
-// metaprogramming to ensure padding is only added if required.
-
+//! constexpr modulo operator.
 constexpr size_t
 mod(size_t a, size_t b)
 {
     return a - b * (a / b);
 }
 
+//! Compute the number of padding bytes required to fill space between end of an
+//! aligned object and the next aligned location.
+template<class T, size_t Align>
+constexpr size_t
+required_bytes()
+{
+    size_t free_space = Align - mod(sizeof(std::atomic<T>), Align);
+    return free_space = free_space > 1 ? free_space : 1;
+}
+
+//! Padding bytes from end of aligned object until next alignment point.
 template<class T, size_t Align>
 struct padding_bytes
 {
-    static constexpr size_t free_space =
-      Align - mod(sizeof(std::atomic<T>), Align);
-    static constexpr size_t padding_size_ = free_space > 1 ? free_space : 1;
-    char padding_[padding_size_ + sizeof(void*)];
+    char padding_[required_bytes<T, Align>()];
 };
 
 struct empty_struct
 {};
 
+//! Class holding padding bytes is necessary. Classes can inherit from this
+//! to automically add padding if necessary.
 template<class T, size_t Align>
 struct padding
   : std::conditional<mod(sizeof(std::atomic<T>), Align) != 0,
@@ -72,6 +101,9 @@ struct padding
 
 } // end namespace padding_impl
 
+//! Memory-aligned atomic `std::atomic<T>`. Behaves like `std::atomic<T>`, but
+//! overloads operators `new` and `delete` to align its memory location. Padding
+//! bytes are added if necessary.
 template<class T, size_t Align = 64>
 struct alignas(Align) aligned_atomic
   : public std::atomic<T>
@@ -85,21 +117,11 @@ struct alignas(Align) aligned_atomic
     {}
 
     // Assignment operators have been deleted, must redefine.
-    T operator=(T desired) noexcept
-    {
-        this->store(desired);
-        return desired;
-    }
-
-    T operator=(T desired) volatile noexcept
-    {
-        this->store(desired);
-        return desired;
-    }
+    T operator=(T x) noexcept { return std::atomic<T>::operator=(x); }
+    T operator=(T x) volatile noexcept { return std::atomic<T>::operator=(x); }
 
     // The alloc/dealloc mechanism is pretty much
     // https://www.boost.org/doc/libs/1_76_0/boost/align/detail/aligned_alloc.hpp
-
     static void* operator new(size_t count) noexcept
     {
         // Make sure alignment is at least that of void*.
@@ -131,16 +153,17 @@ struct alignas(Align) aligned_atomic
     static void operator delete(void* ptr)
     {
         if (ptr) {
+            // Read pointer to start of malloc()'ed block and free there.
             std::free(*(static_cast<void**>(ptr) - 1));
         }
     }
 };
 
-// fast atomic with no memory ordering guarantees
+//! Fast and simple load/assign atomic with no memory ordering guarantees.
 template<typename T>
 struct relaxed_atomic : public aligned_atomic<T>
 {
-    relaxed_atomic(T value)
+    explicit relaxed_atomic(T value)
       : mem::aligned_atomic<T>(value)
     {}
 
@@ -153,20 +176,33 @@ struct relaxed_atomic : public aligned_atomic<T>
     }
 };
 
-}
+} // end namespace mem
 
+// 2. --------------------------------------------------------------------------
+
+//! Loop related utilities.
 namespace loop {
 
+//! Worker state.
 struct State
 {
-    int pos;
-    int end;
+    int pos; //!< position in the loop range
+    int end; //!< end of range assigned to worker
 };
 
+//! Worker class for parallel loops.
+//!
+//! When a worker completes its own range, it steals half of the remaining range
+//! of another worker. The number of steals (= only source of contention) is
+//! therefore only logarithmic in the number of tasks. The algorithm uses
+//! double-width compare-and-swap, which is lock-free on most modern processor
+//! architectures.
+//!
+//! @tparam type of function processing the loop (required to account for
+//! type-erasure).
 template<typename Function>
 struct Worker
 {
-
     Worker() {}
     Worker(int begin, int end, Function f)
       : state{ State{ begin, end } }
@@ -183,55 +219,66 @@ struct Worker
       , f{ std::forward<Function>(other.f) }
     {}
 
-    bool done() const
-    {
-        auto s = state.load(mem::relaxed);
-        return s.end - s.pos < 1;
-    }
-    int tasks_left() const
+    size_t tasks_left() const
     {
         auto s = state.load(mem::relaxed);
         return s.end - s.pos;
     }
 
+    bool done() const { return (tasks_left() == 0); }
+
+    //! @param others pointer to the vector of all workers.
     void run(std::shared_ptr<std::vector<Worker>> others)
     {
-        State s;
+        State s, s_old; // temporary state variables
         do {
             s = state.load(mem::relaxed);
             if (s.pos < s.end) {
-                // try to advance position before doing work
-                auto old_s = s;
+                // Protect slot by trying to advance position before doing work.
+                s_old = s;
                 s.pos++;
+                // Another worker might have changed the end of the range.
+                // Check atomically if the state is unaltered and, if so,
+                // replace by advanced state.
                 if (state.compare_exchange_weak(
-                      old_s, s, mem::seq_cst, mem::relaxed)) {
-                    f(s.pos - 1); // succeeded
+                      s_old, s, mem::seq_cst, mem::relaxed)) {
+                    f(s_old.pos); // succeeded, do work
                 }
             } else {
+                // Reached end of own range, steal range from others. Range
+                // remains empty if all work is done, so we can leave the loop.
                 this->steal_range(*others);
             }
-        } while (!done());
+        } while (!this->done());
     }
 
+    //! @param workers vector of all workers.
     void steal_range(std::vector<Worker>& workers)
     {
+        // If a steal fails, repeat until no work is left.
+        State s, s_old; // temporary state variables
         do {
             auto other = find_victim(workers);
-            auto s = other.state.load(mem::relaxed);
-            if (s.pos >= s.end - 1)
-                continue;
+            s = other.state.load(mem::relaxed);
+            if (s.pos >= s.end - 1) {
+                continue; // other range is empty by now
+            }
 
-            auto old_s = s;
+            // Remove second half of the range. Check atomically if the state is
+            // unaltered and, if so, replace with reduced range.
+            s_old = s;
             s.end -= (s.end - s.pos + 1) / 2;
-            if (!other.state.compare_exchange_strong(
-                  old_s, s, mem::seq_cst, mem::relaxed))
-                continue;
+            if (other.state.compare_exchange_strong(
+                  s_old, s, mem::seq_cst, mem::relaxed)) {
+                // succeeded, update own range
+                state.store(State{ s.end, old_s.end }, mem::relaxed);
+                break;
+            }
 
-            state.store(State{ s.end, old_s.end }, mem::relaxed);
-            break;
         } while (!all_done(workers));
     }
 
+    //! @param workers vector of all workers.
     bool all_done(const std::vector<Worker>& workers)
     {
         for (const auto& worker : workers) {
@@ -241,6 +288,9 @@ struct Worker
         return true;
     }
 
+    //! targets the worker with the largest remaining range to minimize number
+    //! of steal events.
+    //! @param others vector of all workers.
     Worker& find_victim(std::vector<Worker>& workers)
     {
         std::vector<size_t> tasks_left;
@@ -248,17 +298,18 @@ struct Worker
         for (const auto& worker : workers) {
             tasks_left.push_back(worker.tasks_left());
         }
-
-        auto idx =
-          std::distance(tasks_left.begin(),
-                        std::max_element(tasks_left.begin(), tasks_left.end()));
+        auto max_it = std::max_element(tasks_left.begin(), tasks_left.end());
+        auto idx = std::distance(tasks_left.begin(), max_it);
         return workers[idx];
     }
 
-    mem::aligned_atomic<State> state;
-    Function f;
+    mem::aligned_atomic<State> state; //!< worker state `{pos, end}`
+    Function f;                       //< function applied to the loop index
 };
 
+//! creates loop workers. They must be passed to each worker using a shared
+//! pointer, so that they persist if an inner `parallel_for()` in a nested
+//! loop exits.
 template<typename Function>
 std::shared_ptr<std::vector<Worker<Function>>>
 create_workers(const Function& f, int begin, int end, size_t num_workers)
@@ -276,7 +327,9 @@ create_workers(const Function& f, int begin, int end, size_t num_workers)
 
 } // end namespace loop
 
-//! Implementation details
+// 3. -------------------------------------------------------------------------
+
+//! Task management utilities.
 namespace detail {
 
 //! A simple ring buffer class.

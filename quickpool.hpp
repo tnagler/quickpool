@@ -212,7 +212,7 @@ struct Worker
 
     size_t tasks_left() const
     {
-        auto s = state.load(mem::relaxed);
+        State s = state;
         return s.end - s.pos;
     }
 
@@ -223,7 +223,7 @@ struct Worker
     {
         State s, s_old; // temporary state variables
         do {
-            s = state.load(mem::relaxed);
+            s = state;
             if (s.pos < s.end) {
                 // Protect slot by trying to advance position before doing work.
                 s_old = s;
@@ -252,7 +252,7 @@ struct Worker
         // If a steal fails, repeat until no work is left.
         do {
             Worker& other = find_victim(workers);
-            auto s = other.state.load(mem::relaxed);
+            State s = other.state;
             if (s.pos >= s.end - 1) {
                 continue; // other range is empty by now
             }
@@ -264,7 +264,7 @@ struct Worker
             if (other.state.compare_exchange_strong(
                   s_old, s, mem::seq_cst, mem::relaxed)) {
                 // succeeded, update own range
-                state.store(State{ s.end, s_old.end }, mem::relaxed);
+                state = State{ s.end, s_old.end };
                 break;
             }
 
@@ -296,7 +296,7 @@ struct Worker
         return workers[idx];
     }
 
-    mem::aligned_atomic<State> state; //!< worker state `{pos, end}`
+    mem::relaxed_atomic<State> state; //!< worker state `{pos, end}`
     Function f;                       //< function applied to the loop index
 };
 

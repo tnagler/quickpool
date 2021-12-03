@@ -200,9 +200,9 @@ template<typename Function>
 struct Worker
 {
     Worker() {}
-    Worker(int begin, int end, Function f)
+    Worker(int begin, int end, Function fun)
       : state{ State{ begin, end } }
-      , f{ f }
+      , f{ fun }
     {}
 
     Worker(Worker&& other)

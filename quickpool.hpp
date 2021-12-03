@@ -205,11 +205,6 @@ struct Worker
       , f{ f }
     {}
 
-    Worker(const Worker& other)
-      : state{ other.state.load(mem::relaxed) }
-      , f{ other.f }
-    {}
-
     Worker(Worker&& other)
       : state{ other.state.load(mem::relaxed) }
       , f{ std::forward<Function>(other.f) }
@@ -239,8 +234,11 @@ struct Worker
                 if (state.compare_exchange_weak(
                       s_old, s, mem::seq_cst, mem::relaxed)) {
                     f(s_old.pos); // succeeded, do work
+                } else {
+                    continue;
                 }
-            } else {
+            }
+            if (s.pos == s.end) {
                 // Reached end of own range, steal range from others. Range
                 // remains empty if all work is done, so we can leave the loop.
                 this->steal_range(*others);
@@ -252,17 +250,16 @@ struct Worker
     void steal_range(std::vector<Worker>& workers)
     {
         // If a steal fails, repeat until no work is left.
-        State s, s_old; // temporary state variables
         do {
-            auto other = find_victim(workers);
-            s = other.state.load(mem::relaxed);
+            Worker& other = find_victim(workers);
+            auto s = other.state.load(mem::relaxed);
             if (s.pos >= s.end - 1) {
                 continue; // other range is empty by now
             }
 
             // Remove second half of the range. Check atomically if the state is
             // unaltered and, if so, replace with reduced range.
-            s_old = s;
+            auto s_old = s;
             s.end -= (s.end - s.pos + 1) / 2;
             if (other.state.compare_exchange_strong(
                   s_old, s, mem::seq_cst, mem::relaxed)) {
@@ -775,23 +772,6 @@ class ThreadPool
         this->wait();
     }
 
-    //! @brief computes a iterator-based parallel for loop.
-    //!
-    //! Waits until all tasks have finished, unless called from a thread that
-    //! didn't create the pool. If this is taken into account, parallel loops
-    //! can be nested.
-    //!
-    //! @param begin iterator for first element.
-    //! @param end iterator for last element.
-    //! @param f function to be applied as `f(*it)` for the iterator in the
-    //! range `[begin, end)` (the 'loop body').
-    template<class InputIt, class UnaryFunction>
-    inline void parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
-    {
-        auto size = std::distance(begin, end);
-        this->parallel_for(0, size, [&, f](ptrdiff_t i) { f(*(begin + i)); });
-        this->wait();
-    }
 
     //! @brief computes a iterator-based parallel for loop.
     //!
@@ -805,7 +785,10 @@ class ThreadPool
     template<class Items, class UnaryFunction>
     inline void parallel_for_each(Items& items, UnaryFunction&& f)
     {
-        this->parallel_for_each(std::begin(items), std::end(items), f);
+        auto begin = std::begin(items);
+        auto size = std::distance(begin, std::end(items));
+        this->parallel_for(0, size, [=](int i) { f(begin[i]); });
+        this->wait();
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
@@ -881,23 +864,6 @@ parallel_for(int begin,
 {
     ThreadPool::global_instance().parallel_for(
       begin, end, std::forward<Function>(f), nthreads);
-}
-
-//! @brief computes a iterator-based parallel for loop.
-//!
-//! Waits until all tasks have finished, unless called from a thread that
-//! didn't create the pool. If this is taken into account, parallel loops
-//! can be nested.
-//!
-//! @param begin iterator for first element.
-//! @param end iterator for last element.
-//! @param f function to be applied as `f(*it)` for the iterator in the
-//! range `[begin, end)` (the 'loop body').
-template<class InputIt, class UnaryFunction>
-inline void
-parallel_for_each(InputIt begin, InputIt end, UnaryFunction&& f)
-{
-    ThreadPool::global_instance().parallel_for_each(begin, end, f);
 }
 
 //! @brief computes a iterator-based parallel for loop.

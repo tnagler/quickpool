@@ -64,6 +64,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
@@ -74,6 +75,12 @@ $(function() {
 <p>quickpool namespace  
 <a href="namespacequickpool.html#details">More...</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespacequickpool_1_1sched"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacequickpool_1_1sched.html">sched</a></td></tr>
+<tr class="memdesc:namespacequickpool_1_1sched"><td class="mdescLeft">&#160;</td><td class="mdescRight">Task management utilities. <br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html">ThreadPool</a></td></tr>
@@ -96,12 +103,15 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 <tr class="separator:a2a7dcef03a6a02c06a999ef6f244a291"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa72b140a64eabe34cd9302bab837c24c"><td class="memTemplParams" colspan="2">template&lt;class Function &gt; </td></tr>
 <tr class="memitem:aa72b140a64eabe34cd9302bab837c24c"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">parallel_for</a> (int begin, int end, Function &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</td></tr>
+<tr class="memdesc:aa72b140a64eabe34cd9302bab837c24c"><td class="mdescLeft">&#160;</td><td class="mdescRight">computes an index-based parallel for loop.  <a href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">More...</a><br /></td></tr>
 <tr class="separator:aa72b140a64eabe34cd9302bab837c24c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa25ec2f27552cfb9647e1d50e2251e74"><td class="memTemplParams" colspan="2">template&lt;class InputIt , class UnaryFunction &gt; </td></tr>
 <tr class="memitem:aa25ec2f27552cfb9647e1d50e2251e74"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#aa25ec2f27552cfb9647e1d50e2251e74">parallel_for_each</a> (InputIt begin, InputIt end, UnaryFunction &amp;&amp;f)</td></tr>
+<tr class="memdesc:aa25ec2f27552cfb9647e1d50e2251e74"><td class="mdescLeft">&#160;</td><td class="mdescRight">computes a iterator-based parallel for loop.  <a href="namespacequickpool.html#aa25ec2f27552cfb9647e1d50e2251e74">More...</a><br /></td></tr>
 <tr class="separator:aa25ec2f27552cfb9647e1d50e2251e74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5542d71824605f77ed621c725d77ed69"><td class="memTemplParams" colspan="2">template&lt;class Items , class UnaryFunction &gt; </td></tr>
 <tr class="memitem:a5542d71824605f77ed621c725d77ed69"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">parallel_for_each</a> (Items &amp;items, UnaryFunction &amp;&amp;f)</td></tr>
+<tr class="memdesc:a5542d71824605f77ed621c725d77ed69"><td class="mdescLeft">&#160;</td><td class="mdescRight">computes a iterator-based parallel for loop.  <a href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">More...</a><br /></td></tr>
 <tr class="separator:a5542d71824605f77ed621c725d77ed69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -154,7 +164,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00764">764</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00854">854</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -205,7 +215,10 @@ template&lt;class Function &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>computes an index-based parallel for loop. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>computes an index-based parallel for loop. </p>
+<p>Waits until all tasks have finished, unless called from a thread that didn't create the pool. If this is taken into account, parallel loops can be nested.</p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">begin</td><td>first index of the loop. </td></tr>
     <tr><td class="paramname">end</td><td>the loop runs in the range <code>[begin, end)</code>. </td></tr>
@@ -215,7 +228,7 @@ template&lt;class Function &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00784">784</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00879">879</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -260,16 +273,19 @@ template&lt;class InputIt , class UnaryFunction &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>computes a range-based parllel for loop. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>computes a iterator-based parallel for loop. </p>
+<p>Waits until all tasks have finished, unless called from a thread that didn't create the pool. If this is taken into account, parallel loops can be nested.</p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">begin</td><td>iterator for first element. </td></tr>
     <tr><td class="paramname">end</td><td>iterator for last element. </td></tr>
-    <tr><td class="paramname">f</td><td>function to be applied to the result of dereferencing the iterator in the range <code>[begin, end)</code> (the 'loop body'). <b>Caution</b>: if the iterations are not independent from another, the tasks need to be synchronized manually (e.g., using mutexes). </td></tr>
+    <tr><td class="paramname">f</td><td>function to be applied as <code>f(*it)</code> for the iterator in the range <code>[begin, end)</code> (the 'loop body'). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00802">802</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00900">900</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -308,15 +324,18 @@ template&lt;class Items , class UnaryFunction &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>computes a range-based parllel for loop. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>computes a iterator-based parallel for loop. </p>
+<p>Waits until all tasks have finished, unless called from a thread that didn't create the pool. If this is taken into account, parallel loops can be nested.</p>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">items</td><td>an object allowing for <code>std::begin()</code> and <code>std::end()</code>. </td></tr>
-    <tr><td class="paramname">f</td><td>function to be applied to the result of dereferencing the iterator in the range <code>[begin, end)</code> (the 'loop body'). </td></tr>
+    <tr><td class="paramname">f</td><td>function to be applied as <code>f(*it)</code> for the iterator in the range <code>[begin, end)</code> (the 'loop body'). </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00813">813</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00916">916</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -365,7 +384,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00751">751</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00841">841</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>

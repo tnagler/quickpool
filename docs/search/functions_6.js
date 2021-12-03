@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['wait_61',['wait',['../classquickpool_1_1detail_1_1TaskQueue.html#a8fc1d49770992f5721327d9194d15708',1,'quickpool::detail::TaskQueue::wait()'],['../classquickpool_1_1ThreadPool.html#a0d8a3e00d2095145a4899b97080471ce',1,'quickpool::ThreadPool::wait()'],['../namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291',1,'quickpool::wait()']]],
-  ['wait_5ffor_5ffinish_62',['wait_for_finish',['../classquickpool_1_1detail_1_1TaskManager.html#a3c1ea595358046d82ddce5eecb3ba78e',1,'quickpool::detail::TaskManager']]]
+  ['wait_35',['wait',['../classquickpool_1_1sched_1_1TaskQueue.html#a7a0d03c055e406df98a1a6330513dcec',1,'quickpool::sched::TaskQueue::wait()'],['../classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1',1,'quickpool::ThreadPool::wait()'],['../namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291',1,'quickpool::wait()']]],
+  ['wait_5ffor_5ffinish_36',['wait_for_finish',['../classquickpool_1_1sched_1_1TaskManager.html#a6ebab2368c0f98da7a8f28541ed560c8',1,'quickpool::sched::TaskManager']]]
 ];

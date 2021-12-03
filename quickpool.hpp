@@ -489,11 +489,12 @@ class TaskManager
     void push(Task&& task)
     {
         rethrow_exception(); // push() should throw if task has errored.
-        
+
         todo_.fetch_add(1, mem::release);
         while (is_running()) {
             if (queues_[push_idx_++ % num_queues_].try_push(task))
                 return;
+            std::cout << "failed steal" << std::endl;
         }
         // Failed pushing, loop might have finished.
         todo_.fetch_sub(1, mem::release);

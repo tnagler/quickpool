@@ -5,7 +5,7 @@
 int
 main()
 {
-    auto runs = 100;
+    auto runs = 1000;
     for (auto run = 0; run < runs; run++) {
         std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs << "\t\r"
                   << std::flush;

@@ -22,7 +22,6 @@ Just drop in your project folder and enjoy.
 * [`push(f, args...)`](https://tnagler.github.io/quickpool/namespacequickpool.html#affc41895dab281715c271aca3649e830) schedules a task running `f(args...)` with no return,   
 * [`async(f, args...)`](https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a) schedules a task running `f(args...)` and returns an [`std::future`](https://en.cppreference.com/w/cpp/thread/future), 
 * [`wait()`](https://tnagler.github.io/quickpool/namespacequickpool.html#a086671a25cc4f207112bc82a00688301) waits for all scheduled tasks to finish.
-* [`parallel_for(b, e, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c) runs `f(i)` for all `b <= i < e`,
 * [`parallel_for_each(x, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aeb91fe18664b8d06523aba081174abe3) runs `f(*it)` for all  `x.begin() <= it < x.end()`.
 
 Loops can be nested with some care, see the examples below. All functions 
@@ -83,7 +82,6 @@ for (int i = 0; i < x.size(); ++i)
 
 // parallel  versions
 parallel_for(0, x.size(), [&] (int i) { x[i] *= 2; };
-parallel_for_each(x.begin(), x.end(), [] (double& xx) { xx *= 2; };
 parallel_for_each(x, [] (double& xx) { xx *= 2; };
 ```
 The loop functions automatically wait for all jobs to finish, but only when 
@@ -125,6 +123,5 @@ pool.wait();
 
 pool.parallel_for(2, 5, [&] (int i) {});
 auto x = std::vector<double>{10};
-pool.parallel_for_each(x.begin(), x.end(), [] (double& xx) {});
 pool.parallel_for_each(x, [] (double& xx) {});
 ```

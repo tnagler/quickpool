@@ -55,8 +55,7 @@ main()
             // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
             for (size_t i = 0; i < x.size(); i++)
-                quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; },
-                i);
+                quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
             quickpool::wait();
 
             size_t count_wrong = 0;
@@ -171,13 +170,36 @@ main()
                   "static parallel_for_each gives wrong result");
             }
 
+            quickpool::parallel_for_each(x.begin(), x.end(), fun);
+            quickpool::wait();
+
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 4);
+            if (count_wrong > 0) {
+                for (auto xx : x)
+                    std::cout << xx;
+                throw std::runtime_error(
+                  "static parallel_for_each gives wrong result");
+            }
+
             quickpool::ThreadPool pool;
             pool.parallel_for_each(x, fun);
             pool.wait();
 
             count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
-                count_wrong += (x[i] != 4);
+                count_wrong += (x[i] != 8);
+            if (count_wrong > 0)
+                throw std::runtime_error(
+                  "parallel_for_each gives wrong result");
+
+            pool.parallel_for_each(x.begin(), x.end(), fun);
+            pool.wait();
+
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 16);
             if (count_wrong > 0)
                 throw std::runtime_error(
                   "parallel_for_each gives wrong result");

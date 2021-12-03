@@ -157,80 +157,69 @@ struct relaxed_atomic : public aligned_atomic<T>
 
 namespace loop {
 
+struct State
+{
+    int pos;
+    int end;
+};
+
 struct Range
 {
     Range(int begin, int end)
-      : pos{ begin }
-      , end{ end }
+      : state{ State{ begin, end } }
     {}
 
     Range(const Range& other)
-      : pos{ other.pos.load() }
-      , end{ other.end.load() }
+      : state{ other.state.load(mem::relaxed) }
     {}
 
-    bool empty() const { return end - pos < 1; }
-    int size() const { return end - pos; }
+    bool empty() const
+    {
+        auto s = state.load(mem::relaxed);
+        return s.end - s.pos < 1;
+    }
+    int size() const
+    {
+        auto s = state.load(mem::relaxed);
+        return s.end - s.pos;
+    }
 
     bool try_local_work(int& p)
     {
-        p = pos + 1;
-        pos = p;
-        std::atomic_thread_fence(mem::seq_cst);
-        if (p < end) {
-            p = p - 1;
-            return true;
+        auto s = state.load(mem::relaxed);
+        if (s.pos < s.end) {
+            // try to advance position before doing work
+            auto old_s = s;
+            p = s.pos++;
+            if (state.compare_exchange_strong(
+                  old_s, s, mem::seq_cst, mem::relaxed)) {
+                return true; // succeeded
+            }
         }
-        // conflict detected: rollback under lock
-        pos = p - 1;
-        {
-            std::lock_guard<std::mutex> lk(mutex);
-            p = pos;
-            if (p < end)
-                pos = p + 1;
-        }
-
-        if (p < pos)
-            return true;
         return false;
     }
 
     bool try_steal_range(Range& other_range)
     {
-        if (this == &other_range)
+        if (this == &other_range) {
             return false;
-        if (other_range.end < other_range.pos)
-            return false;
-
-        int e, chunk_size;
-        {
-            std::unique_lock<std::mutex> lk_other(other_range.mutex,
-                                                  std::try_to_lock);
-            if (!lk_other) {
-                return false;
-            }
-            e = other_range.end;
-            chunk_size = (e - other_range.pos) / 2;
-            e = e - chunk_size;
-            other_range.end = e;
-            std::atomic_thread_fence(std::memory_order_acq_rel);
-            if (e <= other_range.pos) {
-                // rollback and abort
-                other_range.end = e + chunk_size;
-                return false;
-            }
         }
 
-        std::lock_guard<std::mutex> lk_self(mutex);
-        pos = e;
-        end = e + chunk_size;
+        auto s = other_range.state.load(mem::relaxed);
 
+        if (s.pos >= s.end - 1)
+            return false;
+
+        State old_s = s;
+        s.end -= (s.end - s.pos + 1) / 2;
+        if (!other_range.state.compare_exchange_strong(old_s, s))
+            return false;
+
+        state.store(State{ s.end, old_s.end }, mem::relaxed);
         return true;
     }
 
-    mem::relaxed_atomic<int> pos;
-    mem::relaxed_atomic<int> end;
-    std::mutex mutex;
+    mem::aligned_atomic<State> state;
 };
 
 class Ranges
@@ -257,29 +246,27 @@ class Ranges
         return true;
     }
 
-    std::vector<size_t> range_order() const
+    std::vector<int> sizes() const
     {
-        std::vector<size_t> range_sizes;
+        std::vector<int> range_sizes;
         range_sizes.reserve(ranges_.size());
         for (const auto& range : ranges_)
             range_sizes.push_back(range.size());
+        return range_sizes;
+    }
 
-        std::vector<size_t> order(ranges_.size());
-        std::iota(order.begin(), order.end(), 0);
-        std::sort(order.begin(), order.end(), [&](size_t i, size_t j) {
-            return range_sizes[i] > range_sizes[j];
-        });
-
-        return order;
+    Range& find_largest_range()
+    {
+        const auto sizes = this->sizes();
+        auto idx = std::distance(sizes.begin(),
+                                 std::max_element(sizes.begin(), sizes.end()));
+        return ranges_[idx];
     }
 
     void distribute_to(Range& range)
     {
-        const auto n = ranges_.size();
-        const auto order = range_order();
-        size_t idx = 0;
-        while (!seems_empty()) {
-            if (range.try_steal_range(ranges_[order[idx++ % n]]))
+        while (!this->seems_empty()) {
+            if (range.try_steal_range(this->find_largest_range()))
                 break;
         }
     }
@@ -287,6 +274,27 @@ class Ranges
   private:
     std::vector<Range> ranges_;
 };
+
+template<typename Function>
+void
+run_worker(Function f, std::shared_ptr<Ranges> ranges, size_t id)
+{
+    State s, old_s;
+    do {
+        s = (*ranges)[id].state.load(mem::relaxed);
+        if (s.pos < s.end) {
+            // try to advance position before doing work
+            old_s = s;
+            s.pos++;
+            if ((*ranges)[id].state.compare_exchange_strong(
+                  old_s, s, mem::seq_cst, mem::relaxed)) {
+                f(s.pos - 1);
+            }
+        } else {
+            ranges->distribute_to((*ranges)[id]);
+        }
+    } while (!(*ranges)[id].empty());
+}
 
 } // end namespace loop
 
@@ -706,18 +714,11 @@ class ThreadPool
         // each worker has its dedicated range, but can steal part of another
         // worker's ranges when done with own
         auto ranges = std::make_shared<loop::Ranges>(begin, end, nthreads);
-        const auto run_worker = [=](int id) {
-            do {
-                int pos;
-                while ((*ranges)[id].try_local_work(pos)) {
-                    f(pos);
-                };
-                ranges->distribute_to((*ranges)[id]);
-            } while (!(*ranges)[id].empty());
-        };
-
         for (int k = 0; k < nthreads; k++)
-            this->push(run_worker, k);
+            this->push(&loop::run_worker<Function>,
+                       std::forward<Function>(f),
+                       ranges,
+                       k);
         this->wait();
     }
 

@@ -5,7 +5,11 @@
 int
 main()
 {
-    auto runs = 100;
+    using namespace quickpool;
+    mem::aligned_atomic<loop::State> test{};
+    std::cout << "lock free: " <<  test.is_lock_free() << std::endl;
+
+      auto runs = 100;
     for (auto run = 0; run < runs; run++) {
         std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs
                   << "\t\r" << std::flush;
@@ -15,9 +19,8 @@ main()
             // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
             for (size_t i = 0; i < x.size(); i++)
-                quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; },
-                i);
-            quickpool::wait();
+                push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
+            wait();
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++) {
@@ -28,7 +31,7 @@ main()
                 throw std::runtime_error("static push gives wrong result");
             }
 
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             x = std::vector<size_t>(10000, 1);
             for (size_t i = 0; i < x.size(); i++)
                 pool.push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
@@ -50,10 +53,10 @@ main()
 
             std::vector<std::future<size_t>> fut(x.size());
             for (size_t i = 0; i < x.size(); i++)
-                fut[i] = quickpool::async(dummy, i);
+                fut[i] = async(dummy, i);
             for (size_t i = 0; i < x.size(); i++)
                 x[i] = fut[i].get();
-            quickpool::wait();
+            wait();
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -61,7 +64,7 @@ main()
             if (count_wrong > 0)
                 throw std::runtime_error("static async gives wrong result");
 
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             x = std::vector<size_t>(10000, 1);
             std::vector<std::future<size_t>> fut2(x.size());
             for (size_t i = 0; i < x.size(); i++)
@@ -83,7 +86,7 @@ main()
             // std::cout << "      * parallel_for: ";
             std::vector<size_t> x(10000, 1);
             auto fun = [&](size_t i) { x[i] = 2 * x[i]; };
-            quickpool::parallel_for(0, x.size(), fun, 2);
+            parallel_for(0, x.size(), fun, 2);
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -96,7 +99,7 @@ main()
                   "static parallel_for gives wrong result");
             }
 
-            quickpool::ThreadPool pool(4);
+            ThreadPool pool(4);
             pool.parallel_for(0, x.size(), fun);
 
             count_wrong = 0;
@@ -116,7 +119,7 @@ main()
             // std::cout << "      * parallel_for_each: ";
             std::vector<size_t> x(10000, 1);
             auto fun = [](size_t& xx) { xx = 2 * xx; };
-            quickpool::parallel_for_each(x, fun);
+            parallel_for_each(x, fun);
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -128,7 +131,7 @@ main()
                   "static parallel_for_each gives wrong result");
             }
 
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             pool.parallel_for_each(x, fun);
 
             count_wrong = 0;
@@ -143,7 +146,7 @@ main()
         // single threaded
         {
             // std::cout << "      * single threaded: ";
-            quickpool::ThreadPool pool(0);
+            ThreadPool pool(0);
             std::vector<size_t> x(1000, 1);
             auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
 
@@ -163,7 +166,7 @@ main()
         // rethrows exceptions
         {
             // std::cout << "      * exception handling: ";
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             // pool passes exceptions either via wait() or push()
             std::exception_ptr eptr = nullptr;
             try {

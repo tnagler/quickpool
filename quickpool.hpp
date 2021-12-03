@@ -494,8 +494,8 @@ class TaskManager
         while (is_running()) {
             if (queues_[push_idx_++ % num_queues_].try_push(task))
                 return;
-            std::cout << "failed steal" << std::endl;
         }
+        std::cout << "failed push" << std::endl;
         // Failed pushing, loop might have finished.
         todo_.fetch_sub(1, mem::release);
     }
@@ -769,9 +769,7 @@ class ThreadPool
         auto workers =
           loop::create_workers<UnaryFunction>(f, begin, end, nthreads);
         for (int k = 0; k < nthreads; k++)
-            this->push([=] {
-                workers->at(k).run(workers);
-            });
+            this->push([=] { workers->at(k).run(workers); });
         this->wait();
     }
 

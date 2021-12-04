@@ -206,7 +206,7 @@ struct Worker
     {}
 
     Worker(Worker&& other)
-      : state{ other.state.load(mem::relaxed) }
+      : state{ other.state.load() }
       , f{ std::forward<Function>(other.f) }
     {}
 
@@ -232,8 +232,7 @@ struct Worker
                 // Another worker might have changed the end of the range in
                 // the meanwhile. Check atomically if the state is unaltered
                 // and, if so, replace by advanced state.
-                if (state.compare_exchange_weak(
-                      s_old, s, mem::seq_cst, mem::relaxed)) {
+                if (state.compare_exchange_weak(s_old, s)) {
                     f(s_old.pos); // succeeded, do work
                 } else {
                     continue; // failed, try again
@@ -261,8 +260,7 @@ struct Worker
             // unaltered and, if so, replace with reduced range.
             auto s_old = s;
             s.end -= (s.end - s.pos + 1) / 2;
-            if (other.state.compare_exchange_strong(
-                  s_old, s, mem::seq_cst, mem::relaxed)) {
+            if (other.state.compare_exchange_weak(s_old, s)) {
                 // succeeded, update own range
                 state = State{ s.end, s_old.end };
                 break;

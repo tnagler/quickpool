@@ -689,12 +689,9 @@ class ThreadPool
             });
 
             // set thread affinity on linux
-            #if (defined __linux__ || defined AFFINITY)
             this->set_thread_affinity(id);
-            #endif
         }
     }
-
 
     ~ThreadPool()
     {
@@ -801,10 +798,10 @@ class ThreadPool
     void wait(size_t millis = 0) { task_manager_.wait_for_finish(millis); }
 
   private:
-
     //! sets thread affinity of workers on linux.
     void set_thread_affinity(size_t id)
     {
+#if (defined __linux__ || defined AFFINITY)
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
         CPU_SET(id, &cpuset);
@@ -813,6 +810,7 @@ class ThreadPool
         if (rc != 0) {
             throw std::runtime_error("Error calling pthread_setaffinity_np");
         }
+#endif
     }
 
     void execute_safely(std::function<void()>& task)

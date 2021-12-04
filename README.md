@@ -13,9 +13,9 @@
 
 ### Developer friendly
 
-The library consists of a single header file with permissive license. 
+The library consists of a [single header file](https://github.com/tnagler/quickpool/blob/parallel-for/quickpool.hpp) with permissive license. 
 It requires only C++11 and is otherwise self-contained, no external dependencies.
-Just drop in your project folder and enjoy.
+Just drop `quickpool.hpp` in your project folder and enjoy.
 
 ### User friendly API
 
@@ -25,14 +25,14 @@ Just drop in your project folder and enjoy.
 * [`parallel_for(b, e, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c) runs `f(i)` for all `b <= i < e`,
 * [`parallel_for_each(x, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aeb91fe18664b8d06523aba081174abe3) runs `f(*it)` for all  `std::begin(x) <= it < std::end(x)`.
 
-Loops can be nested with some care, see the examples below. All functions 
+Loops can be nested, see the examples below. All functions 
 dispatch to a global thread pool instantiated only once with as 
 many threads as there are cores. Optionally, one can create a local `ThreadPool`
 exposing the functions above. See also the [API documentation](https://tnagler.github.io/quickpool/).
 
 ### Cutting edge algorithms
 
-All scheduling is done using [work stealing](https://en.wikipedia.org/wiki/Work_stealing).
+All scheduling uses [work stealing](https://en.wikipedia.org/wiki/Work_stealing) synchronized by [cache-aligned atomic](https://github.com/tnagler/aligned_atomic) operations.
 
 The thread pool assigns each worker thread a task queue. The workers process 
 first their own queue and then steal work from others. The algorithm is [lock-free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
@@ -43,7 +43,6 @@ When a worker completes its own range, it steals half the range
 of another worker. This perfectly balances the load and only requires a logarithmic number of steals (= points of contention). The algorithm uses 
 [double-wide compare-and-swap](https://en.wikipedia.org/wiki/Compare-and-swap#Extensions), which is lock-free on most modern processor
 architectures.
-
 
 ## Examples
 

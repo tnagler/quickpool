@@ -75,7 +75,7 @@ $(function() {
 Why quickpool?</h1>
 <h2><a class="anchor" id="autotoc_md2"></a>
 Developer friendly</h2>
-<p>The library consists of a single header file with permissive license. It requires only C++11 and is otherwise self-contained, no external dependencies. Just drop in your project folder and enjoy.</p>
+<p>The library consists of a <a href="https://github.com/tnagler/quickpool/blob/parallel-for/quickpool.hpp">single header file</a> with permissive license. It requires only C++11 and is otherwise self-contained, no external dependencies. Just drop <code><a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a></code> in your project folder and enjoy.</p>
 <h2><a class="anchor" id="autotoc_md3"></a>
 User friendly API</h2>
 <ul>
@@ -86,10 +86,10 @@ User friendly API</h2>
 <li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c"><code>parallel_for(b, e, f)</code></a> runs <code>f(i)</code> for all <code>b &lt;= i &lt; e</code>,</li>
 <li><a href="https://tnagler.github.io/quickpool/namespacequickpool.html#aeb91fe18664b8d06523aba081174abe3"><code>parallel_for_each(x, f)</code></a> runs <code>f(*it)</code> for all <code>std::begin(x) &lt;= it &lt; std::end(x)</code>.</li>
 </ul>
-<p>Loops can be nested with some care, see the examples below. All functions dispatch to a global thread pool instantiated only once with as many threads as there are cores. Optionally, one can create a local <code>ThreadPool</code> exposing the functions above. See also the <a href="https://tnagler.github.io/quickpool/">API documentation</a>.</p>
+<p>Loops can be nested, see the examples below. All functions dispatch to a global thread pool instantiated only once with as many threads as there are cores. Optionally, one can create a local <code>ThreadPool</code> exposing the functions above. See also the <a href="https://tnagler.github.io/quickpool/">API documentation</a>.</p>
 <h2><a class="anchor" id="autotoc_md4"></a>
 Cutting edge algorithms</h2>
-<p>All scheduling is done using <a href="https://en.wikipedia.org/wiki/Work_stealing">work stealing</a>.</p>
+<p>All scheduling uses <a href="https://en.wikipedia.org/wiki/Work_stealing">work stealing</a> synchronized by <a href="https://github.com/tnagler/aligned_atomic">cache-aligned atomic</a> operations.</p>
 <p>The thread pool assigns each worker thread a task queue. The workers process first their own queue and then steal work from others. The algorithm is <a href="https://en.wikipedia.org/wiki/Non-blocking_algorithm">lock-free</a> in the standard case where only a single thread pushes work to the pool.</p>
 <p>Parallel loops assign each worker part of the loop range. When a worker completes its own range, it steals half the range of another worker. This perfectly balances the load and only requires a logarithmic number of steals (= points of contention). The algorithm uses <a href="https://en.wikipedia.org/wiki/Compare-and-swap#Extensions">double-wide compare-and-swap</a>, which is lock-free on most modern processor architectures.</p>
 <h1><a class="anchor" id="autotoc_md5"></a>

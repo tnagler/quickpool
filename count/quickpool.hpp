@@ -228,15 +228,14 @@ struct Worker
                 // Protect slot by trying to advance position before doing work.
                 s_old = s;
                 s.pos++;
-
-                // Another worker might have changed the end of the range in
-                // the meanwhile. Check atomically if the state is unaltered
-                // and, if so, replace by advanced state.
+                // Another worker might have changed the end of the range.
+                // Check atomically if the state is unaltered and, if so,
+                // replace by advanced state.
                 if (state.compare_exchange_weak(
                       s_old, s, mem::seq_cst, mem::relaxed)) {
                     f(s_old.pos); // succeeded, do work
                 } else {
-                    continue; // failed, try again
+                    continue;
                 }
             }
             if (s.pos == s.end) {
@@ -245,11 +244,14 @@ struct Worker
                 this->steal_range(*others);
             }
         } while (!this->done());
+        std::cout << "worker " << std::this_thread::get_id() << "done"
+                  << std::endl;
     }
 
     //! @param workers vector of all workers.
     void steal_range(std::vector<Worker>& workers)
     {
+        // If a steal fails, repeat until no work is left.
         do {
             Worker& other = find_victim(workers);
             State s = other.state;
@@ -267,7 +269,8 @@ struct Worker
                 state = State{ s.end, s_old.end };
                 break;
             }
-        } while (!all_done(workers)); // failed steal, try again
+
+        } while (!all_done(workers));
     }
 
     //! @param workers vector of all workers.
@@ -368,7 +371,8 @@ class TaskQueue
 
     ~TaskQueue() noexcept
     {
-        // Must free memory allocated by push(), but not freed by try_pop().
+        // Must free memory allocated by try_push(), but not deallocated by
+        // try_pop().
         auto buf_ptr = buffer_.load();
         for (int i = top_; i < bottom_.load(mem::relaxed); ++i)
             delete buf_ptr->get_entry(i);
@@ -386,10 +390,13 @@ class TaskQueue
 
     //! pushes a task to the bottom of the queue; returns false if queue is
     //! currently locked; enlarges the queue if full.
-    void push(Task&& task)
+    bool try_push(Task&& task)
     {
-        // Must hold lock in case of multiple producers.
-        std::unique_lock<std::mutex> lk(mutex_);
+        // Must hold lock in case of multiple producers. Abort if already
+        // taken, so we can check out next queue.
+        std::unique_lock<std::mutex> lk(mutex_, std::try_to_lock);
+        if (!lk)
+            return false;
 
         auto b = bottom_.load(mem::relaxed);
         auto t = top_.load(mem::acquire);
@@ -406,9 +413,11 @@ class TaskQueue
         //! Store pointer to new task in ring buffer.
         buf_ptr->set_entry(b, new Task{ std::forward<Task>(task) });
         bottom_.store(b + 1, mem::release);
+        lk.unlock();
 
-        lk.unlock(); // can release before signal
         cv_.notify_one();
+
+        return true;
     }
 
     //! pops a task from the top of the queue; returns false if lost race.
@@ -427,7 +436,7 @@ class TaskQueue
             if (top_.compare_exchange_strong(
                   t, t + 1, mem::seq_cst, mem::relaxed)) {
                 task = std::move(*task_ptr); // won race, get task
-                delete task_ptr;             // fre memory allocated in push()
+                delete task_ptr; // fre memory allocated in try_push()
                 return true;
             }
         }
@@ -448,15 +457,7 @@ class TaskQueue
             std::lock_guard<std::mutex> lk(mutex_);
             stopped_ = true;
         }
-        cv_.notify_one();
-    }
-
-    void wake_up()
-    {
-        {
-            std::lock_guard<std::mutex> lk(mutex_);
-        }
-        cv_.notify_one();
+        cv_.notify_all();
     }
 
   private:
@@ -489,10 +490,15 @@ class TaskManager
     template<typename Task>
     void push(Task&& task)
     {
-        rethrow_exception(); // push() throws if a task has errored.
-        if (is_running()) {
-            todo_.fetch_add(1, mem::release);
-            queues_[push_idx_++ % num_queues_].push(task);
+        rethrow_exception(); // push() should throw if task has errored.
+
+        todo_.fetch_add(1, mem::relaxed);
+
+        size_t q_idx;
+        while (is_running()) {
+            q_idx = push_idx_.fetch_add(1, mem::relaxed) % num_queues_;
+            if (queues_[q_idx].try_push(task))
+                return;
         }
     }
 
@@ -510,14 +516,7 @@ class TaskManager
                 }
             }
         }
-
         return false;
-    }
-
-    void wake_up_all_workers()
-    {
-        for (auto& q : queues_)
-            q.wake_up();
     }
 
     void wait_for_jobs(size_t id)
@@ -557,7 +556,7 @@ class TaskManager
 
     void report_success()
     {
-        auto n = todo_.fetch_sub(1, mem::release) - 1;
+        auto n = todo_.fetch_sub(1, mem::relaxed) - 1;
         if (n <= 0) {
             // all jobs are done; lock before signal to prevent spurious failure
             {
@@ -569,8 +568,13 @@ class TaskManager
 
     void report_fail(std::exception_ptr err_ptr)
     {
-        std::lock_guard<std::mutex> lk(mtx_);
         if (has_errored()) // only catch first exception
+            return;
+
+        std::lock_guard<std::mutex> lk(mtx_);
+
+        // status might have changed, double check under lock
+        if (has_errored())
             return;
         err_ptr_ = err_ptr;
         status_ = Status::errored;
@@ -596,11 +600,11 @@ class TaskManager
     {
         // Exceptions are only thrown from the owner thread, not in workers.
         if (called_from_owner_thread() && has_errored()) {
-            {
-                // Wait for all threads to idle so we can clean up after them.
-                std::unique_lock<std::mutex> lk(mtx_);
-                cv_.wait(lk, [this] { return num_waiting_ == num_queues_; });
-            }
+            // Wait for all threads to idle so we can clean up after them.
+            std::unique_lock<std::mutex> lk(mtx_);
+            cv_.wait(lk, [this] { return num_waiting_ == num_queues_; });
+            lk.unlock();
+
             // Before throwing: restore defaults for potential future use of
             // the task manager.
             todo_ = 0;
@@ -627,16 +631,7 @@ class TaskManager
         return status_.load(mem::relaxed) == Status::stopped;
     }
 
-    bool done() const
-    {
-        if (todo_.load(mem::relaxed) <= 0)
-            return true;
-        for (auto& q : queues_) {
-            if (!q.empty())
-                return false;
-        }
-        return true;
-    }
+    bool done() const { return (todo_.load(mem::relaxed) <= 0); }
 
   private:
     //! worker queues
@@ -644,8 +639,8 @@ class TaskManager
     size_t num_queues_;
 
     //! task management
-    mem::relaxed_atomic<size_t> num_waiting_{ 0 };
-    mem::relaxed_atomic<size_t> push_idx_{ 0 };
+    mem::aligned_atomic<size_t> num_waiting_{ 0 };
+    mem::aligned_atomic<size_t> push_idx_{ 0 };
     mem::aligned_atomic<int> todo_{ 0 };
 
     //! synchronization variables
@@ -687,7 +682,7 @@ class ThreadPool
                 while (!task_manager_.stopped()) {
                     task_manager_.wait_for_jobs(id);
                     do {
-                        // inner while to save some time calling done()
+                        // inner while to save cash misses when calling done()
                         while (task_manager_.try_pop(task, id))
                             this->execute_safely(task);
                     } while (!task_manager_.done());
@@ -766,18 +761,25 @@ class ThreadPool
     template<class UnaryFunction>
     void parallel_for(int begin,
                       int end,
-                      UnaryFunction f,
+                      UnaryFunction&& f,
                       size_t nthreads = std::thread::hardware_concurrency())
     {
         // each worker has its dedicated range, but can steal part of another
         // worker's ranges when done with own
         nthreads = std::min(end - begin, static_cast<int>(nthreads));
-        nthreads = std::min(nthreads, workers_.size());
-        auto workers =
-          loop::create_workers<UnaryFunction>(f, begin, end, nthreads);
-        for (int k = 0; k < nthreads; k++) {
-            this->push([=] { workers->at(k).run(workers); });
-        }
+        auto workers = loop::create_workers<UnaryFunction>(
+                            std::cout << "worker " << std::this_thread::get_id() << "done"
+                          << std::endl;
+
+          std::forward<UnaryFunction>(f), begin, end, nthreads);
+        for (int k = 0; k < nthreads; k++)
+            this->push([=] {
+                       std::cout << "worker " << std::this_thread::get_id() << "start"
+                          << std::endl;
+         workers->at(k).run(workers);
+                std::cout << "worker " << std::this_thread::get_id() << "done"
+                          << std::endl;
+            });
         this->wait();
     }
 
@@ -790,12 +792,8 @@ class ThreadPool
     //! @param items an object allowing for `std::begin()` and `std::end()`.
     //! @param f function to be applied as `f(*it)` for the iterator in the
     //! range `[begin, end)` (the 'loop body').
-    //! @param nthreads optional; limits the number of threads.
     template<class Items, class UnaryFunction>
-    inline void parallel_for_each(
-      Items& items,
-      UnaryFunction&& f,
-      size_t nthreads = std::thread::hardware_concurrency())
+    inline void parallel_for_each(Items& items, UnaryFunction&& f)
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
@@ -887,12 +885,9 @@ parallel_for(int begin,
 //! @param items an object allowing for `std::begin()` and `std::end()`.
 //! @param f function to be applied as `f(*it)` for the iterator in the
 //! range `[begin, end)` (the 'loop body').
-//! @param nthreads optional; limits the number of threads.
 template<class Items, class UnaryFunction>
 inline void
-parallel_for_each(Items& items,
-                  UnaryFunction&& f,
-                  size_t nthreads = std::thread::hardware_concurrency())
+parallel_for_each(Items& items, UnaryFunction&& f)
 {
     ThreadPool::global_instance().parallel_for_each(items, f);
 }

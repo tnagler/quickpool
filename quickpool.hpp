@@ -29,7 +29,7 @@
 #include <thread>
 #include <vector>
 
-#ifndef _WIN32
+#if (defined __linux__ || defined AFFINITY)
 #include <pthread.h>
 #endif
 
@@ -687,21 +687,14 @@ class ThreadPool
                     } while (!task_manager_.done());
                 }
             });
+
+            // set thread affinity on linux
+            #if (defined __linux__ || defined AFFINITY)
             this->set_thread_affinity(id);
+            #endif
         }
     }
 
-    void set_thread_affinity(size_t id)
-    {
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(id, &cpuset);
-        int rc = pthread_setaffinity_np(
-          workers_[id].native_handle(), sizeof(cpu_set_t), &cpuset);
-        if (rc != 0) {
-            throw std::runtime_error("Error calling pthread_setaffinity_np");
-        }
-    }
 
     ~ThreadPool()
     {
@@ -808,6 +801,20 @@ class ThreadPool
     void wait(size_t millis = 0) { task_manager_.wait_for_finish(millis); }
 
   private:
+
+    //! sets thread affinity of workers on linux.
+    void set_thread_affinity(size_t id)
+    {
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(id, &cpuset);
+        int rc = pthread_setaffinity_np(
+          workers_[id].native_handle(), sizeof(cpu_set_t), &cpuset);
+        if (rc != 0) {
+            throw std::runtime_error("Error calling pthread_setaffinity_np");
+        }
+    }
+
     void execute_safely(std::function<void()>& task)
     {
         try {

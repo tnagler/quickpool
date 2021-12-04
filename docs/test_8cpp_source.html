@@ -155,7 +155,7 @@ $(function() {
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * parallel_for: &quot;;</span></div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            std::vector&lt;size_t&gt; x(10000, 1);</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="keyword">auto</span> fun = [&amp;](<span class="keywordtype">size_t</span> i) { x[i] = 2 * x[i]; };</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <a class="code" href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">parallel_for</a>(0, x.size(), fun, 2);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <a class="code" href="namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889">parallel_for</a>(0, x.size(), fun);</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -169,7 +169,7 @@ $(function() {
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            }</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad734ea599d614c8fb534d2f9e6542fa6">parallel_for</a>(0, x.size(), fun);</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#acb9d7efe2053b8d961ed98bcc2cf2618">parallel_for</a>(0, x.size(), fun);</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160; </div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            count_wrong = 0;</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -183,110 +183,185 @@ $(function() {
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        }</div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160; </div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="comment">// parallel_for_each()</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="comment">// nested parallel_for()</span></div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        {</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * parallel_for_each: &quot;;</span></div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            std::vector&lt;size_t&gt; x(10000, 1);</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keyword">auto</span> fun = [](<span class="keywordtype">size_t</span>&amp; xx) { xx = 2 * xx; };</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;            <a class="code" href="namespacequickpool.html#a6655cae9dab967ff085f08c2c91a210c">parallel_for_each</a>(x, fun);</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;                count_wrong += (x[i] != 2);</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0) {</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span> xx : x)</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;                    std::cout &lt;&lt; xx;</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                  <span class="stringliteral">&quot;static parallel_for_each gives wrong result&quot;</span>);</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            }</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ac11a80ca175424c4c61fd950dda17e0f">parallel_for_each</a>(x, fun);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * nested parallel_for: &quot;;</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            std::vector&lt;std::vector&lt;double&gt;&gt; x(100);</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; xx : x)</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                xx = std::vector&lt;double&gt;(100, 1.0);</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <a class="code" href="namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889">parallel_for</a>(0, x.size(), [&amp;](<span class="keywordtype">int</span> i) {</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                parallel_for(0, x[i].size(), [&amp;x, i](int j) { x[i][j] *= 2; });</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            });</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> xx : x) {</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span> xxx : xx)</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                    count_wrong += xxx != 2;</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;            }</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0) {</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;                  <span class="stringliteral">&quot;static nested parallel_for gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;            }</div>
 <div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160; </div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;            count_wrong = 0;</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                count_wrong += (x[i] != 4);</div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0)</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;                  <span class="stringliteral">&quot;parallel_for_each gives wrong result&quot;</span>);</div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;        }</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;        <span class="comment">// single threaded</span></div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;        {</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * single threaded: &quot;;</span></div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool(0);</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;            std::vector&lt;size_t&gt; x(1000, 1);</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            <span class="keyword">auto</span> dummy = [&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; };</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160; </div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++) {</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>(dummy, i);</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;            }</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;                count_wrong += (x[i] != 2);</div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0)</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;single threaded gives wrong result&quot;</span>);</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;        }</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        <span class="comment">// rethrows exceptions</span></div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;        {</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * exception handling: &quot;;</span></div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            <span class="comment">// pool passes exceptions either via wait() or push()</span></div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            std::exception_ptr eptr = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] { <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;test error&quot;</span>); });</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;                std::this_thread::sleep_for(std::chrono::milliseconds(30));</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; 10; i++) {</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;                    pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] {});</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                }</div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            } <span class="keywordflow">catch</span> (...) {</div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                eptr = std::current_exception();</div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;            }</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160; </div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;            <span class="keywordflow">if</span> (!eptr) {</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;exception not rethrown by push&quot;</span>);</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;                eptr = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            }</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160; </div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;            <span class="comment">// poool should be functional again</span></div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] { <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;test error&quot;</span>); });</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            } <span class="keywordflow">catch</span> (...) {</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;                eptr = std::current_exception();</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;            }</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;            <span class="keywordflow">if</span> (!eptr) {</div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;exception not rethrown by wait&quot;</span>);</div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;                eptr = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;            }</div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;        }</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    }</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#acb9d7efe2053b8d961ed98bcc2cf2618">parallel_for</a>(0, x.size(), [&amp;](<span class="keywordtype">int</span> i) {</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;                pool.parallel_for(</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                  0, x[i].size(), [&amp;x, i](int j) { x[i][j] *= 2; });</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;            });</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160; </div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;            count_wrong = 0;</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> xx : x) {</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span> xxx : xx)</div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;                    count_wrong += xxx != 4;</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;            }</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0) {</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;                  <span class="stringliteral">&quot;nested parallel_for gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;            }</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        }</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160; </div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;        <span class="comment">// parallel_for_each()</span></div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;        {</div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * parallel_for_each: &quot;;</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;            std::vector&lt;size_t&gt; x(10000, 1);</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;            <span class="keyword">auto</span> fun = [](<span class="keywordtype">size_t</span>&amp; xx) { xx = 2 * xx; };</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;            <a class="code" href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">parallel_for_each</a>(x, fun);</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;                count_wrong += (x[i] != 2);</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0) {</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span> xx : x)</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;                    std::cout &lt;&lt; xx;</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;                  <span class="stringliteral">&quot;static parallel_for_each gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            }</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a>(x, fun);</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            count_wrong = 0;</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;                count_wrong += (x[i] != 4);</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0)</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;                  <span class="stringliteral">&quot;parallel_for_each gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;        }</div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160; </div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;        <span class="comment">// nested parallel_for_each()</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;        {</div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * nested parallel_for_each: &quot;;</span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;            std::vector&lt;std::vector&lt;double&gt;&gt; x(100);</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; xx : x)</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;                xx = std::vector&lt;double&gt;(100, 1.0);</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            <a class="code" href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">parallel_for_each</a>(x, [](std::vector&lt;double&gt;&amp; xx) {</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;                <a class="code" href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">parallel_for_each</a>(xx, [](<span class="keywordtype">double</span>&amp; xxx) { xxx *= 2; });</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            });</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160; </div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> xx : x) {</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span> xxx : xx)</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;                    count_wrong += xxx != 2;</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;            }</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0) {</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;                  <span class="stringliteral">&quot;static nested parallel_for_each gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;            }</div>
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160; </div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;- unit tests: OK              &quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;}</div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a>(x, [&amp;](std::vector&lt;double&gt;&amp; xx) {</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a>(xx, [](<span class="keywordtype">double</span>&amp; xxx) { xxx *= 2; });</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            });</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;            count_wrong = 0;</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span> xx : x) {</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span> xxx : xx)</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;                    count_wrong += xxx != 4;</div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;            }</div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0) {</div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(</div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;                  <span class="stringliteral">&quot;nested parallel_for_each gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;            }</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;        }</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160; </div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        <span class="comment">// single threaded</span></div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        {</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * single threaded: &quot;;</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool(0);</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;            std::vector&lt;size_t&gt; x(1000, 1);</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;            <span class="keyword">auto</span> dummy = [&amp;](<span class="keywordtype">size_t</span> i) -&gt; <span class="keywordtype">void</span> { x[i] = 2 * x[i]; };</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160; </div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++) {</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>(dummy, i);</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            }</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160; </div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;                count_wrong += (x[i] != 2);</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;            <span class="keywordflow">if</span> (count_wrong &gt; 0)</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;single threaded gives wrong result&quot;</span>);</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        }</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160; </div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        <span class="comment">// rethrows exceptions</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        {</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * exception handling: &quot;;</span></div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;            <span class="comment">// pool passes exceptions either via wait() or push()</span></div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            std::exception_ptr eptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;            <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] { <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;test error&quot;</span>); });</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;                std::this_thread::sleep_for(std::chrono::milliseconds(30));</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;                <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; 10; i++) {</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;                    pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] {});</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;                }</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;            } <span class="keywordflow">catch</span> (...) {</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;                eptr = std::current_exception();</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;            }</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160; </div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;            <span class="keywordflow">if</span> (!eptr) {</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;exception not rethrown by push&quot;</span>);</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;                eptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;            }</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160; </div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;            <span class="comment">// poool should be functional again</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([] { <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;test error&quot;</span>); });</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;            <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;            } <span class="keywordflow">catch</span> (...) {</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;                eptr = std::current_exception();</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;            }</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="keywordflow">if</span> (!eptr) {</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;exception not rethrown by wait&quot;</span>);</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;                eptr = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            }</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        }</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    }</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;- unit tests: OK              &quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="anamespacequickpool_html"><div class="ttname"><a href="namespacequickpool.html">quickpool</a></div><div class="ttdoc">quickpool namespace</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00049">quickpool.hpp:49</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00844">quickpool.hpp:844</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_aa72b140a64eabe34cd9302bab837c24c"><div class="ttname"><a href="namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c">quickpool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, Function &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00869">quickpool.hpp:869</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a118c926c7a49a5ac952291e207c4f4b1"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait(size_t millis=0)</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00805">quickpool.hpp:805</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a6655cae9dab967ff085f08c2c91a210c"><div class="ttname"><a href="namespacequickpool.html#a6655cae9dab967ff085f08c2c91a210c">quickpool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00890">quickpool.hpp:890</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00852">quickpool.hpp:852</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00743">quickpool.hpp:743</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_ac11a80ca175424c4c61fd950dda17e0f"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#ac11a80ca175424c4c61fd950dda17e0f">quickpool::ThreadPool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f, size_t nthreads=std::thread::hardware_concurrency())</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00793">quickpool.hpp:793</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_ad734ea599d614c8fb534d2f9e6542fa6"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#ad734ea599d614c8fb534d2f9e6542fa6">quickpool::ThreadPool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, UnaryFunction f, size_t nthreads=std::thread::hardware_concurrency())</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00765">quickpool.hpp:765</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00668">quickpool.hpp:668</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00729">quickpool.hpp:729</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Free-standing functions (main API)</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00831">quickpool.hpp:831</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a5542d71824605f77ed621c725d77ed69"><div class="ttname"><a href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">quickpool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00871">quickpool.hpp:871</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00829">quickpool.hpp:829</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_acb9d7efe2053b8d961ed98bcc2cf2618"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#acb9d7efe2053b8d961ed98bcc2cf2618">quickpool::ThreadPool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, UnaryFunction f)</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00755">quickpool.hpp:755</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a118c926c7a49a5ac952291e207c4f4b1"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait(size_t millis=0)</div><div class="ttdoc">waits for all jobs currently running on the global thread pool. Has no effect when called from thread...</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00790">quickpool.hpp:790</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool. Has no effect when not called from ma...</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00838">quickpool.hpp:838</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a8c2ad78828bc6ec56f6da75649940889"><div class="ttname"><a href="namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889">quickpool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, Function &amp;&amp;f)</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00854">quickpool.hpp:854</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00734">quickpool.hpp:734</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_ad156c576dcd6fb314071ee8a028f2739"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">quickpool::ThreadPool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00779">quickpool.hpp:779</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00659">quickpool.hpp:659</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00720">quickpool.hpp:720</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Free-standing functions (main API)</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00816">quickpool.hpp:816</a></div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

@@ -799,8 +799,7 @@ class ThreadPool
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
-        this->parallel_for(0, size, [=](int i) { f(begin[i]); });
-        this->wait();
+        this->parallel_for(0, size, [=](int i) { f(begin[i]); }, nthreads);
     }
 
     //! @brief waits for all jobs currently running on the global thread pool.
@@ -894,7 +893,7 @@ parallel_for_each(Items& items,
                   UnaryFunction&& f,
                   size_t nthreads = std::thread::hardware_concurrency())
 {
-    ThreadPool::global_instance().parallel_for_each(items, f);
+    ThreadPool::global_instance().parallel_for_each(items, f, nthreads);
 }
 
 } // end namespace quickpool

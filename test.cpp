@@ -86,7 +86,7 @@ main()
             // std::cout << "      * parallel_for: ";
             std::vector<size_t> x(10000, 1);
             auto fun = [&](size_t i) { x[i] = 2 * x[i]; };
-            parallel_for(0, x.size(), fun);
+            parallel_for(0, x.size(), fun, 2);
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)

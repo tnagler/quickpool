@@ -798,10 +798,13 @@ class ThreadPool
     void wait(size_t millis = 0) { task_manager_.wait_for_finish(millis); }
 
   private:
-    //! sets thread affinity of workers on linux.
+    //! sets thread affinity (if there are as many workers as cores). 
+    //! This works on linux by default. In OSX compile with -pthread -DAFFINITY.
     void set_thread_affinity(size_t id)
     {
 #if (defined __linux__ || defined AFFINITY)
+        if (workers_.size() == std::thread::hardware_concurrency())
+            return;
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
         CPU_SET(id, &cpuset);

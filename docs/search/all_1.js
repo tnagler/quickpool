@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['empty_5fstruct_2',['empty_struct',['../structquickpool_1_1mem_1_1padding__impl_1_1empty__struct.html',1,'quickpool::mem::padding_impl']]]
+  ['global_5finstance_1',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
 ];

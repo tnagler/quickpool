@@ -5,58 +5,22 @@
 int
 main()
 {
-    // README contents --------------------------------------------
-    std::cout << "- Running contents from README: ";
+    using namespace quickpool;
+    mem::aligned_atomic<loop::State> test{};
+    std::cout << "lock free: " << test.is_lock_free() << std::endl;
 
-    // Static access to a global pool
-    {
-        quickpool::push([] { /* some work */ });
-        quickpool::push([] { /* some work */ });
-        quickpool::wait(); // waits for all current jobs to finish
-    }
-
-    // async
-    {
-        auto f = quickpool::async([] { return 1 + 1; });
-        // do something else ...
-        auto result = f.get(); // waits until done and returns result
-    }
-    quickpool::wait();
-
-    // extra arguments
-    {
-        auto work = [](const std::string& title, int i) {
-            // std::cout << title << ": " << i << std::endl;
-        };
-        quickpool::push(work, "first title", 5);
-        quickpool::async(work, "other title", 99);
-        quickpool::wait();
-    }
-
-    // Local thread pool
-    {
-        quickpool::ThreadPool pool; // thread pool with two threads
-        pool.push([] { /* some work */ });
-        pool.async([] { /* some work */ });
-        pool.wait(); // waits for all current jobs to finish
-    }
-
-    std::cout << "OK" << std::endl;
-
-    // unit tests ---------------------------------------
-    std::cout << "- unit tests:        \t\r";
     auto runs = 100;
     for (auto run = 0; run < runs; run++) {
-        std::cout << "- unit tests: run " << run + 1 << "/" << runs << "\t\r"
-                  << std::flush;
+        std::cout << "* [quickpool] unit tests: run " << run + 1 << "/" << runs
+                  << "\t\r" << std::flush;
 
         // thread pool push
         {
             // std::cout << "      * push: ";
             std::vector<size_t> x(10000, 1);
             for (size_t i = 0; i < x.size(); i++)
-                quickpool::push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
-            quickpool::wait();
+                push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
+            wait();
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++) {
@@ -67,7 +31,7 @@ main()
                 throw std::runtime_error("static push gives wrong result");
             }
 
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             x = std::vector<size_t>(10000, 1);
             for (size_t i = 0; i < x.size(); i++)
                 pool.push([&](size_t i) -> void { x[i] = 2 * x[i]; }, i);
@@ -89,10 +53,10 @@ main()
 
             std::vector<std::future<size_t>> fut(x.size());
             for (size_t i = 0; i < x.size(); i++)
-                fut[i] = quickpool::async(dummy, i);
+                fut[i] = async(dummy, i);
             for (size_t i = 0; i < x.size(); i++)
                 x[i] = fut[i].get();
-            quickpool::wait();
+            wait();
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -100,7 +64,7 @@ main()
             if (count_wrong > 0)
                 throw std::runtime_error("static async gives wrong result");
 
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             x = std::vector<size_t>(10000, 1);
             std::vector<std::future<size_t>> fut2(x.size());
             for (size_t i = 0; i < x.size(); i++)
@@ -117,10 +81,147 @@ main()
             // std::cout << "OK" << std::endl;
         }
 
+        // parallel_for()
+        {
+            // std::cout << "      * parallel_for: ";
+            std::vector<size_t> x(10000, 1);
+            auto fun = [&](size_t i) { x[i] = 2 * x[i]; };
+            parallel_for(0, x.size(), fun);
+
+            size_t count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 2);
+            if (count_wrong > 0) {
+                for (auto xx : x)
+                    std::cout << xx;
+                std::cout << std::endl;
+                throw std::runtime_error(
+                  "static parallel_for gives wrong result");
+            }
+
+            ThreadPool pool;
+            pool.parallel_for(0, x.size(), fun);
+
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 4);
+            if (count_wrong > 0) {
+                for (auto xx : x)
+                    std::cout << xx;
+                std::cout << std::endl;
+                throw std::runtime_error("parallel_for gives wrong result");
+            }
+            // std::cout << "OK" << std::endl;
+        }
+
+        // nested parallel_for()
+        {
+            // std::cout << "      * nested parallel_for: ";
+            std::vector<std::vector<double>> x(100);
+            for (auto& xx : x)
+                xx = std::vector<double>(100, 1.0);
+            parallel_for(0, x.size(), [&](int i) {
+                parallel_for(0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+            });
+
+            size_t count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 2;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "static nested parallel_for gives wrong result");
+            }
+
+            ThreadPool pool;
+            pool.parallel_for(0, x.size(), [&](int i) {
+                pool.parallel_for(
+                  0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+            });
+
+            count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 4;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "nested parallel_for gives wrong result");
+            }
+            // std::cout << "OK" << std::endl;
+        }
+
+        // parallel_for_each()
+        {
+            // std::cout << "      * parallel_for_each: ";
+            std::vector<size_t> x(10000, 1);
+            auto fun = [](size_t& xx) { xx = 2 * xx; };
+            parallel_for_each(x, fun);
+
+            size_t count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 2);
+            if (count_wrong > 0) {
+                for (auto xx : x)
+                    std::cout << xx;
+                throw std::runtime_error(
+                  "static parallel_for_each gives wrong result");
+            }
+
+            ThreadPool pool;
+            pool.parallel_for_each(x, fun);
+
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 4);
+            if (count_wrong > 0)
+                throw std::runtime_error(
+                  "parallel_for_each gives wrong result");
+            // std::cout << "OK" << std::endl;
+        }
+
+        // nested parallel_for_each()
+        {
+            // std::cout << "      * nested parallel_for_each: ";
+            std::vector<std::vector<double>> x(100);
+            for (auto& xx : x)
+                xx = std::vector<double>(100, 1.0);
+            parallel_for_each(x, [](std::vector<double>& xx) {
+                parallel_for_each(xx, [](double& xxx) { xxx *= 2; });
+            });
+
+            size_t count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 2;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "static nested parallel_for_each gives wrong result");
+            }
+
+            ThreadPool pool;
+            pool.parallel_for_each(x, [&](std::vector<double>& xx) {
+                pool.parallel_for_each(xx, [](double& xxx) { xxx *= 2; });
+            });
+
+            count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 4;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "nested parallel_for_each gives wrong result");
+            }
+            // std::cout << "OK" << std::endl;
+        }
+
         // single threaded
         {
             // std::cout << "      * single threaded: ";
-            quickpool::ThreadPool pool(0);
+            ThreadPool pool(0);
             std::vector<size_t> x(1000, 1);
             auto dummy = [&](size_t i) -> void { x[i] = 2 * x[i]; };
 
@@ -140,12 +241,12 @@ main()
         // rethrows exceptions
         {
             // std::cout << "      * exception handling: ";
-            quickpool::ThreadPool pool;
+            ThreadPool pool;
             // pool passes exceptions either via wait() or push()
             std::exception_ptr eptr = nullptr;
             try {
                 pool.push([] { throw std::runtime_error("test error"); });
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(30));
                 for (size_t i = 0; i < 10; i++) {
                     pool.push([&] {});
                 }

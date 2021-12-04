@@ -14,7 +14,7 @@
 ### Developer friendly
 
 The library consists of a [single header file](https://github.com/tnagler/quickpool/blob/parallel-for/quickpool.hpp) with permissive license. 
-It requires only C++11 and is otherwise self-contained, no external dependencies.
+It requires only C++11 and is otherwise self-contained.
 Just drop `quickpool.hpp` in your project folder and enjoy.
 
 ### User friendly API

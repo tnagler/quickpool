@@ -86,7 +86,7 @@ main()
             // std::cout << "      * parallel_for: ";
             std::vector<size_t> x(10000, 1);
             auto fun = [&](size_t i) { x[i] = 2 * x[i]; };
-            parallel_for(0, x.size(), fun, 2);
+            parallel_for(0, x.size(), fun);
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -110,6 +110,44 @@ main()
                     std::cout << xx;
                 std::cout << std::endl;
                 throw std::runtime_error("parallel_for gives wrong result");
+            }
+            // std::cout << "OK" << std::endl;
+        }
+
+        // nested parallel_for()
+        {
+            // std::cout << "      * nested parallel_for: ";
+            std::vector<std::vector<double>> x(100);
+            for (auto& xx : x)
+                xx = std::vector<double>(100, 1.0);
+            parallel_for(0, x.size(), [&](int i) {
+                parallel_for(0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+            });
+
+            size_t count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 2;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "static nested parallel_for gives wrong result");
+            }
+
+            ThreadPool pool;
+            pool.parallel_for(0, x.size(), [&](int i) {
+                pool.parallel_for(
+                  0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+            });
+
+            count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 4;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "nested parallel_for gives wrong result");
             }
             // std::cout << "OK" << std::endl;
         }
@@ -140,6 +178,43 @@ main()
             if (count_wrong > 0)
                 throw std::runtime_error(
                   "parallel_for_each gives wrong result");
+            // std::cout << "OK" << std::endl;
+        }
+
+        // nested parallel_for_each()
+        {
+            // std::cout << "      * nested parallel_for_each: ";
+            std::vector<std::vector<double>> x(100);
+            for (auto& xx : x)
+                xx = std::vector<double>(100, 1.0);
+            parallel_for_each(x, [](std::vector<double>& xx) {
+                parallel_for_each(xx, [](double& xxx) { xxx *= 2; });
+            });
+
+            size_t count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 2;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "static nested parallel_for_each gives wrong result");
+            }
+
+            ThreadPool pool;
+            pool.parallel_for_each(x, [&](std::vector<double>& xx) {
+                pool.parallel_for_each(xx, [](double& xxx) { xxx *= 2; });
+            });
+
+            count_wrong = 0;
+            for (auto xx : x) {
+                for (auto xxx : xx)
+                    count_wrong += xxx != 4;
+            }
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "nested parallel_for_each gives wrong result");
+            }
             // std::cout << "OK" << std::endl;
         }
 

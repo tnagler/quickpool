@@ -769,7 +769,7 @@ class ThreadPool
         auto nthreads =
           std::min(end - begin, static_cast<int>(workers_.size()));
         auto workers = loop::create_workers<UnaryFunction>(
-          std::forward<UnaryFunction>(f), begin, end, nthreads);
+            f, begin, end, nthreads);
         for (int k = 0; k < nthreads; k++) {
             this->push([=] { workers->at(k).run(workers); });
         }
@@ -786,7 +786,7 @@ class ThreadPool
     //! @param f function to be applied as `f(*it)` for the iterator in the
     //! range `[begin, end)` (the 'loop body').
     template<class Items, class UnaryFunction>
-    inline void parallel_for_each(Items& items, UnaryFunction&& f)
+    inline void parallel_for_each(Items& items, UnaryFunction f)
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
@@ -877,12 +877,12 @@ wait()
 //! @param begin first index of the loop.
 //! @param end the loop runs in the range `[begin, end)`.
 //! @param f a function taking `int` argument (the 'loop body').
-template<class Function>
+template<class UnaryFunction>
 inline void
-parallel_for(int begin, int end, Function&& f)
+parallel_for(int begin, int end, UnaryFunction&& f)
 {
     ThreadPool::global_instance().parallel_for(
-      begin, end, std::forward<Function>(f));
+      begin, end, std::forward<UnaryFunction>(f));
 }
 
 //! @brief computes a iterator-based parallel for loop.

@@ -492,11 +492,14 @@ class TaskManager
 
     void resize(size_t num_queues)
     {
+        num_queues_ = std::max(num_queues, static_cast<size_t>(1));
         if (num_queues > queues_.size()) {
             queues_ = std::vector<TaskQueue>(num_queues);
+            // thread pool must have stopped the manager, reset
+            num_waiting_ = 0;
+            todo_ = 0;
+            status_ = Status::running;
         }
-        num_queues_ = num_queues;
-        status_ = Status::running; // thread pool might have stopped the manager
     }
 
     template<typename Task>
@@ -719,7 +722,6 @@ class ThreadPool
 
         if (threads <= workers_.size()) {
             task_manager_.resize(threads);
-            active_threads_ = threads;
         } else {
             if (workers_.size() > 0) {
                 task_manager_.stop();
@@ -812,7 +814,7 @@ class ThreadPool
     void wait(size_t millis = 0) { task_manager_.wait_for_finish(millis); }
 
     //! @brief checks whether all jobs are done.
-    bool done() const { return task_manager_.done(); } 
+    bool done() const { return task_manager_.done(); }
 
   private:
     //! joins all worker threads.
@@ -875,7 +877,7 @@ class ThreadPool
 
     sched::TaskManager task_manager_;
     std::vector<std::thread> workers_;
-    size_t active_threads_;
+    std::atomic_size_t active_threads_;
 };
 
 // 5. ---------------------------------------------------

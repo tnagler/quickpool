@@ -283,37 +283,37 @@ main()
 
             ThreadPool pool(2);
             pool.set_active_threads(1);
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 100; i++)
                 pool.push([&] { dummy++; });
             pool.wait();
-            if (dummy != 10000) {
+            if (dummy != 100) {
                 throw std::runtime_error("downsizing doesn't work");
             }
 
             pool.set_active_threads(2);
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 100; i++)
                 pool.push([&] { dummy++; });
             pool.wait();
             pool.wait();
-            if (dummy != 20000) {
+            if (dummy != 200) {
                 throw std::runtime_error("restore size doesn't work");
             }
 
             pool.set_active_threads(3);
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 100; i++)
                 pool.push([&] { dummy++; });
             pool.wait();
             pool.wait();
-            if (dummy != 30000) {
+            if (dummy != 300) {
                 throw std::runtime_error("upsizing doesn't work");
             }
 
             pool.set_active_threads(std::thread::hardware_concurrency() + 1);
-            for (int i = 0; i < 10000; i++)
+            for (int i = 0; i < 100; i++)
                 pool.push([&] { dummy++; });
             pool.wait();
             pool.wait();
-            if (dummy != 40000) {
+            if (dummy != 400) {
                 throw std::runtime_error("oversizing doesn't work");
             }
 

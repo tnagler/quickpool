@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['threadpool_7',['ThreadPool',['../classquickpool_1_1ThreadPool.html',1,'quickpool::ThreadPool'],['../classquickpool_1_1ThreadPool.html#a77be0411acd893ba35e966beb05834b0',1,'quickpool::ThreadPool::ThreadPool()'],['../classquickpool_1_1ThreadPool.html#ab067ffcc9f09b64eb16591b36a6b9f4a',1,'quickpool::ThreadPool::ThreadPool(size_t n_workers)']]]
+  ['set_5factive_5fthreads_8',['set_active_threads',['../classquickpool_1_1ThreadPool.html#aaed4dbfa25b36013a801d69709c0fb0d',1,'quickpool::ThreadPool::set_active_threads()'],['../namespacequickpool.html#a56d0ddf0c5f3dc5f4cf2ada1c8cde29a',1,'quickpool::set_active_threads()']]]
 ];

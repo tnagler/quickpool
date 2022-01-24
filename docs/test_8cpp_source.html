@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">quickpool
-   &#160;<span id="projectnumber">1.2.0</span>
+   &#160;<span id="projectnumber">1.3.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -155,7 +155,7 @@ $(function() {
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * parallel_for: &quot;;</span></div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            std::vector&lt;size_t&gt; x(10000, 1);</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="keyword">auto</span> fun = [&amp;](<span class="keywordtype">size_t</span> i) { x[i] = 2 * x[i]; };</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <a class="code" href="namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889">parallel_for</a>(0, x.size(), fun);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <a class="code" href="namespacequickpool.html#a3432dfdfadaf9705389263e726926b28">parallel_for</a>(0, x.size(), fun);</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            <span class="keywordtype">size_t</span> count_wrong = 0;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -189,7 +189,7 @@ $(function() {
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            std::vector&lt;std::vector&lt;double&gt;&gt; x(100);</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; xx : x)</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                xx = std::vector&lt;double&gt;(100, 1.0);</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <a class="code" href="namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889">parallel_for</a>(0, x.size(), [&amp;](<span class="keywordtype">int</span> i) {</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <a class="code" href="namespacequickpool.html#a3432dfdfadaf9705389263e726926b28">parallel_for</a>(0, x.size(), [&amp;](<span class="keywordtype">int</span> i) {</div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                parallel_for(0, x[i].size(), [&amp;x, i](int j) { x[i][j] *= 2; });</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            });</div>
 <div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
@@ -239,7 +239,7 @@ $(function() {
 <div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;            }</div>
 <div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160; </div>
 <div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a>(x, fun);</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad08862259cb77c023523789c0632a6f7">parallel_for_each</a>(x, fun);</div>
 <div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
 <div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;            count_wrong = 0;</div>
 <div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; x.size(); i++)</div>
@@ -271,8 +271,8 @@ $(function() {
 <div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;            }</div>
 <div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160; </div>
 <div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool;</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a>(x, [&amp;](std::vector&lt;double&gt;&amp; xx) {</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">parallel_for_each</a>(xx, [](<span class="keywordtype">double</span>&amp; xxx) { xxx *= 2; });</div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad08862259cb77c023523789c0632a6f7">parallel_for_each</a>(x, [&amp;](std::vector&lt;double&gt;&amp; xx) {</div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#ad08862259cb77c023523789c0632a6f7">parallel_for_each</a>(xx, [](<span class="keywordtype">double</span>&amp; xxx) { xxx *= 2; });</div>
 <div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;            });</div>
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;            count_wrong = 0;</div>
@@ -343,25 +343,72 @@ $(function() {
 <div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            }</div>
 <div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
 <div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        }</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    }</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;- unit tests: OK              &quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160; </div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;}</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160; </div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        <span class="comment">// can be resized</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        {</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;      * resizing: &quot;;</span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160; </div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;            std::atomic_int dummy{ 0 };</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160; </div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;            <a class="code" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> pool(2);</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#aaed4dbfa25b36013a801d69709c0fb0d">set_active_threads</a>(1);</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 10000; i++)</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] { dummy++; });</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;            <span class="keywordflow">if</span> (dummy != 10000) {</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;downsizing doesn&#39;t work&quot;</span>);</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;            }</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160; </div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#aaed4dbfa25b36013a801d69709c0fb0d">set_active_threads</a>(2);</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 10000; i++)</div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] { dummy++; });</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;            <span class="keywordflow">if</span> (dummy != 20000) {</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;restore size doesn&#39;t work&quot;</span>);</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;            }</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160; </div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#aaed4dbfa25b36013a801d69709c0fb0d">set_active_threads</a>(3);</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 10000; i++)</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] { dummy++; });</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;            <span class="keywordflow">if</span> (dummy != 30000) {</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;upsizing doesn&#39;t work&quot;</span>);</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;            }</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160; </div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#aaed4dbfa25b36013a801d69709c0fb0d">set_active_threads</a>(std::thread::hardware_concurrency() + 1);</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 10000; i++)</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;                pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">push</a>([&amp;] { dummy++; });</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;            pool.<a class="code" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a>();</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;            <span class="keywordflow">if</span> (dummy != 40000) {</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;oversizing doesn&#39;t work&quot;</span>);</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;            }</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160; </div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160; </div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;            <span class="comment">// std::cout &lt;&lt; &quot;OK&quot; &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;        }</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    }</div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160; </div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;    std::cout &lt;&lt; <span class="stringliteral">&quot;- unit tests: OK              &quot;</span> &lt;&lt; std::endl;</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160; </div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;}</div>
 </div><!-- fragment --></div><!-- contents -->
-<div class="ttc" id="anamespacequickpool_html"><div class="ttname"><a href="namespacequickpool.html">quickpool</a></div><div class="ttdoc">quickpool namespace</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00049">quickpool.hpp:49</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a5542d71824605f77ed621c725d77ed69"><div class="ttname"><a href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">quickpool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00871">quickpool.hpp:871</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00829">quickpool.hpp:829</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_acb9d7efe2053b8d961ed98bcc2cf2618"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#acb9d7efe2053b8d961ed98bcc2cf2618">quickpool::ThreadPool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, UnaryFunction f)</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00755">quickpool.hpp:755</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a118c926c7a49a5ac952291e207c4f4b1"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait(size_t millis=0)</div><div class="ttdoc">waits for all jobs currently running on the global thread pool. Has no effect when called from thread...</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00790">quickpool.hpp:790</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool. Has no effect when not called from ma...</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00838">quickpool.hpp:838</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a8c2ad78828bc6ec56f6da75649940889"><div class="ttname"><a href="namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889">quickpool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, Function &amp;&amp;f)</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00854">quickpool.hpp:854</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00734">quickpool.hpp:734</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_ad156c576dcd6fb314071ee8a028f2739"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739">quickpool::ThreadPool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00779">quickpool.hpp:779</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00659">quickpool.hpp:659</a></div></div>
-<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00720">quickpool.hpp:720</a></div></div>
-<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Free-standing functions (main API)</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00816">quickpool.hpp:816</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a3432dfdfadaf9705389263e726926b28"><div class="ttname"><a href="namespacequickpool.html#a3432dfdfadaf9705389263e726926b28">quickpool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00954">quickpool.hpp:954</a></div></div>
+<div class="ttc" id="anamespacequickpool_html"><div class="ttname"><a href="namespacequickpool.html">quickpool</a></div><div class="ttdoc">quickpool namespace</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00055">quickpool.hpp:55</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a5542d71824605f77ed621c725d77ed69"><div class="ttname"><a href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">quickpool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction &amp;&amp;f)</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00971">quickpool.hpp:971</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_abe02477646e2dfceb9b8657815afefd1"><div class="ttname"><a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">quickpool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00905">quickpool.hpp:905</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_acb9d7efe2053b8d961ed98bcc2cf2618"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#acb9d7efe2053b8d961ed98bcc2cf2618">quickpool::ThreadPool::parallel_for</a></div><div class="ttdeci">void parallel_for(int begin, int end, UnaryFunction f)</div><div class="ttdoc">computes an index-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00781">quickpool.hpp:781</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a118c926c7a49a5ac952291e207c4f4b1"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">quickpool::ThreadPool::wait</a></div><div class="ttdeci">void wait(size_t millis=0)</div><div class="ttdoc">waits for all jobs currently running on the thread pool. Has no effect when called from threads other...</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00814">quickpool.hpp:814</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_ad08862259cb77c023523789c0632a6f7"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#ad08862259cb77c023523789c0632a6f7">quickpool::ThreadPool::parallel_for_each</a></div><div class="ttdeci">void parallel_for_each(Items &amp;items, UnaryFunction f)</div><div class="ttdoc">computes a iterator-based parallel for loop.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00803">quickpool.hpp:803</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a2a7dcef03a6a02c06a999ef6f244a291"><div class="ttname"><a href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">quickpool::wait</a></div><div class="ttdeci">void wait()</div><div class="ttdoc">waits for all jobs currently running on the global thread pool. Has no effect when not called from ma...</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00914">quickpool.hpp:914</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_af803164106b0c9181e01eb59bf9abdcc"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#af803164106b0c9181e01eb59bf9abdcc">quickpool::ThreadPool::async</a></div><div class="ttdeci">auto async(Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</div><div class="ttdoc">executes a job asynchronously on the global thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00760">quickpool.hpp:760</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_aaed4dbfa25b36013a801d69709c0fb0d"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#aaed4dbfa25b36013a801d69709c0fb0d">quickpool::ThreadPool::set_active_threads</a></div><div class="ttdeci">void set_active_threads(size_t threads)</div><div class="ttdoc">sets the number of active worker threads in the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00718">quickpool.hpp:718</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html">quickpool::ThreadPool</a></div><div class="ttdoc">A work stealing thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00678">quickpool.hpp:678</a></div></div>
+<div class="ttc" id="aclassquickpool_1_1ThreadPool_html_a3a79d3a078643e271b238ee1be47986e"><div class="ttname"><a href="classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e">quickpool::ThreadPool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">pushes a job to the thread pool.</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00746">quickpool.hpp:746</a></div></div>
+<div class="ttc" id="anamespacequickpool_html_a06e138ab2370dc5055a64995ad6c9286"><div class="ttname"><a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">quickpool::push</a></div><div class="ttdeci">void push(Function &amp;&amp;f, Args &amp;&amp;... args)</div><div class="ttdoc">Free-standing functions (main API)</div><div class="ttdef"><b>Definition:</b> <a href="quickpool_8hpp_source.html#l00892">quickpool.hpp:892</a></div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

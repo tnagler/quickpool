@@ -274,6 +274,52 @@ main()
             }
             // std::cout << "OK" << std::endl;
         }
+
+        // can be resized
+        {
+            // std::cout << "      * resizing: ";
+
+            std::atomic_int dummy{ 0 };
+
+            ThreadPool pool(2);
+            pool.set_active_threads(1);
+            for (int i = 0; i < 10000; i++)
+                pool.push([&] { dummy++; });
+            pool.wait();
+            if (dummy != 10000) {
+                throw std::runtime_error("downsizing doesn't work");
+            }
+
+            pool.set_active_threads(2);
+            for (int i = 0; i < 10000; i++)
+                pool.push([&] { dummy++; });
+            pool.wait();
+            pool.wait();
+            if (dummy != 20000) {
+                throw std::runtime_error("restore size doesn't work");
+            }
+
+            pool.set_active_threads(3);
+            for (int i = 0; i < 10000; i++)
+                pool.push([&] { dummy++; });
+            pool.wait();
+            pool.wait();
+            if (dummy != 30000) {
+                throw std::runtime_error("upsizing doesn't work");
+            }
+
+            pool.set_active_threads(std::thread::hardware_concurrency() + 1);
+            for (int i = 0; i < 10000; i++)
+                pool.push([&] { dummy++; });
+            pool.wait();
+            pool.wait();
+            if (dummy != 40000) {
+                throw std::runtime_error("oversizing doesn't work");
+            }
+
+
+            // std::cout << "OK" << std::endl;
+        }
     }
 
     std::cout << "- unit tests: OK              " << std::endl;

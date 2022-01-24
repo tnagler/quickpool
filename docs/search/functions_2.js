@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['parallel_5ffor_13',['parallel_for',['../classquickpool_1_1ThreadPool.html#acb9d7efe2053b8d961ed98bcc2cf2618',1,'quickpool::ThreadPool::parallel_for()'],['../namespacequickpool.html#a8c2ad78828bc6ec56f6da75649940889',1,'quickpool::parallel_for()']]],
-  ['parallel_5ffor_5feach_14',['parallel_for_each',['../classquickpool_1_1ThreadPool.html#ad156c576dcd6fb314071ee8a028f2739',1,'quickpool::ThreadPool::parallel_for_each()'],['../namespacequickpool.html#a5542d71824605f77ed621c725d77ed69',1,'quickpool::parallel_for_each()']]],
-  ['push_15',['push',['../classquickpool_1_1ThreadPool.html#a3a79d3a078643e271b238ee1be47986e',1,'quickpool::ThreadPool::push()'],['../namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286',1,'quickpool::push()']]]
+  ['get_5factive_5fthreads_16',['get_active_threads',['../classquickpool_1_1ThreadPool.html#a9fa5b73a745b2382fecfadd2afb34735',1,'quickpool::ThreadPool::get_active_threads()'],['../namespacequickpool.html#a7e1597aaed04ba7dddb4e5beb0e3be63',1,'quickpool::get_active_threads()']]],
+  ['global_5finstance_17',['global_instance',['../classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180',1,'quickpool::ThreadPool']]]
 ];

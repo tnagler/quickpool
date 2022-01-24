@@ -94,6 +94,10 @@ Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">wait</a> ()</td></tr>
 <tr class="memdesc:a2a7dcef03a6a02c06a999ef6f244a291"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the global thread pool. Has no effect when not called from main thread. <br /></td></tr>
 <tr class="separator:a2a7dcef03a6a02c06a999ef6f244a291"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc737ea3d3b4a958f05d435681d7098d"><td class="memItemLeft" align="right" valign="top"><a id="abc737ea3d3b4a958f05d435681d7098d"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#abc737ea3d3b4a958f05d435681d7098d">done</a> ()</td></tr>
+<tr class="memdesc:abc737ea3d3b4a958f05d435681d7098d"><td class="mdescLeft">&#160;</td><td class="mdescRight">checks whether all globel jobs are done. <br /></td></tr>
+<tr class="separator:abc737ea3d3b4a958f05d435681d7098d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56d0ddf0c5f3dc5f4cf2ada1c8cde29a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#a56d0ddf0c5f3dc5f4cf2ada1c8cde29a">set_active_threads</a> (size_t threads)</td></tr>
 <tr class="memdesc:a56d0ddf0c5f3dc5f4cf2ada1c8cde29a"><td class="mdescLeft">&#160;</td><td class="mdescRight">sets the number of active worker threads in the global thread pool.  <a href="namespacequickpool.html#a56d0ddf0c5f3dc5f4cf2ada1c8cde29a">More...</a><br /></td></tr>
 <tr class="separator:a56d0ddf0c5f3dc5f4cf2ada1c8cde29a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -160,7 +164,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00900">900</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00903">903</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -217,7 +221,7 @@ template&lt;class UnaryFunction &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00942">942</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00952">952</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -267,7 +271,7 @@ template&lt;class Items , class UnaryFunction &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00959">959</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00969">969</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -316,7 +320,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00887">887</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00890">890</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -352,7 +356,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00918">918</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00928">928</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>

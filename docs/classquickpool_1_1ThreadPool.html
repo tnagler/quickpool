@@ -122,8 +122,12 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="memdesc:ad08862259cb77c023523789c0632a6f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">computes a iterator-based parallel for loop.  <a href="classquickpool_1_1ThreadPool.html#ad08862259cb77c023523789c0632a6f7">More...</a><br /></td></tr>
 <tr class="separator:ad08862259cb77c023523789c0632a6f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a118c926c7a49a5ac952291e207c4f4b1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">wait</a> (size_t millis=0)</td></tr>
-<tr class="memdesc:a118c926c7a49a5ac952291e207c4f4b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the global thread pool. Has no effect when called from threads other than the one that created the pool.  <a href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">More...</a><br /></td></tr>
+<tr class="memdesc:a118c926c7a49a5ac952291e207c4f4b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the thread pool. Has no effect when called from threads other than the one that created the pool.  <a href="classquickpool_1_1ThreadPool.html#a118c926c7a49a5ac952291e207c4f4b1">More...</a><br /></td></tr>
 <tr class="separator:a118c926c7a49a5ac952291e207c4f4b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0f882945e639b1092e543b11cf3abe8"><td class="memItemLeft" align="right" valign="top"><a id="ac0f882945e639b1092e543b11cf3abe8"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#ac0f882945e639b1092e543b11cf3abe8">done</a> () const</td></tr>
+<tr class="memdesc:ac0f882945e639b1092e543b11cf3abe8"><td class="mdescLeft">&#160;</td><td class="mdescRight">checks whether all jobs are done. <br /></td></tr>
+<tr class="separator:ac0f882945e639b1092e543b11cf3abe8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -441,7 +445,7 @@ template&lt;class Function , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>waits for all jobs currently running on the global thread pool. Has no effect when called from threads other than the one that created the pool. </p>
+<p>waits for all jobs currently running on the thread pool. Has no effect when called from threads other than the one that created the pool. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">millis</td><td>if &gt; 0: stops waiting after millis ms. </td></tr>

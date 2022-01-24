@@ -805,11 +805,14 @@ class ThreadPool
         this->parallel_for(0, size, [=](int i) { f(begin[i]); });
     }
 
-    //! @brief waits for all jobs currently running on the global thread
+    //! @brief waits for all jobs currently running on the thread
     //! pool. Has no effect when called from threads other than the one that
     //! created the pool.
     //! @param millis if > 0: stops waiting after millis ms.
     void wait(size_t millis = 0) { task_manager_.wait_for_finish(millis); }
+
+    //! @brief checks whether all jobs are done.
+    bool done() const { return task_manager_.done(); } 
 
   private:
     //! joins all worker threads.
@@ -909,6 +912,13 @@ inline void
 wait()
 {
     ThreadPool::global_instance().wait();
+}
+
+//! @brief checks whether all globel jobs are done.
+inline bool
+done()
+{
+    return ThreadPool::global_instance().done();
 }
 
 //! @brief sets the number of active worker threads in the global thread pool.

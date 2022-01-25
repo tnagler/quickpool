@@ -7,7 +7,7 @@ main()
 {
     using namespace quickpool;
     mem::aligned_atomic<loop::State> test{};
-    std::cout << "lock free: " << test.is_lock_free() << std::endl;
+    std::cout << "* [quickpool] lock free: " << (test.is_lock_free() ? "yes\n" : "no\n");
 
     auto runs = 100;
     for (auto run = 0; run < runs; run++) {
@@ -322,7 +322,7 @@ main()
         }
     }
 
-    std::cout << "- unit tests: OK              " << std::endl;
+    std::cout << "* [quickpool] unit tests: OK              " << std::endl;
 
     return 0;
 }

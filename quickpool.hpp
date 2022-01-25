@@ -26,6 +26,7 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <memory>
 #include <mutex>
 #include <numeric>
 #include <thread>

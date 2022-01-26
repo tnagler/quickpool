@@ -7,9 +7,8 @@ main()
 {
     using namespace quickpool;
     aligned::atomic<loop::State> test{};
-
-    aligned::allocator<int, 64> alloc;
-    std::cout << "* [quickpool] lock free: " << (test.is_lock_free() ? "yes\n" : "no\n");
+    std::cout << "* [quickpool] lock free: "
+              << (test.is_lock_free() ? "yes\n" : "no\n");
 
     auto runs = 100;
     for (auto run = 0; run < runs; run++) {
@@ -318,7 +317,6 @@ main()
             if (dummy != 400) {
                 throw std::runtime_error("oversizing doesn't work");
             }
-
 
             // std::cout << "OK" << std::endl;
         }

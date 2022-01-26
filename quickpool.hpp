@@ -895,7 +895,7 @@ class ThreadPool
     bool done() const { return task_manager_.done(); }
 
     //! @brief allocator respecting memory alignment.
-    static void* operator new(size_t count) noexcept
+    static void* operator new(size_t count)
     {
         return mem::aligned::alloc(alignof(ThreadPool), count);
     }

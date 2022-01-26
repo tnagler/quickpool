@@ -148,8 +148,8 @@ free(void* ptr) noexcept
     }
 }
 
-// short version of
-// https://www.boost.org/doc/libs/1_65_0/boost/align/aligned_allocator.hpp
+//! short version of
+//! https://www.boost.org/doc/libs/1_65_0/boost/align/aligned_allocator.hpp
 template<class T, std::size_t Alignment = 64>
 class allocator : public std::allocator<T>
 {
@@ -236,6 +236,7 @@ struct relaxed_atomic : public aligned::atomic<T>
     }
 };
 
+//! vector class for aligned types.
 template<class T, size_t Alignment = 64>
 using vector = std::vector<T, aligned::allocator<T, Alignment>>;
 

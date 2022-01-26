@@ -6,7 +6,9 @@ int
 main()
 {
     using namespace quickpool;
-    mem::aligned_atomic<loop::State> test{};
+    aligned::atomic<loop::State> test{};
+
+    aligned::allocator<int, 64> alloc;
     std::cout << "* [quickpool] lock free: " << (test.is_lock_free() ? "yes\n" : "no\n");
 
     auto runs = 100;

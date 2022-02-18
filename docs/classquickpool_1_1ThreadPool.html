@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">quickpool
-   &#160;<span id="projectnumber">1.4.0</span>
+   &#160;<span id="projectnumber">1.5.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -83,9 +83,9 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ace792be7b69bb4e18c1770d898e84303"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#ace792be7b69bb4e18c1770d898e84303">ThreadPool</a> (size_t threads=std::thread::hardware_concurrency())</td></tr>
-<tr class="memdesc:ace792be7b69bb4e18c1770d898e84303"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructs a thread pool.  <a href="classquickpool_1_1ThreadPool.html#ace792be7b69bb4e18c1770d898e84303">More...</a><br /></td></tr>
-<tr class="separator:ace792be7b69bb4e18c1770d898e84303"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ace3e9fbaa04fbd0b8a9555ba7f6d26e1"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#ace3e9fbaa04fbd0b8a9555ba7f6d26e1">ThreadPool</a> (size_t threads=sched::num_cores_avail())</td></tr>
+<tr class="memdesc:ace3e9fbaa04fbd0b8a9555ba7f6d26e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">constructs a thread pool.  <a href="classquickpool_1_1ThreadPool.html#ace3e9fbaa04fbd0b8a9555ba7f6d26e1">More...</a><br /></td></tr>
+<tr class="separator:ace3e9fbaa04fbd0b8a9555ba7f6d26e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81374a2e9bd678f174d6e8cf6b3280c0"><td class="memItemLeft" align="right" valign="top"><a id="a81374a2e9bd678f174d6e8cf6b3280c0"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ThreadPool</b> (<a class="el" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> &amp;&amp;)=delete</td></tr>
 <tr class="separator:a81374a2e9bd678f174d6e8cf6b3280c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,10 +135,10 @@ Static Public Member Functions</h2></td></tr>
 static <a class="el" href="classquickpool_1_1ThreadPool.html">ThreadPool</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#ab5daa930caa3724dac002ac2dd3d3180">global_instance</a> ()</td></tr>
 <tr class="memdesc:ab5daa930caa3724dac002ac2dd3d3180"><td class="mdescLeft">&#160;</td><td class="mdescRight">returns a reference to the global thread pool instance. <br /></td></tr>
 <tr class="separator:ab5daa930caa3724dac002ac2dd3d3180"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27bc3249d258543c450f0e98492be310"><td class="memItemLeft" align="right" valign="top"><a id="a27bc3249d258543c450f0e98492be310"></a>
-static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a27bc3249d258543c450f0e98492be310">operator new</a> (size_t count) noexcept</td></tr>
-<tr class="memdesc:a27bc3249d258543c450f0e98492be310"><td class="mdescLeft">&#160;</td><td class="mdescRight">allocator respecting memory alignment. <br /></td></tr>
-<tr class="separator:a27bc3249d258543c450f0e98492be310"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a283848e5204e82cd93737c7fceabdd1b"><td class="memItemLeft" align="right" valign="top"><a id="a283848e5204e82cd93737c7fceabdd1b"></a>
+static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a283848e5204e82cd93737c7fceabdd1b">operator new</a> (size_t count)</td></tr>
+<tr class="memdesc:a283848e5204e82cd93737c7fceabdd1b"><td class="mdescLeft">&#160;</td><td class="mdescRight">allocator respecting memory alignment. <br /></td></tr>
+<tr class="separator:a283848e5204e82cd93737c7fceabdd1b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c1369433f01eb78516e809a98aa1fb6"><td class="memItemLeft" align="right" valign="top"><a id="a6c1369433f01eb78516e809a98aa1fb6"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classquickpool_1_1ThreadPool.html#a6c1369433f01eb78516e809a98aa1fb6">operator delete</a> (void *ptr)</td></tr>
 <tr class="memdesc:a6c1369433f01eb78516e809a98aa1fb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">deallocator respecting memory alignment. <br /></td></tr>
@@ -147,10 +147,10 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A work stealing thread pool. </p>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00756">756</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00787">787</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ace792be7b69bb4e18c1770d898e84303"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace792be7b69bb4e18c1770d898e84303">&#9670;&nbsp;</a></span>ThreadPool()</h2>
+<a id="ace3e9fbaa04fbd0b8a9555ba7f6d26e1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ace3e9fbaa04fbd0b8a9555ba7f6d26e1">&#9670;&nbsp;</a></span>ThreadPool()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,7 +162,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
           <td class="memname">quickpool::ThreadPool::ThreadPool </td>
           <td>(</td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>threads</em> = <code>std::thread::hardware_concurrency()</code></td><td>)</td>
+          <td class="paramname"><em>threads</em> = <code>sched::num_cores_avail()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -181,7 +181,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00762">762</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00793">793</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -233,7 +233,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00838">838</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00872">872</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -290,7 +290,7 @@ template&lt;class UnaryFunction &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00859">859</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00893">893</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -340,7 +340,7 @@ template&lt;class Items , class UnaryFunction &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00881">881</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00915">915</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -389,7 +389,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00824">824</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00858">858</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -425,7 +425,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00796">796</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00827">827</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -461,7 +461,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00892">892</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l00926">926</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>

@@ -749,7 +749,7 @@ class TaskManager
 };
 
 // find out which cores are allowed for use by pthread
-std::vector<size_t>
+inline std::vector<size_t>
 get_avail_cores()
 {
     auto ncores = std::thread::hardware_concurrency();
@@ -770,7 +770,7 @@ get_avail_cores()
     return avail_cores;
 }
 
-size_t
+inline size_t
 num_cores_avail()
 {
 #if (defined __linux__)

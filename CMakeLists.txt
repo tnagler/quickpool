@@ -35,21 +35,28 @@ target_link_libraries(quickpool
 )
 
 if(QUICKPOOL_TEST)
-  add_executable(test "test.cpp")
+  include(CTest)
 
-  target_link_libraries(test
+  add_executable(quickpool_test "test.cpp")
+
+  add_test(
+    NAME quickpool_test
+    COMMAND "quickpool_test"
+  )
+
+  target_link_libraries(quickpool_test
     PRIVATE
       quickpool
   )
 
   if(QUICKPOOL_TEST_SANITIZE)
-    target_compile_options(test
+    target_compile_options(quickpool_test
       PRIVATE
         "-fno-omit-frame-pointer"
         "-fsanitize=address,undefined,leak,bounds,alignment"
     )
 
-    target_link_options(test
+    target_link_options(quickpool_test
       PRIVATE
         "-fno-omit-frame-pointer"
         "-fsanitize=address,undefined,leak,bounds,alignment"

@@ -162,6 +162,15 @@ class allocator : public std::allocator<T>
         typedef allocator<U, Alignment> other;
     };
 
+    allocator() noexcept
+      : std::allocator<T>()
+    {}
+
+    template<class U, std::size_t UAlignment>
+    allocator(const allocator<U, UAlignment>& other) noexcept
+      : std::allocator<T>(other)
+    {}
+
     T* allocate(size_t size, const void* = 0)
     {
         if (size == 0) {

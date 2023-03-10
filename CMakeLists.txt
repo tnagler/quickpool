@@ -18,13 +18,17 @@ find_library(LIB_ATOMIC
 
 find_package(Threads)
 
-add_library(quickpool
-  INTERFACE
-    "quickpool.hpp"
-)
+add_library(quickpool INTERFACE)
+
+if (CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  # Project built standalone
+  set(SYSTEM "")
+else()
+  set(SYSTEM "SYSTEM")
+endif()
 
 target_include_directories(quickpool
-  INTERFACE
+  ${SYSTEM} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

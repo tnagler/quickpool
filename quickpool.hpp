@@ -270,10 +270,12 @@ template<class Iterator, class UnaryFunction, class Pool>
 void
 parallel_for_each_impl(Iterator begin,
                        Iterator end,
+                       int size,
                        UnaryFunction f,
                        Pool& pool,
                        std::random_access_iterator_tag)
 {
+    (void)end;
     pool.parallel_for(0, static_cast<int>(size), [=](int i) { f(begin[i]); });
 }
 
@@ -281,6 +283,7 @@ template<class Iterator, class UnaryFunction, class Pool, class IteratorCategory
 void
 parallel_for_each_impl(Iterator begin,
                        Iterator end,
+                       int size,
                        UnaryFunction f,
                        Pool& pool,
                        IteratorCategory)
@@ -963,9 +966,16 @@ class ThreadPool
     template<class UnaryFunction>
     void parallel_for(int begin, int end, UnaryFunction f)
     {
+        if (end <= begin) {
+            return;
+        }
+
         // each worker has its dedicated range, but can steal part of
         // another worker's ranges when done with own
-        auto n = std::max(this->get_active_threads(), static_cast<size_t>(1));
+        const auto num_tasks = static_cast<size_t>(end - begin);
+        const auto n =
+          std::min(std::max(this->get_active_threads(), static_cast<size_t>(1)),
+                   num_tasks);
         auto workers = loop::create_workers<UnaryFunction>(f, begin, end, n);
         for (size_t k = 0; k < n; k++) {
             this->push([=] { workers->at(k).run(workers); });
@@ -987,14 +997,20 @@ class ThreadPool
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
-        if (size <= 0) return;
+        if (size <= 0) {
+            return;
+        }
         if (size > std::numeric_limits<int>::max()) {
             throw std::length_error("parallel_for_each range is too large");
         }
         typedef typename std::iterator_traits<decltype(begin)>::iterator_category
           iterator_category;
-        loop::parallel_for_each_impl(
-          begin, std::end(items), f, *this, iterator_category{});
+        loop::parallel_for_each_impl(begin,
+                                     std::end(items),
+                                     static_cast<int>(size),
+                                     f,
+                                     *this,
+                                     iterator_category{});
     }
 
     //! @brief waits for all jobs currently running on the thread

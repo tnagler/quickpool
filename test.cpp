@@ -140,6 +140,13 @@ main()
                 std::cout << std::endl;
                 throw std::runtime_error("parallel_for gives wrong result");
             }
+
+            int empty_count = 0;
+            parallel_for(4, 4, [&](int) { empty_count++; });
+            pool.parallel_for(8, 2, [&](int) { empty_count++; });
+            if (empty_count != 0) {
+                throw std::runtime_error("empty parallel_for runs work");
+            }
             // std::cout << "OK" << std::endl;
         }
 

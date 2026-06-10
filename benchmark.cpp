@@ -27,6 +27,8 @@ struct Options
 struct Workload
 {
     int push_tasks;
+    int short_loop_items;
+    int short_loop_repeats;
     int loop_items;
     int nested_outer;
     int nested_inner;
@@ -86,9 +88,9 @@ Workload
 workload_for(const Options& options)
 {
     if (options.quick) {
-        return Workload{ 1000, 4000, 40, 40, 2000 };
+        return Workload{ 1000, 3, 100, 4000, 40, 40, 2000 };
     }
-    return Workload{ 10000, 100000, 200, 200, 50000 };
+    return Workload{ 10000, 3, 1000, 100000, 200, 200, 50000 };
 }
 
 std::vector<size_t>
@@ -192,6 +194,29 @@ benchmark_push_medium(size_t threads, int tasks, int repetitions)
 }
 
 void
+benchmark_parallel_for_short(size_t threads,
+                             int items,
+                             int short_repeats,
+                             int repetitions)
+{
+    quickpool::ThreadPool pool(threads);
+    std::vector<std::uint64_t> output(static_cast<size_t>(items));
+    const auto median = median_ms(repetitions, [&] {
+        for (int repeat = 0; repeat < short_repeats; ++repeat) {
+            pool.parallel_for(0, items, [&, repeat](int i) {
+                output[static_cast<size_t>(i)] =
+                  burn(16, static_cast<std::uint64_t>(i + repeat));
+            });
+        }
+    });
+    for (auto value : output) {
+        sink ^= value;
+    }
+    print_result(
+      "parallel_for_short", threads, items * short_repeats, repetitions, median);
+}
+
+void
 benchmark_parallel_for_tiny(size_t threads, int items, int repetitions)
 {
     quickpool::ThreadPool pool(threads);
@@ -253,7 +278,7 @@ benchmark_parallel_for_nested(size_t threads,
     std::vector<std::uint64_t> output(static_cast<size_t>(items));
     const auto median = median_ms(repetitions, [&] {
         pool.parallel_for(0, outer, [&](int i) {
-            pool.parallel_for(0, inner, [&](int j) {
+            pool.parallel_for(0, inner, [&, i](int j) {
                 const auto idx = static_cast<size_t>(i * inner + j);
                 output[idx] = burn(16, static_cast<std::uint64_t>(idx));
             });
@@ -315,6 +340,10 @@ main(int argc, char** argv)
     for (auto threads : counts) {
         benchmark_push_empty(threads, workload.push_tasks, options.repetitions);
         benchmark_push_medium(threads, workload.push_tasks, options.repetitions);
+        benchmark_parallel_for_short(threads,
+                                     workload.short_loop_items,
+                                     workload.short_loop_repeats,
+                                     options.repetitions);
         benchmark_parallel_for_tiny(
           threads, workload.loop_items, options.repetitions);
         benchmark_parallel_for_medium(

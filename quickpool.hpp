@@ -537,7 +537,7 @@ class TaskQueue
             auto old_buf = buf_ptr;
             buf_ptr = std::move(buf_ptr->enlarged_copy(b, t));
             old_buffers_.emplace_back(old_buf);
-            buffer_.store(buf_ptr, mem::relaxed);
+            buffer_.store(buf_ptr, mem::release);
         }
 
         auto node = acquire_node();

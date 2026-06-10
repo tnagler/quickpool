@@ -26,9 +26,11 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <numeric>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -290,7 +292,8 @@ struct Worker
     size_t tasks_left() const
     {
         State s = state.load();
-        return s.end - s.pos;
+        return (s.end > s.pos) ? static_cast<size_t>(s.end - s.pos)
+                               : static_cast<size_t>(0);
     }
 
     bool done() const { return (tasks_left() == 0); }
@@ -368,7 +371,7 @@ struct Worker
             tasks_left.push_back(worker.tasks_left());
         }
         auto max_it = std::max_element(tasks_left.begin(), tasks_left.end());
-        auto idx = std::distance(tasks_left.begin(), max_it);
+        auto idx = static_cast<size_t>(std::distance(tasks_left.begin(), max_it));
         return workers[idx];
     }
 
@@ -388,9 +391,13 @@ create_workers(const Function& f, int begin, int end, size_t num_workers)
     auto workers = new mem::aligned::vector<Worker<Function>>;
     workers->reserve(num_workers);
     for (size_t i = 0; i < num_workers; i++) {
-        workers->emplace_back(begin + num_tasks * i / num_workers,
-                              begin + num_tasks * (i + 1) / num_workers,
-                              f);
+        const auto first =
+          begin + static_cast<int>(static_cast<size_t>(num_tasks) * i /
+                                   num_workers);
+        const auto last =
+          begin + static_cast<int>(static_cast<size_t>(num_tasks) * (i + 1) /
+                                   num_workers);
+        workers->emplace_back(first, last, f);
     }
     return std::shared_ptr<mem::aligned::vector<Worker<Function>>>(
       std::move(workers));
@@ -449,8 +456,9 @@ class TaskQueue
     {
         // Must free memory allocated by push(), but not freed by try_pop().
         auto buf_ptr = buffer_.load();
-        for (int i = top_; i < bottom_.load(mem::relaxed); ++i)
-            delete buf_ptr->get_entry(i);
+        for (int i = top_.load(mem::relaxed); i < bottom_.load(mem::relaxed);
+             ++i)
+            delete buf_ptr->get_entry(static_cast<size_t>(i));
         delete buf_ptr;
     }
 
@@ -473,16 +481,19 @@ class TaskQueue
         auto t = top_.load(mem::acquire);
         RingBuffer<Task*>* buf_ptr = buffer_.load(mem::relaxed);
 
-        if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
+        const auto size = static_cast<size_t>(b - t);
+        if (buf_ptr->capacity() < size + 1) {
             // Buffer is full, create enlarged copy before continuing.
             auto old_buf = buf_ptr;
-            buf_ptr = std::move(buf_ptr->enlarged_copy(b, t));
+            buf_ptr = std::move(buf_ptr->enlarged_copy(static_cast<size_t>(b),
+                                                       static_cast<size_t>(t)));
             old_buffers_.emplace_back(old_buf);
             buffer_.store(buf_ptr, mem::relaxed);
         }
 
         //! Store pointer to new task in ring buffer.
-        buf_ptr->set_entry(b, new Task{ std::forward<Task>(task) });
+        buf_ptr->set_entry(static_cast<size_t>(b),
+                           new Task{ std::forward<Task>(task) });
         bottom_.store(b + 1, mem::release);
 
         lk.unlock(); // can release before signal
@@ -499,7 +510,8 @@ class TaskQueue
         if (t < b) {
             // Must load task pointer before acquiring the slot, because it
             // could be overwritten immediately after.
-            auto task_ptr = buffer_.load(mem::acquire)->get_entry(t);
+            auto task_ptr =
+              buffer_.load(mem::acquire)->get_entry(static_cast<size_t>(t));
 
             // Atomically try to advance top.
             if (top_.compare_exchange_strong(
@@ -905,7 +917,7 @@ class ThreadPool
         // another worker's ranges when done with own
         auto n = std::max(this->get_active_threads(), static_cast<size_t>(1));
         auto workers = loop::create_workers<UnaryFunction>(f, begin, end, n);
-        for (int k = 0; k < n; k++) {
+        for (size_t k = 0; k < n; k++) {
             this->push([=] { workers->at(k).run(workers); });
         }
         this->wait();
@@ -925,7 +937,11 @@ class ThreadPool
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
-        this->parallel_for(0, size, [=](int i) { f(begin[i]); });
+        if (size > std::numeric_limits<int>::max()) {
+            throw std::length_error("parallel_for_each range is too large");
+        }
+        this->parallel_for(
+          0, static_cast<int>(size), [=](int i) { f(begin[i]); });
     }
 
     //! @brief waits for all jobs currently running on the thread

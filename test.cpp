@@ -1,6 +1,17 @@
 #include <iostream>
+#include <limits>
+#include <stdexcept>
 
 #include "quickpool.hpp"
+
+int
+checked_size_int(size_t size)
+{
+    if (size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw std::length_error("test range is too large");
+    }
+    return static_cast<int>(size);
+}
 
 int
 main()
@@ -86,8 +97,11 @@ main()
         {
             // std::cout << "      * parallel_for: ";
             std::vector<size_t> x(10000, 1);
-            auto fun = [&](size_t i) { x[i] = 2 * x[i]; };
-            parallel_for(0, x.size(), fun);
+            auto fun = [&](int i) {
+                auto idx = static_cast<size_t>(i);
+                x[idx] = 2 * x[idx];
+            };
+            parallel_for(0, checked_size_int(x.size()), fun);
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -101,7 +115,7 @@ main()
             }
 
             ThreadPool pool;
-            pool.parallel_for(0, x.size(), fun);
+            pool.parallel_for(0, checked_size_int(x.size()), fun);
 
             count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -121,8 +135,13 @@ main()
             std::vector<std::vector<double>> x(100);
             for (auto& xx : x)
                 xx = std::vector<double>(100, 1.0);
-            parallel_for(0, x.size(), [&](int i) {
-                parallel_for(0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+            parallel_for(0, checked_size_int(x.size()), [&](int i) {
+                auto row = static_cast<size_t>(i);
+                parallel_for(0,
+                             checked_size_int(x[row].size()),
+                             [&x, row](int j) {
+                                 x[row][static_cast<size_t>(j)] *= 2;
+                             });
             });
 
             size_t count_wrong = 0;
@@ -136,9 +155,12 @@ main()
             }
 
             ThreadPool pool;
-            pool.parallel_for(0, x.size(), [&](int i) {
+            pool.parallel_for(0, checked_size_int(x.size()), [&](int i) {
+                auto row = static_cast<size_t>(i);
                 pool.parallel_for(
-                  0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+                  0, checked_size_int(x[row].size()), [&x, row](int j) {
+                      x[row][static_cast<size_t>(j)] *= 2;
+                  });
             });
 
             count_wrong = 0;

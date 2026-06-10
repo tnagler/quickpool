@@ -970,13 +970,19 @@ class ThreadPool
         if (end <= begin) {
             return;
         }
+        const auto active_threads = active_threads_.load(mem::relaxed);
+        if (active_threads == 0) {
+            for (auto i = begin; i < end; ++i) {
+                f(i);
+            }
+            return;
+        }
 
         // each worker has its dedicated range, but can steal part of
         // another worker's ranges when done with own
         const auto num_tasks = static_cast<size_t>(end - begin);
         const auto n =
-          std::min(std::max(this->get_active_threads(), static_cast<size_t>(1)),
-                   num_tasks);
+          std::min(std::max(active_threads, static_cast<size_t>(1)), num_tasks);
         auto workers = loop::create_workers<UnaryFunction>(f, begin, end, n);
         for (size_t k = 0; k < n; k++) {
             this->push([=] { workers->at(k).run(workers); });

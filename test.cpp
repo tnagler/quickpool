@@ -305,6 +305,26 @@ main()
                 throw std::runtime_error("single threaded gives wrong result");
             if (non_void_push_ran != 1)
                 throw std::runtime_error("single threaded non-void push failed");
+
+            pool.parallel_for(0, checked_size_int(x.size()), [&](int i) {
+                x[static_cast<size_t>(i)] += 1;
+            });
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 3);
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "single threaded parallel_for gives wrong result");
+            }
+
+            pool.parallel_for_each(x, [](size_t& xx) { xx += 1; });
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 4);
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "single threaded parallel_for_each gives wrong result");
+            }
             // std::cout << "OK" << std::endl;
         }
 

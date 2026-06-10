@@ -487,21 +487,21 @@ class TaskQueue
 {
     using Task = std::function<void()>;
 
+    struct TaskNode
+    {
+        Task task;
+        TaskNode* next{ nullptr };
+    };
+
   public:
     //! @param capacity must be a power of two.
     TaskQueue(size_t capacity = 256)
-      : buffer_{ new RingBuffer<Task*>(capacity) }
+      : buffer_{ new RingBuffer<TaskNode*>(capacity) }
     {}
 
     ~TaskQueue() noexcept
     {
-        // Must free memory allocated by push(), but not freed by try_pop().
-        auto buf_ptr = buffer_.load();
-        for (size_t i = top_.load(mem::relaxed);
-             i < bottom_.load(mem::relaxed);
-             ++i)
-            delete buf_ptr->get_entry(i);
-        delete buf_ptr;
+        delete buffer_.load();
     }
 
     TaskQueue(TaskQueue const& other) = delete;
@@ -521,7 +521,7 @@ class TaskQueue
         std::unique_lock<std::mutex> lk(mutex_);
         auto b = bottom_.load(mem::relaxed);
         auto t = top_.load(mem::acquire);
-        RingBuffer<Task*>* buf_ptr = buffer_.load(mem::relaxed);
+        RingBuffer<TaskNode*>* buf_ptr = buffer_.load(mem::relaxed);
 
         const auto size = b - t;
         if (buf_ptr->capacity() < size + 1) {
@@ -532,8 +532,15 @@ class TaskQueue
             buffer_.store(buf_ptr, mem::relaxed);
         }
 
-        //! Store pointer to new task in ring buffer.
-        buf_ptr->set_entry(b, new Task{ std::forward<Task>(task) });
+        auto node = acquire_node();
+        try {
+            node->task = std::forward<Task>(task);
+        } catch (...) {
+            recycle_node(node);
+            throw;
+        }
+        //! Store pointer to task node in ring buffer.
+        buf_ptr->set_entry(b, node);
         bottom_.store(b + 1, mem::release);
 
         lk.unlock(); // can release before signal
@@ -550,13 +557,13 @@ class TaskQueue
         if (t < b) {
             // Must load task pointer before acquiring the slot, because it
             // could be overwritten immediately after.
-            auto task_ptr = buffer_.load(mem::acquire)->get_entry(t);
+            auto node = buffer_.load(mem::acquire)->get_entry(t);
 
             // Atomically try to advance top.
             if (top_.compare_exchange_strong(
                   t, t + 1, mem::seq_cst, mem::relaxed)) {
-                task = std::move(*task_ptr); // won race, get task
-                delete task_ptr;             // fre memory allocated in push()
+                task = std::move(node->task); // won race, get task
+                recycle_node(node);
                 return true;
             }
         }
@@ -594,10 +601,44 @@ class TaskQueue
     mem::aligned::atomic<size_t> bottom_{ 0 };
 
     //! ring buffer holding task pointers
-    std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
+    std::atomic<RingBuffer<TaskNode*>*> buffer_{ nullptr };
 
     //! pointers to buffers that were replaced by enlarged buffer
-    std::vector<std::unique_ptr<RingBuffer<Task*>>> old_buffers_;
+    std::vector<std::unique_ptr<RingBuffer<TaskNode*>>> old_buffers_;
+
+    //! owning storage for all allocated task nodes
+    std::vector<std::unique_ptr<TaskNode>> allocated_nodes_;
+
+    //! nodes available for reuse
+    std::atomic<TaskNode*> free_nodes_{ nullptr };
+
+    // Only push() calls acquire_node(), and push() holds mutex_, while many
+    // worker threads may recycle nodes concurrently.
+    TaskNode* acquire_node()
+    {
+        auto node = free_nodes_.load(mem::acquire);
+        while (node != nullptr) {
+            auto next = node->next;
+            if (free_nodes_.compare_exchange_weak(
+                  node, next, mem::acquire, mem::relaxed)) {
+                node->next = nullptr;
+                return node;
+            }
+        }
+
+        allocated_nodes_.emplace_back(new TaskNode);
+        return allocated_nodes_.back().get();
+    }
+
+    void recycle_node(TaskNode* node) noexcept
+    {
+        node->task = nullptr;
+        auto head = free_nodes_.load(mem::relaxed);
+        do {
+            node->next = head;
+        } while (!free_nodes_.compare_exchange_weak(
+          head, node, mem::release, mem::relaxed));
+    }
 
     //! synchronization variables
     std::mutex mutex_;

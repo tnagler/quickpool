@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -329,6 +330,19 @@ main()
             pool.wait();
             if (dummy != 300) {
                 throw std::runtime_error("upsizing doesn't work");
+            }
+
+            ThreadPool busy_pool(1);
+            std::atomic_int busy_resize_count{ 0 };
+            for (int i = 0; i < 10; i++) {
+                busy_pool.push([&] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    busy_resize_count++;
+                });
+            }
+            busy_pool.set_active_threads(2);
+            if (busy_resize_count != 10) {
+                throw std::runtime_error("busy upsizing drops work");
             }
 
             pool.set_active_threads(std::thread::hardware_concurrency() + 1);

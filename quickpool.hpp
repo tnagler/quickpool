@@ -571,8 +571,8 @@ class TaskManager
 {
   public:
     explicit TaskManager(size_t num_queues)
-      : queues_(num_queues)
-      , num_queues_(num_queues)
+      : queues_(std::max(num_queues, static_cast<size_t>(1)))
+      , num_queues_(std::max(num_queues, static_cast<size_t>(1)))
       , owner_id_(std::this_thread::get_id())
     {}
 
@@ -589,9 +589,12 @@ class TaskManager
 
     void resize(size_t num_queues)
     {
+        if (!done()) {
+            throw std::logic_error("cannot resize with pending tasks");
+        }
         num_queues_ = std::max(num_queues, static_cast<size_t>(1));
-        if (num_queues > queues_.size()) {
-            queues_ = mem::aligned::vector<TaskQueue>(num_queues);
+        if (num_queues_ > queues_.size()) {
+            queues_ = mem::aligned::vector<TaskQueue>(num_queues_);
             // thread pool must have stopped the manager, reset
             num_waiting_ = 0;
             todo_ = 0;
@@ -850,22 +853,27 @@ class ThreadPool
         if (!task_manager_.called_from_owner_thread())
             return;
 
-        if (threads <= workers_.size()) {
-            task_manager_.resize(threads);
-        } else {
-            if (workers_.size() > 0) {
-                task_manager_.stop();
-                join_threads();
-            }
-            workers_ = std::vector<std::thread>{ threads };
-            task_manager_ = quickpool::sched::TaskManager{ threads };
-            for (size_t id = 0; id < threads; ++id) {
-                add_worker(id);
-            }
-#if (defined __linux__)
-            set_thread_affinity();
-#endif
+        if (threads == active_threads_.load(mem::relaxed)) {
+            return;
         }
+
+        this->wait();
+        if (workers_.size() > 0) {
+            task_manager_.stop();
+            join_threads();
+            workers_.clear();
+        }
+
+        task_manager_ = quickpool::sched::TaskManager{ threads };
+        workers_ = std::vector<std::thread>{ threads };
+        for (size_t id = 0; id < threads; ++id) {
+            add_worker(id);
+        }
+#if (defined __linux__)
+        if (threads > 0) {
+            set_thread_affinity();
+        }
+#endif
         active_threads_ = threads;
     }
 
@@ -1020,7 +1028,7 @@ class ThreadPool
 
     sched::TaskManager task_manager_;
     std::vector<std::thread> workers_;
-    std::atomic_size_t active_threads_;
+    std::atomic_size_t active_threads_{ 0 };
 };
 
 // 5. ---------------------------------------------------

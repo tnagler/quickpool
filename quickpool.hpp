@@ -456,9 +456,10 @@ class TaskQueue
     {
         // Must free memory allocated by push(), but not freed by try_pop().
         auto buf_ptr = buffer_.load();
-        for (int i = top_.load(mem::relaxed); i < bottom_.load(mem::relaxed);
+        for (size_t i = top_.load(mem::relaxed);
+             i < bottom_.load(mem::relaxed);
              ++i)
-            delete buf_ptr->get_entry(static_cast<size_t>(i));
+            delete buf_ptr->get_entry(i);
         delete buf_ptr;
     }
 
@@ -481,19 +482,17 @@ class TaskQueue
         auto t = top_.load(mem::acquire);
         RingBuffer<Task*>* buf_ptr = buffer_.load(mem::relaxed);
 
-        const auto size = static_cast<size_t>(b - t);
+        const auto size = b - t;
         if (buf_ptr->capacity() < size + 1) {
             // Buffer is full, create enlarged copy before continuing.
             auto old_buf = buf_ptr;
-            buf_ptr = std::move(buf_ptr->enlarged_copy(static_cast<size_t>(b),
-                                                       static_cast<size_t>(t)));
+            buf_ptr = std::move(buf_ptr->enlarged_copy(b, t));
             old_buffers_.emplace_back(old_buf);
             buffer_.store(buf_ptr, mem::relaxed);
         }
 
         //! Store pointer to new task in ring buffer.
-        buf_ptr->set_entry(static_cast<size_t>(b),
-                           new Task{ std::forward<Task>(task) });
+        buf_ptr->set_entry(b, new Task{ std::forward<Task>(task) });
         bottom_.store(b + 1, mem::release);
 
         lk.unlock(); // can release before signal
@@ -510,8 +509,7 @@ class TaskQueue
         if (t < b) {
             // Must load task pointer before acquiring the slot, because it
             // could be overwritten immediately after.
-            auto task_ptr =
-              buffer_.load(mem::acquire)->get_entry(static_cast<size_t>(t));
+            auto task_ptr = buffer_.load(mem::acquire)->get_entry(t);
 
             // Atomically try to advance top.
             if (top_.compare_exchange_strong(
@@ -551,8 +549,8 @@ class TaskQueue
 
   private:
     //! queue indices
-    mem::aligned::atomic<int> top_{ 0 };
-    mem::aligned::atomic<int> bottom_{ 0 };
+    mem::aligned::atomic<size_t> top_{ 0 };
+    mem::aligned::atomic<size_t> bottom_{ 0 };
 
     //! ring buffer holding task pointers
     std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };

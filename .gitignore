@@ -35,3 +35,4 @@
 build/
 .VSCodeCounter/
 count/
+build-bench/

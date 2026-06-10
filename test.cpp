@@ -1,8 +1,12 @@
+#include <algorithm>
 #include <chrono>
+#include <atomic>
 #include <iostream>
 #include <list>
 #include <limits>
 #include <stdexcept>
+#include <thread>
+#include <vector>
 
 #include "quickpool.hpp"
 
@@ -26,6 +30,103 @@ struct ThrowsOnCopy
 
     void operator()() const {}
 };
+
+void
+stress_queue_growth_and_reuse()
+{
+    using namespace quickpool;
+    const auto batches = 8;
+    const auto tasks = 1024;
+    ThreadPool pool(1);
+
+    for (auto batch = 0; batch < batches; ++batch) {
+        std::atomic_bool release{ false };
+        std::atomic_int done{ 0 };
+
+        for (auto i = 0; i < tasks; ++i) {
+            pool.push([&] {
+                while (!release.load()) {
+                    std::this_thread::yield();
+                }
+                done++;
+            });
+        }
+
+        release = true;
+        pool.wait();
+        if (done != tasks) {
+            throw std::runtime_error("queue growth stress lost work");
+        }
+    }
+}
+
+void
+stress_concurrent_push_and_reuse()
+{
+    using namespace quickpool;
+    const auto hardware = std::max(std::thread::hardware_concurrency(), 2u);
+    const auto workers =
+      std::min<size_t>(static_cast<size_t>(hardware), static_cast<size_t>(8));
+    const auto producers = 4;
+    const auto batches = 20;
+    const auto tasks_per_producer = 512;
+    ThreadPool pool(workers);
+
+    for (auto batch = 0; batch < batches; ++batch) {
+        std::atomic_bool start{ false };
+        std::atomic_int ready{ 0 };
+        std::atomic_int done{ 0 };
+        std::vector<std::atomic_int> counts(static_cast<size_t>(producers));
+        for (auto& count : counts) {
+            count = 0;
+        }
+        std::vector<std::thread> producer_threads;
+        producer_threads.reserve(static_cast<size_t>(producers));
+
+        for (auto producer = 0; producer < producers; ++producer) {
+            producer_threads.emplace_back([&, producer] {
+                ready++;
+                while (!start.load()) {
+                    std::this_thread::yield();
+                }
+
+                for (auto task = 0; task < tasks_per_producer; ++task) {
+                    pool.push([&, producer, task] {
+                        if ((task % 8) == 0) {
+                            std::this_thread::yield();
+                        }
+                        counts[static_cast<size_t>(producer)]++;
+                        done++;
+                    });
+                    if ((task % 16) == 0) {
+                        std::this_thread::yield();
+                    }
+                }
+            });
+        }
+
+        while (ready != producers) {
+            std::this_thread::yield();
+        }
+        start = true;
+
+        for (auto& producer_thread : producer_threads) {
+            producer_thread.join();
+        }
+        pool.wait();
+
+        const auto expected = producers * tasks_per_producer;
+        if (done != expected) {
+            throw std::runtime_error("concurrent push stress lost work");
+        }
+        for (auto producer = 0; producer < producers; ++producer) {
+            if (counts[static_cast<size_t>(producer)] != tasks_per_producer) {
+                throw std::runtime_error(
+                  "concurrent push stress has wrong producer count");
+            }
+        }
+    }
+}
 
 int
 main()
@@ -139,6 +240,13 @@ main()
                     std::cout << xx;
                 std::cout << std::endl;
                 throw std::runtime_error("parallel_for gives wrong result");
+            }
+
+            int empty_count = 0;
+            parallel_for(4, 4, [&](int) { empty_count++; });
+            pool.parallel_for(8, 2, [&](int) { empty_count++; });
+            if (empty_count != 0) {
+                throw std::runtime_error("empty parallel_for runs work");
             }
             // std::cout << "OK" << std::endl;
         }
@@ -298,6 +406,26 @@ main()
                 throw std::runtime_error("single threaded gives wrong result");
             if (non_void_push_ran != 1)
                 throw std::runtime_error("single threaded non-void push failed");
+
+            pool.parallel_for(0, checked_size_int(x.size()), [&](int i) {
+                x[static_cast<size_t>(i)] += 1;
+            });
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 3);
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "single threaded parallel_for gives wrong result");
+            }
+
+            pool.parallel_for_each(x, [](size_t& xx) { xx += 1; });
+            count_wrong = 0;
+            for (size_t i = 0; i < x.size(); i++)
+                count_wrong += (x[i] != 4);
+            if (count_wrong > 0) {
+                throw std::runtime_error(
+                  "single threaded parallel_for_each gives wrong result");
+            }
             // std::cout << "OK" << std::endl;
         }
 
@@ -411,6 +539,15 @@ main()
     }
 
     std::cout << "* [quickpool] unit tests: OK              " << std::endl;
+
+    std::cout << "* [quickpool] stress tests: queue growth\t\r"
+              << std::flush;
+    stress_queue_growth_and_reuse();
+    std::cout << "* [quickpool] stress tests: concurrent push\t\r"
+              << std::flush;
+    stress_concurrent_push_and_reuse();
+    std::cout << "* [quickpool] stress tests: OK              "
+              << std::endl;
 
     return 0;
 }

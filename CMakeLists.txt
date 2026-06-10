@@ -8,6 +8,15 @@ set(CMAKE_CXX_EXTENSIONS NO)
 
 option(QUICKPOOL_TEST          "Build test" ON)
 option(QUICKPOOL_TEST_SANITIZE "Build test with sanitizer" OFF)
+option(QUICKPOOL_TEST_THREAD_SANITIZE "Build test with ThreadSanitizer" OFF)
+option(QUICKPOOL_BENCHMARK     "Build benchmark" OFF)
+
+if(QUICKPOOL_TEST_SANITIZE AND QUICKPOOL_TEST_THREAD_SANITIZE)
+  message(FATAL_ERROR
+    "QUICKPOOL_TEST_SANITIZE and QUICKPOOL_TEST_THREAD_SANITIZE cannot be "
+    "enabled at the same time"
+  )
+endif()
 
 find_library(LIB_ATOMIC
   NAMES
@@ -66,6 +75,29 @@ if(QUICKPOOL_TEST)
         "-fsanitize=address,undefined,leak,bounds,alignment"
     )
   endif()
+
+  if(QUICKPOOL_TEST_THREAD_SANITIZE)
+    target_compile_options(quickpool_test
+      PRIVATE
+        "-fno-omit-frame-pointer"
+        "-fsanitize=thread"
+    )
+
+    target_link_options(quickpool_test
+      PRIVATE
+        "-fno-omit-frame-pointer"
+        "-fsanitize=thread"
+    )
+  endif()
+endif()
+
+if(QUICKPOOL_BENCHMARK)
+  add_executable(quickpool_benchmark "benchmark.cpp")
+
+  target_link_libraries(quickpool_benchmark
+    PRIVATE
+      quickpool
+  )
 endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

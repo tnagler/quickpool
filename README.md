@@ -132,3 +132,23 @@ pool.parallel_for(2, 5, [&] (int i) {});
 auto x = std::vector<double>{10};
 pool.parallel_for_each(x, [] (double& xx) {});
 ```
+
+## Benchmarks
+
+The benchmark suite is optional and has no external dependencies:
+
+```sh
+cmake -S . -B build-bench -DCMAKE_BUILD_TYPE=Release -DQUICKPOOL_BENCHMARK=ON
+cmake --build build-bench --target quickpool_benchmark
+./build-bench/quickpool_benchmark
+```
+
+For a quick smoke run, use:
+
+```sh
+./build-bench/quickpool_benchmark --quick
+```
+
+The output is comma-separated and covers task submission, `parallel_for()`,
+nested loops, uneven loop bodies, and `parallel_for_each()` on `std::vector` and
+`std::list`.

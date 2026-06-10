@@ -72,3 +72,39 @@ jobs:
       with:
         token: ${{secrets.CODECOV_TOKEN}}
         files: quickpool.hpp.gcov
+
+  sanitizers:
+    name: ${{ matrix.sanitizer.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer:
+        - {
+            name: "Ubuntu Clang ASAN/LSAN/UBSAN",
+            cmake_option: "QUICKPOOL_TEST_SANITIZE",
+            runtime_env: "ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1"
+          }
+        - {
+            name: "Ubuntu Clang TSAN",
+            cmake_option: "QUICKPOOL_TEST_THREAD_SANITIZE",
+            runtime_env: "TSAN_OPTIONS=halt_on_error=1"
+          }
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{github.workspace}}/build-sanitize
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DCMAKE_C_COMPILER=clang
+        -DCMAKE_CXX_COMPILER=clang++
+        -D${{matrix.sanitizer.cmake_option}}=ON
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build-sanitize --config RelWithDebInfo
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build-sanitize
+      run: ${{matrix.sanitizer.runtime_env}} ctest --build-config RelWithDebInfo --output-on-failure

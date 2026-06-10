@@ -1,11 +1,10 @@
 # quickpool
 
-![build status](https://github.com/tnagler/quickpool/actions/workflows/main.yml/badge.svg?branch=main)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ed2deb06d4454ab3b488536426ec3066)](https://www.codacy.com/gh/tnagler/quickpool/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tnagler/quickpool&amp;utm_campaign=Badge_Grade)
+[![CMake](https://github.com/tnagler/quickpool/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/tnagler/quickpool/actions/workflows/main.yml)
 [![codecov](https://codecov.io/gh/tnagler/quickpool/branch/main/graph/badge.svg?token=ERPXZC8378)](https://codecov.io/gh/tnagler/quickpool)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Documentation](https://img.shields.io/website/http/tnagler.github.io/quickpool.svg)](https://tnagler.github.io/quickpool/)
-[![DOI](https://zenodo.org/badge/427536398.svg)](https://zenodo.org/badge/latestdoi/427536398)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15013644.svg)](https://zenodo.org/badge/latestdoi/427536398)
 
 > Fast and easy parallel computing in C++
 

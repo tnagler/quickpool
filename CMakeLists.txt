@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS NO)
 
 option(QUICKPOOL_TEST          "Build test" ON)
 option(QUICKPOOL_TEST_SANITIZE "Build test with sanitizer" OFF)
+option(QUICKPOOL_BENCHMARK     "Build benchmark" OFF)
 
 find_library(LIB_ATOMIC
   NAMES
@@ -66,6 +67,15 @@ if(QUICKPOOL_TEST)
         "-fsanitize=address,undefined,leak,bounds,alignment"
     )
   endif()
+endif()
+
+if(QUICKPOOL_BENCHMARK)
+  add_executable(quickpool_benchmark "benchmark.cpp")
+
+  target_link_libraries(quickpool_benchmark
+    PRIVATE
+      quickpool
+  )
 endif()
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

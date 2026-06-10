@@ -661,7 +661,7 @@ class TaskManager
     bool try_pop(Task& task, size_t worker_id = 0)
     {
         // Always start pop cycle at own queue to avoid contention.
-        for (size_t k = 0; k <= num_queues_; k++) {
+        for (size_t k = 0; k < num_queues_; k++) {
             if (queues_[(worker_id + k) % num_queues_].try_pop(task)) {
                 if (is_running()) {
                     return true;

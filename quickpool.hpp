@@ -457,16 +457,24 @@ class RingBuffer
 {
   public:
     explicit RingBuffer(size_t capacity)
-      : buffer_{ std::unique_ptr<T[]>(new T[capacity]) }
+      : buffer_{
+          std::unique_ptr<std::atomic<T>[]>(new std::atomic<T>[capacity])
+        }
       , capacity_{ capacity }
       , mask_{ capacity - 1 }
     {}
 
     size_t capacity() const { return capacity_; }
 
-    void set_entry(size_t i, T val) { buffer_[i & mask_] = val; }
+    void set_entry(size_t i, T val)
+    {
+        buffer_[i & mask_].store(val, mem::relaxed);
+    }
 
-    T get_entry(size_t i) const { return buffer_[i & mask_]; }
+    T get_entry(size_t i) const
+    {
+        return buffer_[i & mask_].load(mem::relaxed);
+    }
 
     RingBuffer<T>* enlarged_copy(size_t bottom, size_t top) const
     {
@@ -477,7 +485,7 @@ class RingBuffer
     }
 
   private:
-    std::unique_ptr<T[]> buffer_;
+    std::unique_ptr<std::atomic<T>[]> buffer_;
     size_t capacity_;
     size_t mask_;
 };

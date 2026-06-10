@@ -430,7 +430,7 @@ create_workers(const Function& f, int begin, int end, size_t num_workers)
 {
     auto num_tasks = std::max(end - begin, static_cast<int>(0));
     num_workers = std::max(num_workers, static_cast<size_t>(1));
-    auto workers = new mem::aligned::vector<Worker<Function>>;
+    auto workers = std::make_shared<mem::aligned::vector<Worker<Function>>>();
     workers->reserve(num_workers);
     for (size_t i = 0; i < num_workers; i++) {
         const auto first =
@@ -441,8 +441,7 @@ create_workers(const Function& f, int begin, int end, size_t num_workers)
                                    num_workers);
         workers->emplace_back(first, last, f);
     }
-    return std::shared_ptr<mem::aligned::vector<Worker<Function>>>(
-      std::move(workers));
+    return workers;
 }
 
 } // end namespace loop

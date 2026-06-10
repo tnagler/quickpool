@@ -186,6 +186,13 @@ class allocator : public std::allocator<T>
         return static_cast<T*>(p);
     }
 
+#if defined(__cpp_lib_allocate_at_least)
+    std::allocation_result<T*> allocate_at_least(std::size_t size)
+    {
+        return { allocate(size), size };
+    }
+#endif
+
     void deallocate(T* ptr, size_t) { mem::aligned::free(ptr); }
 
     template<class U, class... Args>

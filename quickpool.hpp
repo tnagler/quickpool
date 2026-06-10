@@ -405,14 +405,16 @@ struct Worker
     //! @param others vector of all workers.
     Worker& find_victim(mem::aligned::vector<Worker>& workers)
     {
-        std::vector<size_t> tasks_left;
-        tasks_left.reserve(workers.size());
-        for (const auto& worker : workers) {
-            tasks_left.push_back(worker.tasks_left());
+        size_t best = 0;
+        size_t most_tasks_left = 0;
+        for (size_t i = 0; i < workers.size(); ++i) {
+            const auto tasks_left = workers[i].tasks_left();
+            if (tasks_left > most_tasks_left) {
+                best = i;
+                most_tasks_left = tasks_left;
+            }
         }
-        auto max_it = std::max_element(tasks_left.begin(), tasks_left.end());
-        auto idx = static_cast<size_t>(std::distance(tasks_left.begin(), max_it));
-        return workers[idx];
+        return workers[best];
     }
 
     mem::aligned::relaxed_atomic<State> state; //!< worker state `{pos, end}`

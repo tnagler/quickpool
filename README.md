@@ -23,7 +23,7 @@ Just drop `quickpool.hpp` in your project folder and enjoy.
 * [`async(f, args...)`](https://tnagler.github.io/quickpool/namespacequickpool.html#a10575809d24ead3716e312585f90a94a) schedules a task running `f(args...)` and returns an [`std::future`](https://en.cppreference.com/w/cpp/thread/future), 
 * [`wait()`](https://tnagler.github.io/quickpool/namespacequickpool.html#a086671a25cc4f207112bc82a00688301) waits for all scheduled tasks to finish,
 * [`parallel_for(b, e, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aa72b140a64eabe34cd9302bab837c24c) runs `f(i)` for all `b <= i < e`,
-* [`parallel_for_each(x, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aeb91fe18664b8d06523aba081174abe3) runs `f(*it)` for all  `std::begin(x) <= it < std::end(x)`.
+* [`parallel_for_each(x, f)`](https://tnagler.github.io/quickpool/namespacequickpool.html#aeb91fe18664b8d06523aba081174abe3) runs `f(*it)` for all iterators `std::begin(x) <= it < std::end(x)`.
 
 Loops can be nested, see the examples below. All functions 
 dispatch to a global thread pool instantiated only once with as 

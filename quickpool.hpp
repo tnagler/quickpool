@@ -26,9 +26,12 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <iterator>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <numeric>
+#include <stdexcept>
 #include <thread>
 #include <vector>
 
@@ -183,6 +186,13 @@ class allocator : public std::allocator<T>
         return static_cast<T*>(p);
     }
 
+#if defined(__cpp_lib_allocate_at_least)
+    std::allocation_result<T*> allocate_at_least(std::size_t size)
+    {
+        return { allocate(size), size };
+    }
+#endif
+
     void deallocate(T* ptr, size_t) { mem::aligned::free(ptr); }
 
     template<class U, class... Args>
@@ -290,7 +300,8 @@ struct Worker
     size_t tasks_left() const
     {
         State s = state.load();
-        return s.end - s.pos;
+        return (s.end > s.pos) ? static_cast<size_t>(s.end - s.pos)
+                               : static_cast<size_t>(0);
     }
 
     bool done() const { return (tasks_left() == 0); }
@@ -368,7 +379,7 @@ struct Worker
             tasks_left.push_back(worker.tasks_left());
         }
         auto max_it = std::max_element(tasks_left.begin(), tasks_left.end());
-        auto idx = std::distance(tasks_left.begin(), max_it);
+        auto idx = static_cast<size_t>(std::distance(tasks_left.begin(), max_it));
         return workers[idx];
     }
 
@@ -388,9 +399,13 @@ create_workers(const Function& f, int begin, int end, size_t num_workers)
     auto workers = new mem::aligned::vector<Worker<Function>>;
     workers->reserve(num_workers);
     for (size_t i = 0; i < num_workers; i++) {
-        workers->emplace_back(begin + num_tasks * i / num_workers,
-                              begin + num_tasks * (i + 1) / num_workers,
-                              f);
+        const auto first =
+          begin + static_cast<int>(static_cast<size_t>(num_tasks) * i /
+                                   num_workers);
+        const auto last =
+          begin + static_cast<int>(static_cast<size_t>(num_tasks) * (i + 1) /
+                                   num_workers);
+        workers->emplace_back(first, last, f);
     }
     return std::shared_ptr<mem::aligned::vector<Worker<Function>>>(
       std::move(workers));
@@ -449,7 +464,9 @@ class TaskQueue
     {
         // Must free memory allocated by push(), but not freed by try_pop().
         auto buf_ptr = buffer_.load();
-        for (int i = top_; i < bottom_.load(mem::relaxed); ++i)
+        for (size_t i = top_.load(mem::relaxed);
+             i < bottom_.load(mem::relaxed);
+             ++i)
             delete buf_ptr->get_entry(i);
         delete buf_ptr;
     }
@@ -473,7 +490,8 @@ class TaskQueue
         auto t = top_.load(mem::acquire);
         RingBuffer<Task*>* buf_ptr = buffer_.load(mem::relaxed);
 
-        if (static_cast<int>(buf_ptr->capacity()) < (b - t) + 1) {
+        const auto size = b - t;
+        if (buf_ptr->capacity() < size + 1) {
             // Buffer is full, create enlarged copy before continuing.
             auto old_buf = buf_ptr;
             buf_ptr = std::move(buf_ptr->enlarged_copy(b, t));
@@ -539,8 +557,8 @@ class TaskQueue
 
   private:
     //! queue indices
-    mem::aligned::atomic<int> top_{ 0 };
-    mem::aligned::atomic<int> bottom_{ 0 };
+    mem::aligned::atomic<size_t> top_{ 0 };
+    mem::aligned::atomic<size_t> bottom_{ 0 };
 
     //! ring buffer holding task pointers
     std::atomic<RingBuffer<Task*>*> buffer_{ nullptr };
@@ -559,8 +577,8 @@ class TaskManager
 {
   public:
     explicit TaskManager(size_t num_queues)
-      : queues_(num_queues)
-      , num_queues_(num_queues)
+      : queues_(std::max(num_queues, static_cast<size_t>(1)))
+      , num_queues_(std::max(num_queues, static_cast<size_t>(1)))
       , owner_id_(std::this_thread::get_id())
     {}
 
@@ -577,9 +595,12 @@ class TaskManager
 
     void resize(size_t num_queues)
     {
+        if (!done()) {
+            throw std::logic_error("cannot resize with pending tasks");
+        }
         num_queues_ = std::max(num_queues, static_cast<size_t>(1));
-        if (num_queues > queues_.size()) {
-            queues_ = mem::aligned::vector<TaskQueue>(num_queues);
+        if (num_queues_ > queues_.size()) {
+            queues_ = mem::aligned::vector<TaskQueue>(num_queues_);
             // thread pool must have stopped the manager, reset
             num_waiting_ = 0;
             todo_ = 0;
@@ -593,7 +614,12 @@ class TaskManager
         rethrow_exception(); // push() throws if a task has errored.
         if (is_running()) {
             todo_.fetch_add(1, mem::release);
-            queues_[push_idx_++ % num_queues_].push(task);
+            try {
+                queues_[push_idx_++ % num_queues_].push(task);
+            } catch (...) {
+                report_success();
+                throw;
+            }
         }
     }
 
@@ -838,22 +864,27 @@ class ThreadPool
         if (!task_manager_.called_from_owner_thread())
             return;
 
-        if (threads <= workers_.size()) {
-            task_manager_.resize(threads);
-        } else {
-            if (workers_.size() > 0) {
-                task_manager_.stop();
-                join_threads();
-            }
-            workers_ = std::vector<std::thread>{ threads };
-            task_manager_ = quickpool::sched::TaskManager{ threads };
-            for (size_t id = 0; id < threads; ++id) {
-                add_worker(id);
-            }
-#if (defined __linux__)
-            set_thread_affinity();
-#endif
+        if (threads == active_threads_.load(mem::relaxed)) {
+            return;
         }
+
+        this->wait();
+        if (workers_.size() > 0) {
+            task_manager_.stop();
+            join_threads();
+            workers_.clear();
+        }
+
+        task_manager_ = quickpool::sched::TaskManager{ threads };
+        workers_ = std::vector<std::thread>{ threads };
+        for (size_t id = 0; id < threads; ++id) {
+            add_worker(id);
+        }
+#if (defined __linux__)
+        if (threads > 0) {
+            set_thread_affinity();
+        }
+#endif
         active_threads_ = threads;
     }
 
@@ -866,8 +897,10 @@ class ThreadPool
     template<class Function, class... Args>
     void push(Function&& f, Args&&... args)
     {
-        if (active_threads_ == 0)
-            return f(args...);
+        if (active_threads_ == 0) {
+            std::forward<Function>(f)(std::forward<Args>(args)...);
+            return;
+        }
         task_manager_.push(
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
     }
@@ -905,13 +938,13 @@ class ThreadPool
         // another worker's ranges when done with own
         auto n = std::max(this->get_active_threads(), static_cast<size_t>(1));
         auto workers = loop::create_workers<UnaryFunction>(f, begin, end, n);
-        for (int k = 0; k < n; k++) {
+        for (size_t k = 0; k < n; k++) {
             this->push([=] { workers->at(k).run(workers); });
         }
         this->wait();
     }
 
-    //! @brief computes a iterator-based parallel for loop.
+    //! @brief computes an iterator-based parallel for loop.
     //!
     //! Waits until all tasks have finished, unless called from a thread
     //! that didn't create the pool. If this is taken into account, parallel
@@ -925,7 +958,23 @@ class ThreadPool
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
-        this->parallel_for(0, size, [=](int i) { f(begin[i]); });
+        if (size <= 0) {
+            return;
+        }
+        if (size > std::numeric_limits<int>::max()) {
+            throw std::length_error("parallel_for_each range is too large");
+        }
+
+        auto iterators =
+          std::make_shared<std::vector<decltype(begin)>>();
+        iterators->reserve(static_cast<size_t>(size));
+        for (auto it = begin; it != std::end(items); ++it) {
+            iterators->push_back(it);
+        }
+
+        this->parallel_for(0, static_cast<int>(iterators->size()), [=](int i) {
+            f(*iterators->at(static_cast<size_t>(i)));
+        });
     }
 
     //! @brief waits for all jobs currently running on the thread
@@ -1004,7 +1053,7 @@ class ThreadPool
 
     sched::TaskManager task_manager_;
     std::vector<std::thread> workers_;
-    std::atomic_size_t active_threads_;
+    std::atomic_size_t active_threads_{ 0 };
 };
 
 // 5. ---------------------------------------------------
@@ -1084,7 +1133,7 @@ parallel_for(int begin, int end, UnaryFunction&& f)
       begin, end, std::forward<UnaryFunction>(f));
 }
 
-//! @brief computes a iterator-based parallel for loop.
+//! @brief computes an iterator-based parallel for loop.
 //!
 //! Waits until all tasks have finished, unless called from a thread that
 //! didn't create the pool. If this is taken into account, parallel loops

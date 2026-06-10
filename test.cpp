@@ -1,6 +1,31 @@
+#include <chrono>
 #include <iostream>
+#include <list>
+#include <limits>
+#include <stdexcept>
 
 #include "quickpool.hpp"
+
+int
+checked_size_int(size_t size)
+{
+    if (size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+        throw std::length_error("test range is too large");
+    }
+    return static_cast<int>(size);
+}
+
+struct ThrowsOnCopy
+{
+    ThrowsOnCopy() {}
+
+    ThrowsOnCopy(const ThrowsOnCopy&)
+    {
+        throw std::runtime_error("copy failed");
+    }
+
+    void operator()() const {}
+};
 
 int
 main()
@@ -86,8 +111,11 @@ main()
         {
             // std::cout << "      * parallel_for: ";
             std::vector<size_t> x(10000, 1);
-            auto fun = [&](size_t i) { x[i] = 2 * x[i]; };
-            parallel_for(0, x.size(), fun);
+            auto fun = [&](int i) {
+                auto idx = static_cast<size_t>(i);
+                x[idx] = 2 * x[idx];
+            };
+            parallel_for(0, checked_size_int(x.size()), fun);
 
             size_t count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -101,7 +129,7 @@ main()
             }
 
             ThreadPool pool;
-            pool.parallel_for(0, x.size(), fun);
+            pool.parallel_for(0, checked_size_int(x.size()), fun);
 
             count_wrong = 0;
             for (size_t i = 0; i < x.size(); i++)
@@ -121,8 +149,13 @@ main()
             std::vector<std::vector<double>> x(100);
             for (auto& xx : x)
                 xx = std::vector<double>(100, 1.0);
-            parallel_for(0, x.size(), [&](int i) {
-                parallel_for(0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+            parallel_for(0, checked_size_int(x.size()), [&](int i) {
+                auto row = static_cast<size_t>(i);
+                parallel_for(0,
+                             checked_size_int(x[row].size()),
+                             [&x, row](int j) {
+                                 x[row][static_cast<size_t>(j)] *= 2;
+                             });
             });
 
             size_t count_wrong = 0;
@@ -136,9 +169,12 @@ main()
             }
 
             ThreadPool pool;
-            pool.parallel_for(0, x.size(), [&](int i) {
+            pool.parallel_for(0, checked_size_int(x.size()), [&](int i) {
+                auto row = static_cast<size_t>(i);
                 pool.parallel_for(
-                  0, x[i].size(), [&x, i](int j) { x[i][j] *= 2; });
+                  0, checked_size_int(x[row].size()), [&x, row](int j) {
+                      x[row][static_cast<size_t>(j)] *= 2;
+                  });
             });
 
             count_wrong = 0;
@@ -179,6 +215,25 @@ main()
             if (count_wrong > 0)
                 throw std::runtime_error(
                   "parallel_for_each gives wrong result");
+
+            std::list<size_t> y(10000, 1);
+            parallel_for_each(y, fun);
+
+            count_wrong = 0;
+            for (auto yy : y)
+                count_wrong += (yy != 2);
+            if (count_wrong > 0)
+                throw std::runtime_error(
+                  "static parallel_for_each list gives wrong result");
+
+            pool.parallel_for_each(y, fun);
+
+            count_wrong = 0;
+            for (auto yy : y)
+                count_wrong += (yy != 4);
+            if (count_wrong > 0)
+                throw std::runtime_error(
+                  "parallel_for_each list gives wrong result");
             // std::cout << "OK" << std::endl;
         }
 
@@ -229,6 +284,11 @@ main()
             for (size_t i = 0; i < x.size(); i++) {
                 pool.push(dummy, i);
             }
+            std::atomic_int non_void_push_ran{ 0 };
+            pool.push([&] {
+                non_void_push_ran++;
+                return 1;
+            });
             pool.wait();
 
             size_t count_wrong = 0;
@@ -236,6 +296,8 @@ main()
                 count_wrong += (x[i] != 2);
             if (count_wrong > 0)
                 throw std::runtime_error("single threaded gives wrong result");
+            if (non_void_push_ran != 1)
+                throw std::runtime_error("single threaded non-void push failed");
             // std::cout << "OK" << std::endl;
         }
 
@@ -276,6 +338,19 @@ main()
             // std::cout << "OK" << std::endl;
         }
 
+        // push exception safety
+        {
+            quickpool::sched::TaskManager manager(1);
+            try {
+                manager.push(ThrowsOnCopy{});
+                throw std::runtime_error("copy failure was not thrown");
+            } catch (const std::runtime_error&) {
+            }
+            if (!manager.done()) {
+                throw std::runtime_error("failed push leaves unfinished work");
+            }
+        }
+
         // can be resized
         {
             // std::cout << "      * resizing: ";
@@ -307,6 +382,19 @@ main()
             pool.wait();
             if (dummy != 300) {
                 throw std::runtime_error("upsizing doesn't work");
+            }
+
+            ThreadPool busy_pool(1);
+            std::atomic_int busy_resize_count{ 0 };
+            for (int i = 0; i < 10; i++) {
+                busy_pool.push([&] {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                    busy_resize_count++;
+                });
+            }
+            busy_pool.set_active_threads(2);
+            if (busy_resize_count != 10) {
+                throw std::runtime_error("busy upsizing drops work");
             }
 
             pool.set_active_threads(std::thread::hardware_concurrency() + 1);

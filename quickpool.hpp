@@ -620,7 +620,7 @@ class TaskQueue
         while (node != nullptr) {
             auto next = node->next;
             if (free_nodes_.compare_exchange_weak(
-                  node, next, mem::acquire, mem::relaxed)) {
+                  node, next, mem::acquire, mem::acquire)) {
                 node->next = nullptr;
                 return node;
             }

@@ -608,7 +608,12 @@ class TaskManager
         rethrow_exception(); // push() throws if a task has errored.
         if (is_running()) {
             todo_.fetch_add(1, mem::release);
-            queues_[push_idx_++ % num_queues_].push(task);
+            try {
+                queues_[push_idx_++ % num_queues_].push(task);
+            } catch (...) {
+                report_success();
+                throw;
+            }
         }
     }
 

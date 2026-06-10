@@ -14,6 +14,18 @@ checked_size_int(size_t size)
     return static_cast<int>(size);
 }
 
+struct ThrowsOnCopy
+{
+    ThrowsOnCopy() {}
+
+    ThrowsOnCopy(const ThrowsOnCopy&)
+    {
+        throw std::runtime_error("copy failed");
+    }
+
+    void operator()() const {}
+};
+
 int
 main()
 {
@@ -304,6 +316,19 @@ main()
                 eptr = nullptr;
             }
             // std::cout << "OK" << std::endl;
+        }
+
+        // push exception safety
+        {
+            quickpool::sched::TaskManager manager(1);
+            try {
+                manager.push(ThrowsOnCopy{});
+                throw std::runtime_error("copy failure was not thrown");
+            } catch (const std::runtime_error&) {
+            }
+            if (!manager.done()) {
+                throw std::runtime_error("failed push leaves unfinished work");
+            }
         }
 
         // can be resized

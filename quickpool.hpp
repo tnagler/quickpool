@@ -933,13 +933,14 @@ class ThreadPool
         this->wait();
     }
 
-    //! @brief computes a iterator-based parallel for loop.
+    //! @brief computes a random-access iterator-based parallel for loop.
     //!
     //! Waits until all tasks have finished, unless called from a thread
     //! that didn't create the pool. If this is taken into account, parallel
     //! loops can be nested.
     //!
-    //! @param items an object allowing for `std::begin()` and `std::end()`.
+    //! @param items an object allowing for `std::begin()` and `std::end()`,
+    //! where `std::begin(items)` returns a random-access iterator.
     //! @param f function to be applied as `f(*it)` for the iterator in the
     //! range `[begin, end)` (the 'loop body').
     template<class Items, class UnaryFunction>
@@ -1110,13 +1111,14 @@ parallel_for(int begin, int end, UnaryFunction&& f)
       begin, end, std::forward<UnaryFunction>(f));
 }
 
-//! @brief computes a iterator-based parallel for loop.
+//! @brief computes a random-access iterator-based parallel for loop.
 //!
 //! Waits until all tasks have finished, unless called from a thread that
 //! didn't create the pool. If this is taken into account, parallel loops
 //! can be nested.
 //!
-//! @param items an object allowing for `std::begin()` and `std::end()`.
+//! @param items an object allowing for `std::begin()` and `std::end()`, where
+//! `std::begin(items)` returns a random-access iterator.
 //! @param f function to be applied as `f(*it)` for the iterator in the
 //! range `[begin, end)` (the 'loop body').
 template<class Items, class UnaryFunction>

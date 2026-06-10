@@ -886,8 +886,10 @@ class ThreadPool
     template<class Function, class... Args>
     void push(Function&& f, Args&&... args)
     {
-        if (active_threads_ == 0)
-            return f(args...);
+        if (active_threads_ == 0) {
+            std::forward<Function>(f)(std::forward<Args>(args)...);
+            return;
+        }
         task_manager_.push(
           std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
     }

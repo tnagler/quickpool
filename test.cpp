@@ -252,6 +252,11 @@ main()
             for (size_t i = 0; i < x.size(); i++) {
                 pool.push(dummy, i);
             }
+            std::atomic_int non_void_push_ran{ 0 };
+            pool.push([&] {
+                non_void_push_ran++;
+                return 1;
+            });
             pool.wait();
 
             size_t count_wrong = 0;
@@ -259,6 +264,8 @@ main()
                 count_wrong += (x[i] != 2);
             if (count_wrong > 0)
                 throw std::runtime_error("single threaded gives wrong result");
+            if (non_void_push_ran != 1)
+                throw std::runtime_error("single threaded non-void push failed");
             // std::cout << "OK" << std::endl;
         }
 

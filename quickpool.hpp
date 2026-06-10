@@ -26,6 +26,7 @@
 #include <exception>
 #include <functional>
 #include <future>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <mutex>
@@ -936,14 +937,13 @@ class ThreadPool
         this->wait();
     }
 
-    //! @brief computes a random-access iterator-based parallel for loop.
+    //! @brief computes an iterator-based parallel for loop.
     //!
     //! Waits until all tasks have finished, unless called from a thread
     //! that didn't create the pool. If this is taken into account, parallel
     //! loops can be nested.
     //!
-    //! @param items an object allowing for `std::begin()` and `std::end()`,
-    //! where `std::begin(items)` returns a random-access iterator.
+    //! @param items an object allowing for `std::begin()` and `std::end()`.
     //! @param f function to be applied as `f(*it)` for the iterator in the
     //! range `[begin, end)` (the 'loop body').
     template<class Items, class UnaryFunction>
@@ -951,11 +951,23 @@ class ThreadPool
     {
         auto begin = std::begin(items);
         auto size = std::distance(begin, std::end(items));
+        if (size <= 0) {
+            return;
+        }
         if (size > std::numeric_limits<int>::max()) {
             throw std::length_error("parallel_for_each range is too large");
         }
-        this->parallel_for(
-          0, static_cast<int>(size), [=](int i) { f(begin[i]); });
+
+        auto iterators =
+          std::make_shared<std::vector<decltype(begin)>>();
+        iterators->reserve(static_cast<size_t>(size));
+        for (auto it = begin; it != std::end(items); ++it) {
+            iterators->push_back(it);
+        }
+
+        this->parallel_for(0, static_cast<int>(iterators->size()), [=](int i) {
+            f(*iterators->at(static_cast<size_t>(i)));
+        });
     }
 
     //! @brief waits for all jobs currently running on the thread
@@ -1114,14 +1126,13 @@ parallel_for(int begin, int end, UnaryFunction&& f)
       begin, end, std::forward<UnaryFunction>(f));
 }
 
-//! @brief computes a random-access iterator-based parallel for loop.
+//! @brief computes an iterator-based parallel for loop.
 //!
 //! Waits until all tasks have finished, unless called from a thread that
 //! didn't create the pool. If this is taken into account, parallel loops
 //! can be nested.
 //!
-//! @param items an object allowing for `std::begin()` and `std::end()`, where
-//! `std::begin(items)` returns a random-access iterator.
+//! @param items an object allowing for `std::begin()` and `std::end()`.
 //! @param f function to be applied as `f(*it)` for the iterator in the
 //! range `[begin, end)` (the 'loop body').
 template<class Items, class UnaryFunction>

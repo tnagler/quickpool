@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <list>
 #include <limits>
 #include <stdexcept>
 
@@ -214,6 +215,25 @@ main()
             if (count_wrong > 0)
                 throw std::runtime_error(
                   "parallel_for_each gives wrong result");
+
+            std::list<size_t> y(10000, 1);
+            parallel_for_each(y, fun);
+
+            count_wrong = 0;
+            for (auto yy : y)
+                count_wrong += (yy != 2);
+            if (count_wrong > 0)
+                throw std::runtime_error(
+                  "static parallel_for_each list gives wrong result");
+
+            pool.parallel_for_each(y, fun);
+
+            count_wrong = 0;
+            for (auto yy : y)
+                count_wrong += (yy != 4);
+            if (count_wrong > 0)
+                throw std::runtime_error(
+                  "parallel_for_each list gives wrong result");
             // std::cout << "OK" << std::endl;
         }
 

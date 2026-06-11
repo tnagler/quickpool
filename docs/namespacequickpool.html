@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">quickpool
-   &#160;<span id="projectnumber">1.6.0</span>
+   &#160;<span id="projectnumber">1.8.0</span>
    </div>
    <div id="projectbrief">An easy-to-use, header-only work stealing thread pool in C++11</div>
   </td>
@@ -86,10 +86,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a06e138ab2370dc5055a64995ad6c9286"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">push</a> (Function &amp;&amp;f, Args &amp;&amp;... args)</td></tr>
 <tr class="memdesc:a06e138ab2370dc5055a64995ad6c9286"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free-standing functions (main API)  <a href="namespacequickpool.html#a06e138ab2370dc5055a64995ad6c9286">More...</a><br /></td></tr>
 <tr class="separator:a06e138ab2370dc5055a64995ad6c9286"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abe02477646e2dfceb9b8657815afefd1"><td class="memTemplParams" colspan="2">template&lt;class Function , class... Args&gt; </td></tr>
-<tr class="memitem:abe02477646e2dfceb9b8657815afefd1"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">async</a> (Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; decltype(f(args...))&gt;</td></tr>
-<tr class="memdesc:abe02477646e2dfceb9b8657815afefd1"><td class="mdescLeft">&#160;</td><td class="mdescRight">executes a job asynchronously the global thread pool.  <a href="namespacequickpool.html#abe02477646e2dfceb9b8657815afefd1">More...</a><br /></td></tr>
-<tr class="separator:abe02477646e2dfceb9b8657815afefd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab11481151f0965ef050b331b8e66e840"><td class="memTemplParams" colspan="2">template&lt;class Function , class... Args&gt; </td></tr>
+<tr class="memitem:ab11481151f0965ef050b331b8e66e840"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#ab11481151f0965ef050b331b8e66e840">async</a> (Function &amp;&amp;f, Args &amp;&amp;... args) -&gt; std::future&lt; typename <a class="el" href="structquickpool_1_1detail_1_1Task.html">detail::Task</a>&lt; Function, Args... &gt;::type &gt;</td></tr>
+<tr class="memdesc:ab11481151f0965ef050b331b8e66e840"><td class="mdescLeft">&#160;</td><td class="mdescRight">executes a job asynchronously the global thread pool.  <a href="namespacequickpool.html#ab11481151f0965ef050b331b8e66e840">More...</a><br /></td></tr>
+<tr class="separator:ab11481151f0965ef050b331b8e66e840"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a7dcef03a6a02c06a999ef6f244a291"><td class="memItemLeft" align="right" valign="top"><a id="a2a7dcef03a6a02c06a999ef6f244a291"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#a2a7dcef03a6a02c06a999ef6f244a291">wait</a> ()</td></tr>
 <tr class="memdesc:a2a7dcef03a6a02c06a999ef6f244a291"><td class="mdescLeft">&#160;</td><td class="mdescRight">waits for all jobs currently running on the global thread pool. Has no effect when not called from main thread. <br /></td></tr>
@@ -111,14 +111,14 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="na
 <tr class="separator:a3432dfdfadaf9705389263e726926b28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5542d71824605f77ed621c725d77ed69"><td class="memTemplParams" colspan="2">template&lt;class Items , class UnaryFunction &gt; </td></tr>
 <tr class="memitem:a5542d71824605f77ed621c725d77ed69"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">parallel_for_each</a> (Items &amp;items, UnaryFunction &amp;&amp;f)</td></tr>
-<tr class="memdesc:a5542d71824605f77ed621c725d77ed69"><td class="mdescLeft">&#160;</td><td class="mdescRight">computes a iterator-based parallel for loop.  <a href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">More...</a><br /></td></tr>
+<tr class="memdesc:a5542d71824605f77ed621c725d77ed69"><td class="mdescLeft">&#160;</td><td class="mdescRight">computes an iterator-based parallel for loop.  <a href="namespacequickpool.html#a5542d71824605f77ed621c725d77ed69">More...</a><br /></td></tr>
 <tr class="separator:a5542d71824605f77ed621c725d77ed69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>quickpool namespace </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="abe02477646e2dfceb9b8657815afefd1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe02477646e2dfceb9b8657815afefd1">&#9670;&nbsp;</a></span>async()</h2>
+<a id="ab11481151f0965ef050b331b8e66e840"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab11481151f0965ef050b331b8e66e840">&#9670;&nbsp;</a></span>async()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -143,7 +143,7 @@ template&lt;class Function , class... Args&gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; std::future&lt;decltype(f(args...))&gt;
+          <td></td><td> -&gt; std::future&lt;typename <a class="el" href="structquickpool_1_1detail_1_1Task.html">detail::Task</a>&lt;Function, Args...&gt;::type&gt;
 </td>
         </tr>
       </table>
@@ -164,7 +164,7 @@ template&lt;class Function , class... Args&gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A <code>std::future</code> for the task. Call <code>future.get()</code> to retrieve the results at a later point in time (blocking). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01032">1032</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01222">1222</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -221,7 +221,7 @@ template&lt;class UnaryFunction &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01081">1081</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01272">1272</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -261,7 +261,7 @@ template&lt;class Items , class UnaryFunction &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>computes a iterator-based parallel for loop. </p>
+<p>computes an iterator-based parallel for loop. </p>
 <p>Waits until all tasks have finished, unless called from a thread that didn't create the pool. If this is taken into account, parallel loops can be nested.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -271,7 +271,7 @@ template&lt;class Items , class UnaryFunction &gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01098">1098</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01289">1289</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -320,7 +320,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01019">1019</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01209">1209</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>
@@ -356,7 +356,7 @@ template&lt;class Function , class... Args&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01057">1057</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="quickpool_8hpp_source.html#l01248">1248</a> of file <a class="el" href="quickpool_8hpp_source.html">quickpool.hpp</a>.</p>
 
 </div>
 </div>

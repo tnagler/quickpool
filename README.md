@@ -133,6 +133,32 @@ auto x = std::vector<double>{10};
 pool.parallel_for_each(x, [] (double& xx) {});
 ```
 
+## Unit tests
+
+Unit tests are enabled by default when configuring the project:
+
+```sh
+cmake -S . -B build
+cmake --build build --target quickpool_test
+ctest --test-dir build --output-on-failure
+```
+
+The test suite exercises task submission, `async()`, `parallel_for()`,
+`parallel_for_each()`, nested loops, exception paths, queue growth, and
+concurrent task producers.
+
+Optional sanitizer builds are available through CMake options:
+
+```sh
+cmake -S . -B build-asan -DQUICKPOOL_TEST_SANITIZE=ON
+cmake --build build-asan --target quickpool_test
+ctest --test-dir build-asan --output-on-failure
+```
+
+For ThreadSanitizer, use `-DQUICKPOOL_TEST_THREAD_SANITIZE=ON` instead. The
+regular sanitizer and ThreadSanitizer options cannot be enabled at the same
+time.
+
 ## Benchmarks
 
 The benchmark suite is optional and has no external dependencies:

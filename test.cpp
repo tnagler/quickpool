@@ -466,6 +466,54 @@ main()
             // std::cout << "OK" << std::endl;
         }
 
+        // stop_and_reset()
+        {
+            ThreadPool pool(2);
+            std::atomic_bool started{ false };
+            std::atomic_bool release{ false };
+            std::atomic_int finished{ 0 };
+
+            pool.push([&] {
+                started = true;
+                while (!release.load()) {
+                    std::this_thread::yield();
+                }
+                finished++;
+            });
+            while (!started.load()) {
+                std::this_thread::yield();
+            }
+
+            std::exception_ptr eptr = nullptr;
+            try {
+                try {
+                    throw std::runtime_error("test error");
+                } catch (...) {
+                    release = true;
+                    pool.stop_and_reset();
+                }
+            } catch (...) {
+                eptr = std::current_exception();
+            }
+
+            if (!eptr) {
+                throw std::runtime_error(
+                  "stop_and_reset does not rethrow pending exception");
+            }
+            if (finished != 1) {
+                throw std::runtime_error(
+                  "stop_and_reset does not wait for running work");
+            }
+
+            std::atomic_int reused{ 0 };
+            pool.push([&] { reused++; });
+            pool.wait();
+            if (reused != 1) {
+                throw std::runtime_error(
+                  "stop_and_reset does not restore pool");
+            }
+        }
+
         // push exception safety
         {
             quickpool::sched::TaskManager manager(1);

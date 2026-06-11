@@ -36,3 +36,4 @@ build/
 .VSCodeCounter/
 count/
 build-bench/
+build-asan/
